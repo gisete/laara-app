@@ -58,13 +58,14 @@ export default function AddMaterialCategoryScreen() {
 	const getImageSource = (imagePath: string) => {
 		// Map database image paths to actual require() statements
 		const imageMap: { [key: string]: any } = {
-			"add-book.png": require("../../assets/images/graphics/add-book.png"),
-			"add-audio.png": require("../../assets/images/graphics/add-audio.png"),
-			"add-video.png": require("../../assets/images/graphics/add-video.png"),
-			"add-app.png": require("../../assets/images/graphics/add-app.png"),
+			"add-book.png": require("../../assets/images/graphics/single-book.png"),
+			"add-audio.png": require("../../assets/images/graphics/headphones.png"),
+			"add-video.png": require("../../assets/images/graphics/laptop.png"),
+			"add-app.png": require("../../assets/images/graphics/smartphone.png"),
+			"add-class.png": require("../../assets/images/graphics/class-board.png"),
 		};
 
-		return imageMap[imagePath] || imageMap["add-book.png"]; // Fallback to book image
+		return imageMap[imagePath]; // Fallback to book image
 	};
 
 	if (loading) {
@@ -199,8 +200,8 @@ const styles = StyleSheet.create({
 		elevation: 2,
 	},
 	categoryImage: {
-		width: 60,
-		height: 60,
+		width: 40,
+		height: 40,
 		marginRight: 16,
 	},
 	categoryTextContainer: {

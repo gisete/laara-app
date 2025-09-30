@@ -1,23 +1,26 @@
-// app/add-material/book.tsx - Book addition with database-driven subcategories
+// app/add-material/book.tsx - Refactored with reusable components
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
 	Alert,
-	Image,
 	KeyboardAvoidingView,
 	Platform,
 	ScrollView,
 	StatusBar,
 	StyleSheet,
 	Text,
-	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+// Import reusable components
+import ActionButtons from "../../components/forms/ActionButtons";
 import BookFormFields from "../../components/forms/BookFormFields";
+import SearchBar from "../../components/forms/SearchBar";
+import SearchEmptyState from "../../components/forms/SearchEmptyState";
 import SubcategorySelector from "../../components/forms/SubcategorySelector";
 import { addMaterial, getSubcategoriesByCategory } from "../../database/queries";
 
@@ -26,6 +29,7 @@ export default function AddBookScreen() {
 	const [showCustomForm, setShowCustomForm] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [loadingSubcategories, setLoadingSubcategories] = useState(true);
+	const [searchQuery, setSearchQuery] = useState("");
 
 	// Subcategories from database
 	const [subcategories, setSubcategories] = useState<string[]>([]);
@@ -35,6 +39,7 @@ export default function AddBookScreen() {
 	const [title, setTitle] = useState("");
 	const [author, setAuthor] = useState("");
 	const [totalPages, setTotalPages] = useState("");
+	const [totalChapters, setTotalChapters] = useState("");
 	const [notes, setNotes] = useState("");
 
 	// Load subcategories on mount
@@ -63,8 +68,14 @@ export default function AddBookScreen() {
 	};
 
 	const handleAddCustom = () => {
-		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 		setShowCustomForm(true);
+		setSearchQuery(""); // Clear search when entering manual mode
+	};
+
+	const handleSearch = () => {
+		// This will be implemented when API is ready
+		console.log("Searching for:", searchQuery);
+		// TODO: Implement API search
 	};
 
 	const validateForm = (): boolean => {
@@ -74,7 +85,7 @@ export default function AddBookScreen() {
 		}
 
 		if (!selectedSubcategory) {
-			Alert.alert("Subcategory Required", "Please select a book type.");
+			Alert.alert("Book Type Required", "Please select a book type.");
 			return false;
 		}
 
@@ -107,8 +118,6 @@ export default function AddBookScreen() {
 					text: "OK",
 					onPress: () => {
 						// Go back twice to clear the add-material flow
-						// back() from book.tsx -> add-material/index.tsx
-						// back() from add-material/index.tsx -> (tabs)/library
 						router.back();
 						router.back();
 					},
@@ -123,13 +132,13 @@ export default function AddBookScreen() {
 	};
 
 	const handleCancel = () => {
-		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 		setShowCustomForm(false);
 		// Reset form
 		setSelectedSubcategory(null);
 		setTitle("");
 		setAuthor("");
 		setTotalPages("");
+		setTotalChapters("");
 		setNotes("");
 	};
 
@@ -143,16 +152,12 @@ export default function AddBookScreen() {
 				keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
 			>
 				<View style={styles.content}>
-					{/* Header with back button */}
+					{/* Header with back button and title in same row */}
 					<View style={styles.header}>
 						<TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
 							<Text style={styles.backButtonText}>←</Text>
 						</TouchableOpacity>
-					</View>
-
-					{/* Title */}
-					<View style={styles.titleContainer}>
-						<Text style={styles.title}>Search Book</Text>
+						<Text style={styles.title}>{showCustomForm ? "Add a book" : "Search Book"}</Text>
 					</View>
 
 					<ScrollView
@@ -167,76 +172,54 @@ export default function AddBookScreen() {
 								<Text style={styles.loadingText}>Loading book types...</Text>
 							</View>
 						) : !showCustomForm ? (
-							// SEARCH STATE - Initial view
+							// SEARCH STATE - Using reusable components
 							<>
-								{/* Search Bar (Disabled for now) */}
-								<View style={styles.searchContainer}>
-									<TextInput
-										style={[styles.searchInput, styles.searchInputDisabled]}
-										placeholder="Coming soon - Search by title or ISBN"
-										placeholderTextColor="#9CA3AF"
-										editable={false}
-									/>
-								</View>
+								<SearchBar
+									value={searchQuery}
+									onChangeText={setSearchQuery}
+									onSubmit={handleSearch}
+									placeholder="Search by title or ISBN"
+								/>
 
-								{/* Empty state illustration */}
-								<View style={styles.illustrationContainer}>
-									<Image
-										source={require("../../assets/images/graphics/add-book.png")}
-										style={styles.illustration}
-										resizeMode="contain"
-									/>
-								</View>
-
-								{/* Or divider */}
-								<View style={styles.dividerContainer}>
-									<View style={styles.dividerLine} />
-									<Text style={styles.dividerText}>or</Text>
-									<View style={styles.dividerLine} />
-								</View>
-
-								{/* Add Custom Button */}
-								<TouchableOpacity style={styles.customButton} onPress={handleAddCustom} activeOpacity={0.8}>
-									<Text style={styles.customButtonText}>+ Add Custom Book</Text>
-								</TouchableOpacity>
+								<SearchEmptyState
+									onManualAdd={handleAddCustom}
+									helperText="If you're offline or can't find the book you're
+looking for you can enter it manually"
+									buttonText="Enter manually"
+									illustration={require("../../assets/images/graphics/add-book.png")}
+								/>
 							</>
 						) : (
-							// FORM STATE - Custom book form
+							// FORM STATE - Custom book form with reusable components
 							<>
 								<SubcategorySelector
 									categories={subcategories}
 									selectedCategory={selectedSubcategory}
 									onSelectCategory={setSelectedSubcategory}
-									label="Book Type"
-									required={true}
+									label="Type"
+									required={false}
 								/>
 
 								<BookFormFields
 									title={title}
 									author={author}
 									totalPages={totalPages}
+									totalChapters={totalChapters}
 									notes={notes}
 									onTitleChange={setTitle}
 									onAuthorChange={setAuthor}
 									onTotalPagesChange={setTotalPages}
+									onTotalChaptersChange={setTotalChapters}
 									onNotesChange={setNotes}
 								/>
 
-								{/* Action Buttons - Full Width */}
-								<View style={styles.buttonContainer}>
-									<TouchableOpacity
-										style={[styles.saveButton, loading && styles.saveButtonDisabled]}
-										onPress={handleSave}
-										activeOpacity={0.8}
-										disabled={loading}
-									>
-										<Text style={styles.saveButtonText}>{loading ? "Saving..." : "Save Book"}</Text>
-									</TouchableOpacity>
-
-									<TouchableOpacity style={styles.cancelButton} onPress={handleCancel} activeOpacity={0.8}>
-										<Text style={styles.cancelButtonText}>Cancel</Text>
-									</TouchableOpacity>
-								</View>
+								<ActionButtons
+									onSave={handleSave}
+									onCancel={handleCancel}
+									saveText="Save Book"
+									cancelText="Cancel"
+									loading={loading}
+								/>
 							</>
 						)}
 					</ScrollView>
@@ -261,8 +244,10 @@ const styles = StyleSheet.create({
 
 	// Header
 	header: {
+		flexDirection: "row",
+		alignItems: "center",
 		paddingTop: 8,
-		paddingBottom: 16,
+		paddingBottom: 24,
 	},
 	backButton: {
 		width: 40,
@@ -278,13 +263,13 @@ const styles = StyleSheet.create({
 	},
 
 	// Title
-	titleContainer: {
-		marginBottom: 24,
-	},
 	title: {
-		fontSize: 28,
-		fontFamily: "Domine-Bold",
+		fontSize: 18,
+		fontFamily: "Domine-Medium",
 		color: "#111827",
+		flex: 1,
+		textAlign: "center",
+		marginRight: 40, // Balance the back button width
 	},
 
 	// Scroll View
@@ -306,95 +291,5 @@ const styles = StyleSheet.create({
 		marginTop: 16,
 		fontSize: 16,
 		color: "#6B7280",
-	},
-
-	// Search State
-	searchContainer: {
-		marginBottom: 24,
-	},
-	searchInput: {
-		backgroundColor: "#FFFFFF",
-		borderRadius: 12,
-		paddingHorizontal: 16,
-		paddingVertical: 14,
-		fontSize: 16,
-		color: "#111827",
-		borderWidth: 1,
-		borderColor: "#E5E7EB",
-	},
-	searchInputDisabled: {
-		backgroundColor: "#F3F4F6",
-		color: "#9CA3AF",
-	},
-
-	illustrationContainer: {
-		alignItems: "center",
-		marginVertical: 40,
-	},
-	illustration: {
-		width: 180,
-		height: 180,
-	},
-
-	dividerContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-		marginVertical: 24,
-	},
-	dividerLine: {
-		flex: 1,
-		height: 1,
-		backgroundColor: "#E5E7EB",
-	},
-	dividerText: {
-		marginHorizontal: 16,
-		fontSize: 14,
-		color: "#9CA3AF",
-		fontWeight: "500",
-	},
-
-	customButton: {
-		backgroundColor: "#E1DBD4",
-		paddingVertical: 16,
-		borderRadius: 8,
-		alignItems: "center",
-	},
-	customButtonText: {
-		color: "#404040",
-		fontSize: 16,
-		fontWeight: "600",
-	},
-
-	// Action Buttons - Full Width Stack
-	buttonContainer: {
-		marginTop: 8,
-		gap: 12,
-	},
-	saveButton: {
-		backgroundColor: "#DC581F",
-		paddingVertical: 16,
-		borderRadius: 8,
-		alignItems: "center",
-		width: "100%",
-	},
-	saveButtonDisabled: {
-		backgroundColor: "#D1D5DB",
-	},
-	saveButtonText: {
-		color: "#FFFFFF",
-		fontSize: 16,
-		fontWeight: "600",
-	},
-	cancelButton: {
-		backgroundColor: "#E5E7EB",
-		paddingVertical: 16,
-		borderRadius: 8,
-		alignItems: "center",
-		width: "100%",
-	},
-	cancelButtonText: {
-		color: "#374151",
-		fontSize: 16,
-		fontWeight: "600",
 	},
 });

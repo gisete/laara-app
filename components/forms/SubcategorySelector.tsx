@@ -46,10 +46,10 @@ export default function SubcategorySelector({
 
 const styles = StyleSheet.create({
 	container: {
-		marginBottom: 24,
+		marginBottom: 18,
 	},
 	label: {
-		fontSize: 16,
+		fontSize: 14,
 		fontWeight: "600",
 		color: "#111827",
 		marginBottom: 8,
@@ -66,13 +66,13 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 16,
 		paddingVertical: 10,
 		borderRadius: 20,
-		backgroundColor: "#F3F4F6",
-		borderWidth: 2,
+		backgroundColor: "#F4EFEA",
+		borderWidth: 1,
 		borderColor: "transparent",
 	},
 	chipSelected: {
-		backgroundColor: "#FEF3F2",
-		borderColor: "#DC581F",
+		backgroundColor: "#E1DBD4",
+		borderColor: "#595350",
 	},
 	chipText: {
 		fontSize: 14,
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
 		color: "#6B7280",
 	},
 	chipTextSelected: {
-		color: "#DC581F",
-		fontWeight: "600",
+		color: "#595350",
+		fontWeight: "500",
 	},
 });

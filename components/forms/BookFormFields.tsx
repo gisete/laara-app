@@ -6,10 +6,12 @@ interface BookFormFieldsProps {
 	title: string;
 	author: string;
 	totalPages: string;
+	totalChapters: string;
 	notes: string;
 	onTitleChange: (text: string) => void;
 	onAuthorChange: (text: string) => void;
 	onTotalPagesChange: (text: string) => void;
+	onTotalChaptersChange: (text: string) => void;
 	onNotesChange: (text: string) => void;
 }
 
@@ -17,23 +19,23 @@ export default function BookFormFields({
 	title,
 	author,
 	totalPages,
+	totalChapters,
 	notes,
 	onTitleChange,
 	onAuthorChange,
 	onTotalPagesChange,
+	onTotalChaptersChange,
 	onNotesChange,
 }: BookFormFieldsProps) {
 	return (
 		<>
 			{/* Title Input */}
 			<View style={styles.formSection}>
-				<Text style={styles.label}>
-					Title <Text style={styles.required}>*</Text>
-				</Text>
+				<Text style={styles.label}>Title</Text>
 				<TextInput
 					style={styles.input}
 					placeholder="Enter book title"
-					placeholderTextColor="#9CA3AF"
+					placeholderTextColor="#C4C4C4"
 					value={title}
 					onChangeText={onTitleChange}
 					autoCapitalize="words"
@@ -46,26 +48,42 @@ export default function BookFormFields({
 				<TextInput
 					style={styles.input}
 					placeholder="Enter author name"
-					placeholderTextColor="#9CA3AF"
+					placeholderTextColor="#C4C4C4"
 					value={author}
 					onChangeText={onAuthorChange}
 					autoCapitalize="words"
 				/>
 			</View>
 
-			{/* Total Pages Input */}
-			<View style={styles.formSection}>
-				<Text style={styles.label}>Total Pages</Text>
-				<TextInput
-					style={styles.input}
-					placeholder="Enter number of pages"
-					placeholderTextColor="#9CA3AF"
-					value={totalPages}
-					onChangeText={onTotalPagesChange}
-					keyboardType="number-pad"
-				/>
-				<Text style={styles.helperText}>Add page count to track reading progress</Text>
+			{/* Two-column layout for Pages and Chapters */}
+			<View style={styles.twoColumnContainer}>
+				<View style={styles.columnSection}>
+					<Text style={styles.label}>Total pages</Text>
+					<TextInput
+						style={styles.input}
+						placeholder="0"
+						placeholderTextColor="#C4C4C4"
+						value={totalPages}
+						onChangeText={onTotalPagesChange}
+						keyboardType="number-pad"
+					/>
+				</View>
+
+				<View style={styles.columnSection}>
+					<Text style={styles.label}>Number of chapters</Text>
+					<TextInput
+						style={styles.input}
+						placeholder="0"
+						placeholderTextColor="#C4C4C4"
+						value={totalChapters}
+						onChangeText={onTotalChaptersChange}
+						keyboardType="number-pad"
+					/>
+				</View>
 			</View>
+
+			{/* Helper text */}
+			<Text style={styles.helperText}>Add page count to track reading progress</Text>
 
 			{/* Notes Input */}
 			<View style={styles.formSection}>
@@ -73,7 +91,7 @@ export default function BookFormFields({
 				<TextInput
 					style={[styles.input, styles.textArea]}
 					placeholder="Add any notes about this book"
-					placeholderTextColor="#9CA3AF"
+					placeholderTextColor="#C4C4C4"
 					value={notes}
 					onChangeText={onNotesChange}
 					multiline
@@ -87,20 +105,25 @@ export default function BookFormFields({
 
 const styles = StyleSheet.create({
 	formSection: {
-		marginBottom: 24,
+		marginBottom: 18,
+	},
+	twoColumnContainer: {
+		flexDirection: "row",
+		gap: 16,
+		marginBottom: 8,
+	},
+	columnSection: {
+		flex: 1,
 	},
 	label: {
-		fontSize: 16,
-		fontWeight: "600",
+		fontSize: 14,
+		fontWeight: "500",
 		color: "#111827",
 		marginBottom: 8,
 	},
-	required: {
-		color: "#DC581F",
-	},
 	input: {
-		backgroundColor: "#FFFFFF",
-		borderRadius: 8,
+		backgroundColor: "#F9F9F9",
+		borderRadius: 5,
 		paddingHorizontal: 16,
 		paddingVertical: 14,
 		fontSize: 16,
@@ -113,9 +136,9 @@ const styles = StyleSheet.create({
 		paddingTop: 14,
 	},
 	helperText: {
-		fontSize: 13,
+		fontSize: 14,
 		color: "#6B7280",
-		marginTop: 6,
+		marginBottom: 24,
 		fontStyle: "italic",
 	},
 });
