@@ -3,6 +3,8 @@ import * as Haptics from "expo-haptics";
 import React from "react";
 import { Image, ImageSourcePropType, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
+import HoldingBook from "../svgGraphics/HoldingBook";
+
 interface SearchEmptyStateProps {
 	onManualAdd: () => void;
 	helperText?: string;
@@ -38,7 +40,7 @@ export default function SearchEmptyState({
 			{/* Illustration */}
 			{illustration && (
 				<View style={styles.illustrationContainer}>
-					<Image source={illustration} style={styles.illustration} resizeMode="contain" />
+					<HoldingBook />
 				</View>
 			)}
 		</View>

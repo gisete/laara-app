@@ -2,7 +2,6 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 
-// Import your SVG icons here when ready
 import LibraryIcon from "../icons/NavLibraryIcon";
 import ReportsIcon from "../icons/NavReportsIcon";
 import SettingsIcon from "../icons/NavSettingsIcon";
