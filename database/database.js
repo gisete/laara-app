@@ -1,4 +1,4 @@
-// database/database.js - Updated with new material types
+// database/database.js - Updated with material_subcategories table
 import * as SQLite from "expo-sqlite";
 
 const db = SQLite.openDatabaseSync("laara.db");
@@ -87,6 +87,20 @@ export const initDatabase = () => {
 			);
 			console.log("Material categories table created successfully");
 
+			// Create material_subcategories table
+			db.execSync(
+				`CREATE TABLE IF NOT EXISTS material_subcategories (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          category_code TEXT NOT NULL,
+          name TEXT NOT NULL,
+          display_order INTEGER DEFAULT 0,
+          is_active BOOLEAN DEFAULT TRUE,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (category_code) REFERENCES material_categories (code)
+        );`
+			);
+			console.log("Material subcategories table created successfully");
+
 			// Insert default settings if they don't exist
 			db.execSync(`INSERT OR IGNORE INTO user_settings (id) VALUES (1);`);
 			console.log("Default settings initialized");
@@ -120,6 +134,7 @@ export const initDatabase = () => {
 				console.log("Default languages inserted");
 			}
 
+			// Insert default material categories if table is empty
 			const categoryCount = db.getFirstSync("SELECT COUNT(*) as count FROM material_categories");
 			if (categoryCount.count === 0) {
 				const defaultCategories = [
@@ -169,6 +184,56 @@ export const initDatabase = () => {
 				console.log("Default material categories inserted");
 			}
 
+			// Insert default subcategories if table is empty
+			const subcategoryCount = db.getFirstSync("SELECT COUNT(*) as count FROM material_subcategories");
+			if (subcategoryCount.count === 0) {
+				const defaultSubcategories = [
+					// Book subcategories
+					{ category: "book", name: "Textbook", order: 1 },
+					{ category: "book", name: "Fiction/Novel", order: 2 },
+					{ category: "book", name: "Magazine", order: 3 },
+					{ category: "book", name: "Comic book", order: 4 },
+					{ category: "book", name: "Reference", order: 5 },
+					{ category: "book", name: "Custom", order: 6 },
+
+					// Audio subcategories
+					{ category: "audio", name: "Podcast", order: 1 },
+					{ category: "audio", name: "Audiobook", order: 2 },
+					{ category: "audio", name: "Audio lesson", order: 3 },
+					{ category: "audio", name: "Music/Songs", order: 4 },
+					{ category: "audio", name: "Custom", order: 5 },
+
+					// Video subcategories
+					{ category: "video", name: "Movie", order: 1 },
+					{ category: "video", name: "YouTube video", order: 2 },
+					{ category: "video", name: "Video lesson", order: 3 },
+					{ category: "video", name: "TV show/Series", order: 4 },
+					{ category: "video", name: "Custom", order: 5 },
+
+					// Class subcategories
+					{ category: "class", name: "In-person class", order: 1 },
+					{ category: "class", name: "Online class", order: 2 },
+					{ category: "class", name: "Workshop", order: 3 },
+					{ category: "class", name: "Tutoring session", order: 4 },
+					{ category: "class", name: "Custom", order: 5 },
+
+					// App subcategories
+					{ category: "app", name: "Language learning app", order: 1 },
+					{ category: "app", name: "Flashcard app", order: 2 },
+					{ category: "app", name: "Dictionary/Translation app", order: 3 },
+					{ category: "app", name: "Custom", order: 4 },
+				];
+
+				defaultSubcategories.forEach((sub) => {
+					db.runSync("INSERT INTO material_subcategories (category_code, name, display_order) VALUES (?, ?, ?)", [
+						sub.category,
+						sub.name,
+						sub.order,
+					]);
+				});
+				console.log("Default material subcategories inserted");
+			}
+
 			// Create indexes for performance
 			db.execSync(`CREATE INDEX IF NOT EXISTS idx_study_sessions_date ON study_sessions (session_date);`);
 			db.execSync(`CREATE INDEX IF NOT EXISTS idx_study_sessions_material ON study_sessions (material_id);`);
@@ -176,6 +241,7 @@ export const initDatabase = () => {
 			db.execSync(`CREATE INDEX IF NOT EXISTS idx_materials_type ON materials (type);`);
 			db.execSync(`CREATE INDEX IF NOT EXISTS idx_languages_active ON languages (is_active);`);
 			db.execSync(`CREATE INDEX IF NOT EXISTS idx_languages_order ON languages (display_order);`);
+			db.execSync(`CREATE INDEX IF NOT EXISTS idx_subcategories_category ON material_subcategories (category_code);`);
 
 			console.log("Database initialized successfully");
 			resolve();

@@ -10,6 +10,12 @@
 		"plugins": ["expo-router", "expo-sqlite", "expo-font"],
 		"experiments": {
 			"typedRoutes": true
+		},
+		"ios": {
+			"bundleIdentifier": "com.anonymous.laara"
+		},
+		"android": {
+			"package": "com.anonymous.laara"
 		}
 	}
 }

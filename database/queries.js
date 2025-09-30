@@ -272,3 +272,48 @@ export const addCustomCategory = (category) => {
 		}
 	});
 };
+
+export const getSubcategoriesByCategory = (categoryCode) => {
+	return new Promise((resolve, reject) => {
+		try {
+			const result = db.getAllSync(
+				"SELECT * FROM material_subcategories WHERE category_code = ? AND is_active = TRUE ORDER BY display_order ASC",
+				[categoryCode]
+			);
+			resolve(result);
+		} catch (error) {
+			console.error("Error fetching subcategories by category:", error);
+			reject(error);
+		}
+	});
+};
+
+export const getAllActiveSubcategories = () => {
+	return new Promise((resolve, reject) => {
+		try {
+			const result = db.getAllSync(
+				"SELECT * FROM material_subcategories WHERE is_active = TRUE ORDER BY category_code, display_order ASC"
+			);
+			resolve(result);
+		} catch (error) {
+			console.error("Error fetching all subcategories:", error);
+			reject(error);
+		}
+	});
+};
+
+export const addCustomSubcategory = (subcategory) => {
+	return new Promise((resolve, reject) => {
+		try {
+			const result = db.runSync(
+				"INSERT INTO material_subcategories (category_code, name, display_order) VALUES (?, ?, ?)",
+				[subcategory.category_code, subcategory.name, subcategory.display_order || 999]
+			);
+			console.log("Custom subcategory added with ID:", result.lastInsertRowId);
+			resolve(result.lastInsertRowId);
+		} catch (error) {
+			console.error("Error adding custom subcategory:", error);
+			reject(error);
+		}
+	});
+};
