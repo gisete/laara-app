@@ -1,0 +1,273 @@
+// app/add-material/app.tsx
+import * as Haptics from "expo-haptics";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+	ActivityIndicator,
+	Alert,
+	KeyboardAvoidingView,
+	Platform,
+	ScrollView,
+	StatusBar,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+// Import reusable components
+import ActionButtons from "../../components/forms/ActionButtons";
+import AppFormFields from "../../components/forms/AppFormFields";
+import SearchBar from "../../components/forms/SearchBar";
+import SearchEmptyState from "../../components/forms/SearchEmptyState";
+import SubcategorySelector from "../../components/forms/SubcategorySelector";
+import { addMaterial, getSubcategoriesByCategory } from "../../database/queries";
+
+export default function AddAppScreen() {
+	// UI State
+	const [showCustomForm, setShowCustomForm] = useState(true); // Direct to form
+	const [loading, setLoading] = useState(false);
+	const [loadingSubcategories, setLoadingSubcategories] = useState(true);
+	const [searchQuery, setSearchQuery] = useState("");
+
+	// Subcategories from database
+	const [subcategories, setSubcategories] = useState<string[]>([]);
+
+	// Form State
+	const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+	const [appName, setAppName] = useState("");
+	const [totalLevels, setTotalLevels] = useState("");
+	const [notes, setNotes] = useState("");
+
+	// Load subcategories on mount
+	useEffect(() => {
+		loadSubcategories();
+	}, []);
+
+	const loadSubcategories = async () => {
+		try {
+			setLoadingSubcategories(true);
+			const subcategoriesData = await getSubcategoriesByCategory("app");
+			const subcategoryNames = subcategoriesData.map((sub) => sub.name);
+			setSubcategories(subcategoryNames);
+			console.log("Loaded app subcategories:", subcategoryNames);
+		} catch (error) {
+			console.error("Error loading subcategories:", error);
+			Alert.alert("Error", "Failed to load app types. Please try again.");
+		} finally {
+			setLoadingSubcategories(false);
+		}
+	};
+
+	const handleBack = () => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+		router.back();
+	};
+
+	const handleAddCustom = () => {
+		setShowCustomForm(true);
+		setSearchQuery("");
+	};
+
+	const handleSearch = () => {
+		console.log("Searching for:", searchQuery);
+		// TODO: Implement API search
+	};
+
+	const validateForm = (): boolean => {
+		if (!appName.trim()) {
+			Alert.alert("App Name Required", "Please enter an app name.");
+			return false;
+		}
+
+		if (!selectedSubcategory) {
+			Alert.alert("App Type Required", "Please select an app type.");
+			return false;
+		}
+
+		return true;
+	};
+
+	const handleSave = async () => {
+		if (!validateForm()) return;
+
+		try {
+			Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+			setLoading(true);
+
+			const appData = {
+				name: appName.trim(),
+				type: "app",
+				subtype: selectedSubcategory,
+				author: null,
+				total_units: totalLevels ? parseInt(totalLevels, 10) : null,
+				language: "english", // TODO: Get from user settings
+				source: "custom",
+			};
+
+			const appId = await addMaterial(appData);
+			console.log("App added successfully with ID:", appId);
+
+			Alert.alert("Success", "App added to your library!", [
+				{
+					text: "OK",
+					onPress: () => {
+						router.back();
+						router.back();
+					},
+				},
+			]);
+		} catch (error) {
+			console.error("Error saving app:", error);
+			Alert.alert("Error", "Failed to save app. Please try again.");
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleCancel = () => {
+		setShowCustomForm(false);
+		// Reset form
+		setSelectedSubcategory(null);
+		setAppName("");
+		setTotalLevels("");
+		setNotes("");
+	};
+
+	return (
+		<SafeAreaView style={styles.container}>
+			<StatusBar barStyle="dark-content" backgroundColor="#FAF9F6" />
+
+			<KeyboardAvoidingView
+				style={styles.keyboardView}
+				behavior={Platform.OS === "ios" ? "padding" : "height"}
+				keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+			>
+				<View style={styles.content}>
+					{/* Header with back button and title */}
+					<View style={styles.header}>
+						<TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
+							<Text style={styles.backButtonText}>←</Text>
+						</TouchableOpacity>
+						<Text style={styles.title}>{showCustomForm ? "Add app" : "Search App"}</Text>
+					</View>
+
+					<ScrollView
+						style={styles.scrollView}
+						showsVerticalScrollIndicator={false}
+						contentContainerStyle={styles.scrollContent}
+					>
+						{loadingSubcategories ? (
+							<View style={styles.loadingContainer}>
+								<ActivityIndicator size="large" color="#DC581F" />
+								<Text style={styles.loadingText}>Loading app types...</Text>
+							</View>
+						) : !showCustomForm ? (
+							<>
+								<SearchBar
+									value={searchQuery}
+									onChangeText={setSearchQuery}
+									onSubmit={handleSearch}
+									placeholder="Search by app name"
+								/>
+
+								<SearchEmptyState
+									onManualAdd={handleAddCustom}
+									helperText="If you're offline or can't find the app
+you're looking for you can enter it manually"
+									buttonText="Enter manually"
+									illustration={require("../../assets/images/graphics/smartphone.png")}
+								/>
+							</>
+						) : (
+							<>
+								<SubcategorySelector
+									categories={subcategories}
+									selectedCategory={selectedSubcategory}
+									onSelectCategory={setSelectedSubcategory}
+									label="Type"
+									required={false}
+								/>
+
+								<AppFormFields
+									appName={appName}
+									totalLevels={totalLevels}
+									notes={notes}
+									onAppNameChange={setAppName}
+									onTotalLevelsChange={setTotalLevels}
+									onNotesChange={setNotes}
+								/>
+
+								<ActionButtons
+									onSave={handleSave}
+									onCancel={handleCancel}
+									saveText="Save App"
+									cancelText="Cancel"
+									loading={loading}
+								/>
+							</>
+						)}
+					</ScrollView>
+				</View>
+			</KeyboardAvoidingView>
+		</SafeAreaView>
+	);
+}
+
+const styles = StyleSheet.create({
+	container: {
+		flex: 1,
+		backgroundColor: "#FAF9F6",
+	},
+	keyboardView: {
+		flex: 1,
+	},
+	content: {
+		flex: 1,
+		paddingHorizontal: 24,
+	},
+	header: {
+		flexDirection: "row",
+		alignItems: "center",
+		paddingTop: 8,
+		paddingBottom: 24,
+	},
+	backButton: {
+		width: 40,
+		height: 40,
+		borderRadius: 20,
+		backgroundColor: "transparent",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	backButtonText: {
+		fontSize: 28,
+		color: "#111827",
+	},
+	title: {
+		fontSize: 18,
+		fontFamily: "Domine-Medium",
+		color: "#111827",
+		flex: 1,
+		textAlign: "center",
+		marginRight: 40,
+	},
+	scrollView: {
+		flex: 1,
+	},
+	scrollContent: {
+		paddingBottom: 40,
+	},
+	loadingContainer: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		paddingVertical: 100,
+	},
+	loadingText: {
+		marginTop: 16,
+		fontSize: 16,
+		color: "#6B7280",
+	},
+});

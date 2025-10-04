@@ -40,7 +40,7 @@ export default function SearchEmptyState({
 			{/* Illustration */}
 			{illustration && (
 				<View style={styles.illustrationContainer}>
-					<HoldingBook />
+					<Image source={illustration} style={styles.illustration} resizeMode="contain" />
 				</View>
 			)}
 		</View>

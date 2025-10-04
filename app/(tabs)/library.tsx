@@ -1,17 +1,39 @@
-// app/(tabs)/library.tsx - Library screen with add button
+// app/(tabs)/library.tsx - Simplified with component extraction
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getAllMaterials } from "../../database/queries";
+import { deleteMaterial, getAllMaterials } from "../../database/queries";
 
 // Import components
 import EmptyState from "../../components/EmptyState";
+import FilterBar from "../../components/tabs/library/FilterBar";
+import LibraryItem from "../../components/tabs/library/LibraryItem";
+
+interface Material {
+	id: number;
+	name: string;
+	type: string;
+	subtype?: string;
+	author?: string;
+	total_units?: number;
+	current_unit?: number;
+	progress_percentage?: number;
+}
+
+const FILTERS = [
+	{ label: "Books", value: "book" },
+	{ label: "Audio", value: "audio" },
+	{ label: "Apps", value: "app" },
+	{ label: "Classes", value: "class" },
+	{ label: "Videos", value: "video" },
+];
 
 export default function LibraryScreen() {
-	const [materials, setMaterials] = useState([]);
+	const [materials, setMaterials] = useState<Material[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
 
 	useEffect(() => {
 		loadMaterials();
@@ -35,58 +57,73 @@ export default function LibraryScreen() {
 		router.push("/add-material");
 	};
 
+	const handleFilterChange = (filterValue: string) => {
+		// Toggle filter: if same filter clicked, clear it; otherwise set it
+		setSelectedFilter(selectedFilter === filterValue ? null : filterValue);
+	};
+
+	const handleDelete = async (materialId: number, materialName: string) => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+		Alert.alert("Delete Material", `Are you sure you want to delete "${materialName}"?`, [
+			{ text: "Cancel", style: "cancel" },
+			{
+				text: "Delete",
+				style: "destructive",
+				onPress: async () => {
+					try {
+						await deleteMaterial(materialId);
+						loadMaterials(); // Refresh list
+						Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Success);
+					} catch (error) {
+						console.error("Error deleting material:", error);
+						Alert.alert("Error", "Failed to delete material. Please try again.");
+					}
+				},
+			},
+		]);
+	};
+
+	// Filter materials based on selected filter
+	const filteredMaterials = selectedFilter ? materials.filter((m) => m.type === selectedFilter) : materials;
+
 	return (
 		<SafeAreaView style={styles.container}>
 			<StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
 			<View style={styles.content}>
-				{/* Header always shows */}
+				{/* Header */}
 				<View style={styles.header}>
 					<Text style={styles.title}>Library</Text>
 
 					{/* Show add button when materials exist */}
 					{materials.length > 0 && (
 						<TouchableOpacity style={styles.addButton} onPress={handleAddMaterial} activeOpacity={0.8}>
-							<Text style={styles.addButtonText}>+ Add</Text>
+							<Text style={styles.addButtonText}>+</Text>
 						</TouchableOpacity>
 					)}
 				</View>
 
 				{/* Conditional content based on materials */}
 				{!loading && materials.length === 0 ? (
-					// Show empty state below header
 					<EmptyState onAddNew={() => router.push("/add-material")} />
 				) : (
-					// Show materials list when materials exist
-					<ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-						<View style={styles.materialsContainer}>
-							{materials.map((material) => (
-								<View key={material.id} style={styles.materialCard}>
-									<View style={styles.materialHeader}>
-										<Text style={styles.materialName}>{material.name}</Text>
-										<Text style={styles.materialType}>{material.type}</Text>
-									</View>
+					<>
+						{/* Filter Bar */}
+						<FilterBar filters={FILTERS} selectedFilter={selectedFilter} onFilterChange={handleFilterChange} />
 
-									{material.author ? <Text style={styles.materialAuthor}>by {material.author}</Text> : null}
-
-									{material.subtype ? <Text style={styles.materialSubtype}>{material.subtype}</Text> : null}
-
-									{material.total_units ? (
-										<View style={styles.progressContainer}>
-											<Text style={styles.progressText}>
-												{material.current_unit || 0} / {material.total_units} pages
-											</Text>
-											{material.progress_percentage > 0 ? (
-												<View style={styles.progressBar}>
-													<View style={[styles.progressFill, { width: `${material.progress_percentage}%` }]} />
-												</View>
-											) : null}
-										</View>
-									) : null}
-								</View>
-							))}
-						</View>
-					</ScrollView>
+						{/* Materials List */}
+						<ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+							<View style={styles.materialsContainer}>
+								{filteredMaterials.map((material) => (
+									<LibraryItem
+										key={material.id}
+										material={material}
+										onLongPress={() => handleDelete(material.id, material.name)}
+									/>
+								))}
+							</View>
+						</ScrollView>
+					</>
 				)}
 			</View>
 		</SafeAreaView>
@@ -96,11 +133,11 @@ export default function LibraryScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#F9F6F2",
+		backgroundColor: "#FAF9F6",
 	},
 	content: {
 		flex: 1,
-		paddingHorizontal: 32,
+		paddingHorizontal: 24,
 	},
 	scrollContent: {
 		flex: 1,
@@ -112,24 +149,32 @@ const styles = StyleSheet.create({
 		justifyContent: "space-between",
 		alignItems: "center",
 		paddingTop: 20,
-		paddingBottom: 30,
+		paddingBottom: 20,
 		minHeight: 68,
 	},
 	title: {
-		fontSize: 28,
+		fontSize: 32,
 		fontFamily: "Domine-Bold",
 		color: "#111827",
 	},
 	addButton: {
+		width: 48,
+		height: 48,
+		borderRadius: 24,
 		backgroundColor: "#DC581F",
-		paddingHorizontal: 20,
-		paddingVertical: 10,
-		borderRadius: 8,
+		alignItems: "center",
+		justifyContent: "center",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
 	},
 	addButtonText: {
 		color: "#FFFFFF",
-		fontSize: 16,
-		fontWeight: "600",
+		fontSize: 28,
+		fontWeight: "300",
+		marginTop: -2,
 	},
 
 	// Materials List
@@ -139,8 +184,9 @@ const styles = StyleSheet.create({
 	materialCard: {
 		backgroundColor: "#FFFFFF",
 		borderRadius: 12,
-		padding: 20,
+		padding: 16,
 		marginBottom: 16,
+		flexDirection: "row",
 		shadowColor: "#000",
 		shadowOffset: {
 			width: 0,
@@ -150,11 +196,30 @@ const styles = StyleSheet.create({
 		shadowRadius: 8,
 		elevation: 2,
 	},
-	materialHeader: {
+
+	// Cover Image
+	coverPlaceholder: {
+		width: 80,
+		height: 120,
+		borderRadius: 8,
+		alignItems: "center",
+		justifyContent: "center",
+		marginRight: 16,
+	},
+	coverIcon: {
+		fontSize: 40,
+	},
+
+	// Material Info
+	materialInfo: {
+		flex: 1,
+		justifyContent: "space-between",
+	},
+	titleRow: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "flex-start",
-		marginBottom: 4,
+		marginBottom: 6,
 	},
 	materialName: {
 		flex: 1,
@@ -163,26 +228,34 @@ const styles = StyleSheet.create({
 		color: "#111827",
 		marginRight: 12,
 	},
-	materialType: {
+	typeBadge: {
+		backgroundColor: "#F3F4F6",
+		paddingHorizontal: 10,
+		paddingVertical: 4,
+		borderRadius: 12,
+	},
+	typeBadgeText: {
 		fontSize: 12,
 		fontWeight: "500",
-		color: "#DC581F",
-		backgroundColor: "#FEF3F2",
-		paddingHorizontal: 8,
-		paddingVertical: 4,
-		borderRadius: 4,
+		color: "#6B7280",
 		textTransform: "capitalize",
 	},
-	materialAuthor: {
-		fontSize: 14,
-		color: "#6B7280",
+
+	// Metadata
+	metadataRow: {
 		marginBottom: 4,
 	},
-	materialSubtype: {
-		fontSize: 13,
+	metadataText: {
+		fontSize: 14,
+		color: "#9CA3AF",
+	},
+	subtypeText: {
+		fontSize: 14,
 		color: "#9CA3AF",
 		marginBottom: 8,
 	},
+
+	// Progress
 	progressContainer: {
 		marginTop: 8,
 	},
@@ -199,7 +272,7 @@ const styles = StyleSheet.create({
 	},
 	progressFill: {
 		height: "100%",
-		backgroundColor: "#DC581F",
+		backgroundColor: "#D6CCC2",
 		borderRadius: 3,
 	},
 });

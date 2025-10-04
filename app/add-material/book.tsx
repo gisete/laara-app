@@ -144,7 +144,7 @@ export default function AddBookScreen() {
 
 	return (
 		<SafeAreaView style={styles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor="#F9F6F2" />
+			<StatusBar barStyle="dark-content" backgroundColor="#FAF9F6" />
 
 			<KeyboardAvoidingView
 				style={styles.keyboardView}
@@ -232,7 +232,7 @@ looking for you can enter it manually"
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#F9F6F2",
+		backgroundColor: "#FAF9F6",
 	},
 	keyboardView: {
 		flex: 1,

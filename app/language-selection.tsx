@@ -145,7 +145,7 @@ export default function LanguageSelectionScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#F9F6F2",
+		backgroundColor: "#FAF9F6",
 	},
 	content: {
 		flex: 1,
