@@ -9,6 +9,11 @@ import { getAllMaterials } from "../../database/queries";
 import EmptyState from "../../components/EmptyState";
 import TopBar from "../../components/ui/TopBar";
 
+// Import global styles
+import { globalStyles } from "../../theme/styles";
+import { colors } from "../../theme/colors";
+import { spacing, borderRadius } from "../../theme/spacing";
+
 export default function StudyScreen() {
 	const [materials, setMaterials] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -30,8 +35,8 @@ export default function StudyScreen() {
 	};
 
 	return (
-		<SafeAreaView style={styles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+		<SafeAreaView style={globalStyles.container}>
+			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
 			<View style={styles.content}>
 				{/* TopBar now handles language loading internally */}
@@ -98,13 +103,9 @@ export default function StudyScreen() {
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#FAF9F6",
-	},
 	content: {
 		flex: 1,
-		paddingHorizontal: 32,
+		paddingHorizontal: spacing.xl,
 	},
 	scrollContent: {
 		flex: 1,
@@ -112,34 +113,34 @@ const styles = StyleSheet.create({
 
 	// Calendar
 	calendarContainer: {
-		backgroundColor: "#F9FAFB",
-		borderRadius: 12,
-		padding: 20,
-		marginBottom: 30,
+		backgroundColor: colors.grayLightest,
+		borderRadius: borderRadius.md,
+		padding: spacing.lg,
+		marginBottom: spacing.lg,
 	},
 	calendarHeader: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
-		marginBottom: 20,
+		marginBottom: spacing.lg,
 	},
 	navigationButton: {
 		width: 32,
 		height: 32,
 		borderRadius: 16,
-		backgroundColor: "#FFFFFF",
+		backgroundColor: colors.white,
 		alignItems: "center",
 		justifyContent: "center",
 	},
 	navigationText: {
 		fontSize: 18,
-		color: "#6B7280",
+		color: colors.grayMedium,
 		fontWeight: "600",
 	},
 	monthText: {
 		fontSize: 18,
 		fontWeight: "600",
-		color: "#111827",
+		color: colors.grayDarkest,
 	},
 	weekContainer: {
 		flexDirection: "row",
@@ -147,62 +148,58 @@ const styles = StyleSheet.create({
 	},
 	dayContainer: {
 		alignItems: "center",
-		paddingVertical: 12,
-		paddingHorizontal: 8,
-		borderRadius: 8,
+		paddingVertical: spacing.sm,
+		paddingHorizontal: spacing.xs,
+		borderRadius: borderRadius.sm,
 		minWidth: 36,
 	},
 	currentDay: {
-		backgroundColor: "#E5E7EB",
+		backgroundColor: colors.gray200,
 	},
 	studyDay: {
-		backgroundColor: "#DC581F",
+		backgroundColor: colors.primaryOrange,
 	},
 	dayName: {
 		fontSize: 12,
-		color: "#6B7280",
+		color: colors.grayMedium,
 		marginBottom: 4,
 		fontWeight: "500",
 	},
 	dayNumber: {
 		fontSize: 16,
-		color: "#111827",
+		color: colors.grayDarkest,
 		fontWeight: "600",
 	},
 	currentDayText: {
-		color: "#111827",
+		color: colors.grayDarkest,
 	},
 
 	// Action Button
 	actionContainer: {
-		marginBottom: 30,
+		marginBottom: spacing.lg,
 	},
 	logSessionButton: {
-		backgroundColor: "#DC581F",
+		...globalStyles.buttonPrimary,
 		paddingVertical: 16,
 		borderRadius: 5,
-		alignItems: "center",
 		elevation: 8,
 	},
 	logSessionText: {
-		color: "#FFFFFF",
+		...globalStyles.buttonPrimaryText,
 		fontSize: 16,
-		fontWeight: "600",
 	},
 
 	// Sessions
 	sessionsContainer: {
-		marginBottom: 30,
+		marginBottom: spacing.lg,
 	},
 	sessionsTitle: {
-		fontSize: 18,
-		fontWeight: "600",
-		color: "#111827",
-		marginBottom: 12,
+		...globalStyles.headingSmall,
+		marginBottom: spacing.sm,
 	},
 	noSessionsText: {
-		fontSize: 14,
-		color: "#9CA3AF",
+		...globalStyles.bodyMedium,
+		color: colors.grayMedium,
 		fontStyle: "italic",
 	},
 });

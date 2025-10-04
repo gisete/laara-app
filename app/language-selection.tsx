@@ -15,6 +15,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getAllActiveLanguages, updateUserSettings } from "../database/queries";
 
+// Import global styles
+import { globalStyles } from "../theme/styles";
+import { colors } from "../theme/colors";
+import { spacing, borderRadius } from "../theme/spacing";
+import { typography } from "../theme/typography";
+
 interface Language {
 	id: number;
 	code: string;
@@ -45,28 +51,19 @@ export default function LanguageSelectionScreen() {
 		}
 	};
 
-	const handleLanguageSelect = (languageCode: string): void => {
-		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+	const handleLanguageSelect = async (languageCode: string): Promise<void> => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 		setSelectedLanguage(languageCode);
-	};
-
-	const handleNext = async (): Promise<void> => {
-		if (!selectedLanguage) {
-			Alert.alert("Please select a language", "Choose the language you want to learn to continue.");
-			return;
-		}
 
 		try {
-			Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
 			// Save the selected language to user settings
 			await updateUserSettings({
-				primary_language: selectedLanguage,
+				primary_language: languageCode,
 				notification_enabled: false,
 				notification_time: "19:00",
 			});
 
-			console.log("Selected language saved:", selectedLanguage);
+			console.log("Selected language saved:", languageCode);
 
 			// Navigate to main app
 			router.replace("/(tabs)");
@@ -80,9 +77,9 @@ export default function LanguageSelectionScreen() {
 
 	if (loading) {
 		return (
-			<SafeAreaView style={styles.container}>
+			<SafeAreaView style={globalStyles.container}>
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color="#DC581F" />
+					<ActivityIndicator size="large" color={colors.primaryOrange} />
 					<Text style={styles.loadingText}>Loading languages...</Text>
 				</View>
 			</SafeAreaView>
@@ -90,8 +87,8 @@ export default function LanguageSelectionScreen() {
 	}
 
 	return (
-		<SafeAreaView style={styles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+		<SafeAreaView style={globalStyles.container}>
+			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
 			<View style={styles.content}>
 				{/* Header */}
@@ -125,33 +122,17 @@ export default function LanguageSelectionScreen() {
 						</TouchableOpacity>
 					))}
 				</ScrollView>
-
-				{/* Bottom Section */}
-				<View style={styles.bottomSection}>
-					<TouchableOpacity
-						style={[styles.nextButton, !selectedLanguage && styles.nextButtonDisabled]}
-						onPress={handleNext}
-						activeOpacity={0.9}
-						disabled={!selectedLanguage}
-					>
-						<Text style={[styles.nextButtonText, !selectedLanguage && styles.nextButtonTextDisabled]}>Next</Text>
-					</TouchableOpacity>
-				</View>
 			</View>
 		</SafeAreaView>
 	);
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#FAF9F6",
-	},
 	content: {
 		flex: 1,
-		paddingHorizontal: 32,
-		paddingTop: 40,
-		paddingBottom: 32,
+		paddingHorizontal: spacing.lg,
+		paddingTop: spacing.xxl,
+		paddingBottom: spacing.xl,
 	},
 
 	// Loading
@@ -161,29 +142,29 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	loadingText: {
-		marginTop: 16,
-		fontSize: 16,
-		color: "#6B7280",
+		marginTop: spacing.md,
+		...globalStyles.bodyMedium,
+		color: colors.grayMedium,
 	},
 
 	// Header
 	header: {
 		alignItems: "flex-start",
-		marginBottom: 16,
+		marginBottom: spacing.md,
 	},
 	title: {
-		fontFamily: "Domine-Medium",
+		...typography.headingMedium,
 		fontSize: 28,
-		fontWeight: "700",
-		color: "#111827",
-		marginBottom: 8,
+		color: colors.grayDarkest,
+		marginBottom: spacing.xs,
 		textAlign: "left",
 	},
 	subtitle: {
+		...globalStyles.bodyLarge,
 		fontSize: 18,
-		color: "#6B7280",
+		color: colors.grayMedium,
 		textAlign: "left",
-		marginTop: 32,
+		marginTop: spacing.xl,
 	},
 
 	// Language List
@@ -191,76 +172,34 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	languageListContent: {
-		paddingBottom: 20,
+		paddingBottom: spacing.xl,
 	},
 	languageItem: {
-		flexDirection: "row",
-		alignItems: "center",
-		paddingVertical: 16,
-		paddingHorizontal: 20,
-		marginBottom: 8,
-		backgroundColor: "#F9FAFB",
-		borderRadius: 8,
-		borderWidth: 2,
-		borderColor: "transparent",
+		...globalStyles.selectionCard,
 	},
 	languageItemSelected: {
-		backgroundColor: "#FEF3F2",
-		borderColor: "#DC581F",
+		...globalStyles.selectionCardSelected,
 	},
 	flag: {
 		fontSize: 24,
-		marginRight: 16,
+		marginRight: spacing.md,
 	},
 	languageName: {
 		flex: 1,
+		...globalStyles.bodyMedium,
 		fontSize: 16,
 		fontWeight: "500",
-		color: "#374151",
 	},
 	languageNameSelected: {
-		color: "#DC581F",
+		color: colors.primaryOrange,
 		fontWeight: "600",
 	},
 	checkmark: {
-		width: 24,
-		height: 24,
-		borderRadius: 12,
-		backgroundColor: "#DC581F",
-		alignItems: "center",
-		justifyContent: "center",
+		...globalStyles.checkmark,
 	},
 	checkmarkText: {
-		color: "#FFFFFF",
+		color: colors.white,
 		fontSize: 14,
 		fontWeight: "600",
-	},
-
-	// Bottom Section
-	bottomSection: {
-		alignItems: "center",
-		paddingTop: 20,
-	},
-	nextButton: {
-		backgroundColor: "#DC581F",
-		paddingVertical: 18,
-		paddingHorizontal: 48,
-		borderRadius: 5,
-		width: "100%",
-		maxWidth: 330,
-		alignItems: "center",
-		elevation: 8,
-	},
-	nextButtonDisabled: {
-		backgroundColor: "#D1D5DB",
-		elevation: 0,
-	},
-	nextButtonText: {
-		color: "#FFFFFF",
-		fontSize: 18,
-		fontWeight: "600",
-	},
-	nextButtonTextDisabled: {
-		color: "#9CA3AF",
 	},
 });

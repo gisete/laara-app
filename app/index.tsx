@@ -5,6 +5,12 @@ import React from "react";
 import { Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+// Import global styles
+import { globalStyles } from "../theme/styles";
+import { colors } from "../theme/colors";
+import { spacing } from "../theme/spacing";
+import { typography } from "../theme/typography";
+
 export default function WelcomeScreen() {
 	const handleGetStarted = (): void => {
 		// Haptic feedback for better UX
@@ -15,8 +21,8 @@ export default function WelcomeScreen() {
 	};
 
 	return (
-		<SafeAreaView style={styles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+		<SafeAreaView style={globalStyles.container}>
+			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
 			<View style={styles.content}>
 				{/* Illustration */}
@@ -44,13 +50,9 @@ export default function WelcomeScreen() {
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#FAF9F6",
-	},
 	content: {
 		flex: 1,
-		paddingHorizontal: 32,
+		paddingHorizontal: spacing.xl,
 		paddingVertical: 60,
 		justifyContent: "space-between",
 		alignItems: "center",
@@ -59,7 +61,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: "center",
 		alignItems: "center",
-		marginTop: 40,
+		marginTop: spacing.xxl,
 	},
 	illustration: {
 		width: 400,
@@ -69,20 +71,20 @@ const styles = StyleSheet.create({
 	// Text content
 	textContainer: {
 		alignItems: "center",
-		paddingHorizontal: 20,
-		marginBottom: 40,
+		paddingHorizontal: spacing.lg,
+		marginBottom: spacing.xxl,
 	},
 	title: {
-		fontFamily: "Domine-Medium",
+		...typography.headingMedium,
 		fontSize: 28,
-		fontWeight: "700",
-		color: "#111827",
-		marginBottom: 16,
+		color: colors.grayDarkest,
+		marginBottom: spacing.md,
 		textAlign: "center",
 	},
 	subtitle: {
+		...globalStyles.bodyMedium,
 		fontSize: 16,
-		color: "#6B7280",
+		color: colors.grayMedium,
 		textAlign: "center",
 		lineHeight: 24,
 		maxWidth: 280,
@@ -90,18 +92,16 @@ const styles = StyleSheet.create({
 
 	// Button
 	getStartedButton: {
-		backgroundColor: "#DC581F",
+		...globalStyles.buttonPrimary,
 		paddingVertical: 18,
 		paddingHorizontal: 48,
 		borderRadius: 5,
 		width: "100%",
 		maxWidth: 330,
-		alignItems: "center",
 		elevation: 8,
 	},
 	buttonText: {
-		color: "#FFFFFF",
+		...globalStyles.buttonPrimaryText,
 		fontSize: 18,
-		fontWeight: "600",
 	},
 });

@@ -1,7 +1,7 @@
 // app/(tabs)/library.tsx - Simplified with component extraction
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
 import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { deleteMaterial, getAllMaterials } from "../../database/queries";
@@ -10,6 +10,12 @@ import { deleteMaterial, getAllMaterials } from "../../database/queries";
 import EmptyState from "../../components/EmptyState";
 import FilterBar from "../../components/tabs/library/FilterBar";
 import LibraryItem from "../../components/tabs/library/LibraryItem";
+
+// Import global styles
+import { globalStyles } from "../../theme/styles";
+import { colors } from "../../theme/colors";
+import { spacing } from "../../theme/spacing";
+import { typography } from "../../theme/typography";
 
 interface Material {
 	id: number;
@@ -23,6 +29,7 @@ interface Material {
 }
 
 const FILTERS = [
+	{ label: "All", value: "all" },
 	{ label: "Books", value: "book" },
 	{ label: "Audio", value: "audio" },
 	{ label: "Apps", value: "app" },
@@ -33,13 +40,9 @@ const FILTERS = [
 export default function LibraryScreen() {
 	const [materials, setMaterials] = useState<Material[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
+	const [selectedFilter, setSelectedFilter] = useState<string>("all");
 
-	useEffect(() => {
-		loadMaterials();
-	}, []);
-
-	const loadMaterials = async () => {
+	const loadMaterials = useCallback(async () => {
 		try {
 			setLoading(true);
 			const materialsData = await getAllMaterials();
@@ -50,7 +53,14 @@ export default function LibraryScreen() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, []);
+
+	// Reload materials when screen comes into focus
+	useFocusEffect(
+		useCallback(() => {
+			loadMaterials();
+		}, [loadMaterials])
+	);
 
 	const handleAddMaterial = () => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -58,8 +68,7 @@ export default function LibraryScreen() {
 	};
 
 	const handleFilterChange = (filterValue: string) => {
-		// Toggle filter: if same filter clicked, clear it; otherwise set it
-		setSelectedFilter(selectedFilter === filterValue ? null : filterValue);
+		setSelectedFilter(filterValue);
 	};
 
 	const handleDelete = async (materialId: number, materialName: string) => {
@@ -84,11 +93,11 @@ export default function LibraryScreen() {
 	};
 
 	// Filter materials based on selected filter
-	const filteredMaterials = selectedFilter ? materials.filter((m) => m.type === selectedFilter) : materials;
+	const filteredMaterials = selectedFilter === "all" ? materials : materials.filter((m) => m.type === selectedFilter);
 
 	return (
-		<SafeAreaView style={styles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+		<SafeAreaView style={globalStyles.container}>
+			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
 			<View style={styles.content}>
 				{/* Header */}
@@ -131,13 +140,9 @@ export default function LibraryScreen() {
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#FAF9F6",
-	},
 	content: {
 		flex: 1,
-		paddingHorizontal: 24,
+		paddingHorizontal: spacing.md,
 	},
 	scrollContent: {
 		flex: 1,
@@ -148,20 +153,19 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
-		paddingTop: 20,
-		paddingBottom: 20,
+		paddingTop: spacing.lg,
+		paddingBottom: spacing.lg,
 		minHeight: 68,
 	},
 	title: {
-		fontSize: 32,
-		fontFamily: "Domine-Bold",
-		color: "#111827",
+		...typography.headingMedium,
+		color: colors.grayDarkest,
 	},
 	addButton: {
 		width: 48,
 		height: 48,
 		borderRadius: 24,
-		backgroundColor: "#DC581F",
+		backgroundColor: colors.primaryOrange,
 		alignItems: "center",
 		justifyContent: "center",
 		shadowColor: "#000",
@@ -171,7 +175,7 @@ const styles = StyleSheet.create({
 		elevation: 3,
 	},
 	addButtonText: {
-		color: "#FFFFFF",
+		color: colors.white,
 		fontSize: 28,
 		fontWeight: "300",
 		marginTop: -2,
@@ -179,22 +183,12 @@ const styles = StyleSheet.create({
 
 	// Materials List
 	materialsContainer: {
-		paddingBottom: 20,
+		paddingBottom: spacing.lg,
 	},
 	materialCard: {
-		backgroundColor: "#FFFFFF",
-		borderRadius: 12,
-		padding: 16,
-		marginBottom: 16,
+		...globalStyles.card,
+		marginBottom: spacing.md,
 		flexDirection: "row",
-		shadowColor: "#000",
-		shadowOffset: {
-			width: 0,
-			height: 2,
-		},
-		shadowOpacity: 0.05,
-		shadowRadius: 8,
-		elevation: 2,
 	},
 
 	// Cover Image
@@ -204,7 +198,7 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		alignItems: "center",
 		justifyContent: "center",
-		marginRight: 16,
+		marginRight: spacing.md,
 	},
 	coverIcon: {
 		fontSize: 40,
@@ -223,21 +217,20 @@ const styles = StyleSheet.create({
 	},
 	materialName: {
 		flex: 1,
-		fontSize: 18,
+		...globalStyles.bodyLarge,
 		fontWeight: "600",
-		color: "#111827",
-		marginRight: 12,
+		marginRight: spacing.sm,
 	},
 	typeBadge: {
-		backgroundColor: "#F3F4F6",
-		paddingHorizontal: 10,
+		...globalStyles.pill,
+		marginRight: 0,
+		marginBottom: 0,
 		paddingVertical: 4,
-		borderRadius: 12,
+		paddingHorizontal: 10,
 	},
 	typeBadgeText: {
+		...globalStyles.pillText,
 		fontSize: 12,
-		fontWeight: "500",
-		color: "#6B7280",
 		textTransform: "capitalize",
 	},
 
@@ -246,33 +239,34 @@ const styles = StyleSheet.create({
 		marginBottom: 4,
 	},
 	metadataText: {
-		fontSize: 14,
-		color: "#9CA3AF",
+		...globalStyles.bodyMedium,
+		color: colors.grayMedium,
 	},
 	subtypeText: {
-		fontSize: 14,
-		color: "#9CA3AF",
-		marginBottom: 8,
+		...globalStyles.bodyMedium,
+		color: colors.grayMedium,
+		marginBottom: spacing.xs,
 	},
 
 	// Progress
 	progressContainer: {
-		marginTop: 8,
+		marginTop: spacing.xs,
 	},
 	progressText: {
+		...globalStyles.bodyMedium,
 		fontSize: 13,
-		color: "#6B7280",
+		color: colors.grayMedium,
 		marginBottom: 6,
 	},
 	progressBar: {
 		height: 6,
-		backgroundColor: "#E5E7EB",
+		backgroundColor: colors.gray200,
 		borderRadius: 3,
 		overflow: "hidden",
 	},
 	progressFill: {
 		height: "100%",
-		backgroundColor: "#D6CCC2",
+		backgroundColor: colors.gray200,
 		borderRadius: 3,
 	},
 });

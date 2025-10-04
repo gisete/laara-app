@@ -204,24 +204,21 @@ export const initDatabase = () => {
 					{ category: "audio", name: "Custom", order: 5 },
 
 					// Video subcategories
-					{ category: "video", name: "Movie", order: 1 },
-					{ category: "video", name: "YouTube video", order: 2 },
-					{ category: "video", name: "Video lesson", order: 3 },
-					{ category: "video", name: "TV show/Series", order: 4 },
+					{ category: "video", name: "YouTube", order: 1 },
+					{ category: "video", name: "Movie/TV", order: 2 },
+					{ category: "video", name: "Language Course", order: 3 },
+					{ category: "video", name: "Short-form", order: 4 },
 					{ category: "video", name: "Custom", order: 5 },
 
 					// Class subcategories
-					{ category: "class", name: "In-person class", order: 1 },
-					{ category: "class", name: "Online class", order: 2 },
-					{ category: "class", name: "Workshop", order: 3 },
-					{ category: "class", name: "Tutoring session", order: 4 },
-					{ category: "class", name: "Custom", order: 5 },
+					{ category: "class", name: "In-person", order: 1 },
+					{ category: "class", name: "Online", order: 2 },
+					{ category: "class", name: "Custom", order: 3 },
 
 					// App subcategories
 					{ category: "app", name: "Language learning app", order: 1 },
-					{ category: "app", name: "Flashcard app", order: 2 },
-					{ category: "app", name: "Dictionary/Translation app", order: 3 },
-					{ category: "app", name: "Custom", order: 4 },
+					{ category: "app", name: "Flashcards", order: 2 },
+					{ category: "app", name: "Custom", order: 3 },
 				];
 
 				defaultSubcategories.forEach((sub) => {

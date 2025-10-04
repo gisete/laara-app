@@ -2,6 +2,7 @@
 import * as Haptics from "expo-haptics";
 import React from "react";
 import { Image, ImageSourcePropType, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { colors } from "../../theme/colors";
 
 import HoldingBook from "../svgGraphics/HoldingBook";
 
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
 		marginTop: 8,
 	},
 	manualButton: {
-		backgroundColor: "#E1DBD4",
+		backgroundColor: colors.gray300,
 		paddingVertical: 16,
 		paddingHorizontal: 24,
 		borderRadius: 5,
@@ -69,12 +70,12 @@ const styles = StyleSheet.create({
 	},
 	manualButtonIcon: {
 		fontSize: 20,
-		color: "#404040",
+		color: colors.grayDarkest,
 		marginRight: 8,
 		fontWeight: "400",
 	},
 	manualButtonText: {
-		color: "#404040",
+		color: colors.grayDarkest,
 		fontSize: 16,
 		fontWeight: "400",
 	},

@@ -15,6 +15,12 @@ import AppIcon from "../../components/icons/AppIcon";
 import ClassIcon from "../../components/icons/ClassIcon";
 import MyIcon from "../../components/icons/AudioIcon"; // A default fallback icon
 
+// Import global styles
+import { globalStyles } from "../../theme/styles";
+import { colors } from "../../theme/colors";
+import { spacing } from "../../theme/spacing";
+import { typography } from "../../theme/typography";
+
 interface Category {
 	id: number;
 	code: string;
@@ -65,9 +71,9 @@ export default function AddMaterialCategoryScreen() {
 
 	if (loading) {
 		return (
-			<SafeAreaView style={styles.container}>
+			<SafeAreaView style={globalStyles.container}>
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color="#DC581F" />
+					<ActivityIndicator size="large" color={colors.primaryOrange} />
 					<Text style={styles.loadingText}>Loading categories...</Text>
 				</View>
 			</SafeAreaView>
@@ -75,8 +81,8 @@ export default function AddMaterialCategoryScreen() {
 	}
 
 	return (
-		<SafeAreaView style={styles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+		<SafeAreaView style={globalStyles.container}>
+			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
 			<View style={styles.content}>
 				<View style={styles.header}>
@@ -113,13 +119,9 @@ export default function AddMaterialCategoryScreen() {
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#FAF9F6",
-	},
 	content: {
 		flex: 1,
-		paddingHorizontal: 24,
+		paddingHorizontal: spacing.lg,
 	},
 	loadingContainer: {
 		flex: 1,
@@ -127,13 +129,13 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	loadingText: {
-		marginTop: 16,
-		fontSize: 16,
-		color: "#6B7280",
+		marginTop: spacing.md,
+		...globalStyles.bodyMedium,
+		color: colors.grayMedium,
 	},
 	header: {
-		paddingTop: 8,
-		paddingBottom: 16,
+		paddingTop: spacing.xs,
+		paddingBottom: spacing.md,
 	},
 	backButton: {
 		width: 40,
@@ -145,22 +147,22 @@ const styles = StyleSheet.create({
 	},
 	backButtonText: {
 		fontSize: 28,
-		color: "#111827",
+		color: colors.grayDarkest,
 	},
 	titleContainer: {
-		marginBottom: 32,
+		marginBottom: spacing.xl,
 	},
 	title: {
 		fontSize: 26,
-		fontFamily: "Domine-Medium",
-		color: "#111827",
+		...typography.headingMedium,
+		color: colors.grayDarkest,
 		lineHeight: 36,
 	},
 	scrollView: {
 		flex: 1,
 	},
 	scrollContent: {
-		paddingBottom: 40,
+		paddingBottom: spacing.xxl,
 	},
 	// Note: The card-specific styles have been moved to CategoryCard.tsx
 });

@@ -24,6 +24,12 @@ import SearchEmptyState from "../../components/forms/SearchEmptyState";
 import SubcategorySelector from "../../components/forms/SubcategorySelector";
 import { addMaterial, getSubcategoriesByCategory } from "../../database/queries";
 
+// Import global styles
+import { globalStyles } from "../../theme/styles";
+import { colors } from "../../theme/colors";
+import { spacing } from "../../theme/spacing";
+import { typography } from "../../theme/typography";
+
 export default function AddAppScreen() {
 	// UI State
 	const [showCustomForm, setShowCustomForm] = useState(true); // Direct to form
@@ -136,8 +142,8 @@ export default function AddAppScreen() {
 	};
 
 	return (
-		<SafeAreaView style={styles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor="#FAF9F6" />
+		<SafeAreaView style={globalStyles.container}>
+			<StatusBar barStyle="dark-content" backgroundColor={colors.gray50} />
 
 			<KeyboardAvoidingView
 				style={styles.keyboardView}
@@ -216,22 +222,18 @@ you're looking for you can enter it manually"
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#FAF9F6",
-	},
 	keyboardView: {
 		flex: 1,
 	},
 	content: {
 		flex: 1,
-		paddingHorizontal: 24,
+		paddingHorizontal: spacing.lg,
 	},
 	header: {
 		flexDirection: "row",
 		alignItems: "center",
-		paddingTop: 8,
-		paddingBottom: 24,
+		paddingTop: spacing.xs,
+		paddingBottom: spacing.lg,
 	},
 	backButton: {
 		width: 40,
@@ -243,12 +245,12 @@ const styles = StyleSheet.create({
 	},
 	backButtonText: {
 		fontSize: 28,
-		color: "#111827",
+		color: colors.grayDarkest,
 	},
 	title: {
 		fontSize: 18,
-		fontFamily: "Domine-Medium",
-		color: "#111827",
+		...typography.headingSmall,
+		color: colors.grayDarkest,
 		flex: 1,
 		textAlign: "center",
 		marginRight: 40,
@@ -257,7 +259,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	scrollContent: {
-		paddingBottom: 40,
+		paddingBottom: spacing.xxl,
 	},
 	loadingContainer: {
 		flex: 1,
@@ -266,8 +268,8 @@ const styles = StyleSheet.create({
 		paddingVertical: 100,
 	},
 	loadingText: {
-		marginTop: 16,
-		fontSize: 16,
-		color: "#6B7280",
+		marginTop: spacing.md,
+		...globalStyles.bodyMedium,
+		color: colors.grayMedium,
 	},
 });

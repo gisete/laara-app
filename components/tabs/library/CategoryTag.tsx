@@ -1,14 +1,34 @@
 // components/library/CategoryBadge.tsx
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { colors } from "../../../theme/colors";
 
 interface CategoryBadgeProps {
 	type: string;
 }
 
+const getCategoryColor = (type: string): string => {
+	switch (type.toLowerCase()) {
+		case "book":
+			return colors.categoryBook;
+		case "audio":
+			return colors.categoryAudio;
+		case "app":
+			return colors.categoryApp;
+		case "class":
+			return colors.categoryClass;
+		case "video":
+			return colors.categoryVideo;
+		default:
+			return colors.gray200;
+	}
+};
+
 export default function CategoryBadge({ type }: CategoryBadgeProps) {
+	const backgroundColor = getCategoryColor(type);
+
 	return (
-		<View style={styles.badge}>
+		<View style={[styles.badge, { backgroundColor }]}>
 			<Text style={styles.badgeText}>{type}</Text>
 		</View>
 	);
@@ -16,7 +36,6 @@ export default function CategoryBadge({ type }: CategoryBadgeProps) {
 
 const styles = StyleSheet.create({
 	badge: {
-		backgroundColor: "#F3F4F6",
 		paddingHorizontal: 10,
 		paddingVertical: 4,
 		borderRadius: 12,
@@ -24,7 +43,7 @@ const styles = StyleSheet.create({
 	badgeText: {
 		fontSize: 12,
 		fontWeight: "500",
-		color: "#6B7280",
+		color: colors.grayDarkest,
 		textTransform: "capitalize",
 	},
 });

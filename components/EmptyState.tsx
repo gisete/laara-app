@@ -2,6 +2,7 @@
 import * as Haptics from "expo-haptics";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { colors } from "../theme/colors";
 
 interface EmptyStateProps {
 	onAddNew: () => void;
@@ -69,16 +70,18 @@ const styles = StyleSheet.create({
 		maxWidth: 280,
 	},
 	addButton: {
-		backgroundColor: "#E1DBD4",
-		paddingVertical: 24,
-		paddingHorizontal: 68,
+		backgroundColor: colors.gray300,
+		borderWidth: 1,
+		borderColor: colors.gray300,
+		paddingVertical: 20,
+		paddingHorizontal: 60,
 		borderRadius: 5,
 		minWidth: 140,
 		alignItems: "center",
 		elevation: 8,
 	},
 	addButtonText: {
-		color: "#404040",
+		color: colors.grayDarkest,
 		fontSize: 16,
 		fontWeight: "500",
 	},

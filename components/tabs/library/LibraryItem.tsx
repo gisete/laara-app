@@ -97,7 +97,7 @@ export default function LibraryItem({ material, onLongPress }: LibraryItemProps)
 const styles = StyleSheet.create({
 	card: {
 		backgroundColor: "#FFFFFF",
-		borderRadius: 12,
+		borderRadius: 8,
 		padding: 16,
 		marginBottom: 16,
 		flexDirection: "row",
