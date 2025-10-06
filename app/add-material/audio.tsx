@@ -48,7 +48,6 @@ export default function AddAudioScreen() {
 	const [totalDuration, setTotalDuration] = useState("");
 	const [hasPageNumbers, setHasPageNumbers] = useState(false);
 	const [totalPages, setTotalPages] = useState("");
-	const [notes, setNotes] = useState("");
 
 	// Load subcategories on mount
 	useEffect(() => {
@@ -150,7 +149,6 @@ export default function AddAudioScreen() {
 		setTotalDuration("");
 		setHasPageNumbers(false);
 		setTotalPages("");
-		setNotes("");
 	};
 
 	return (
@@ -215,14 +213,12 @@ you're looking for you can enter it manually"
 									totalDuration={totalDuration}
 									hasPageNumbers={hasPageNumbers}
 									totalPages={totalPages}
-									notes={notes}
 									onTitleChange={setTitle}
 									onCreatorChange={setCreator}
 									onTotalEpisodesChange={setTotalEpisodes}
 									onTotalDurationChange={setTotalDuration}
 									onHasPageNumbersChange={setHasPageNumbers}
 									onTotalPagesChange={setTotalPages}
-									onNotesChange={setNotes}
 								/>
 
 								<ActionButtons
@@ -279,7 +275,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	scrollContent: {
-		paddingBottom: spacing.xxl,
+		paddingBottom: 200,
 	},
 	loadingContainer: {
 		flex: 1,

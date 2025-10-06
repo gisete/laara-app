@@ -7,12 +7,10 @@ interface VideoFormFieldsProps {
 	creator: string;
 	totalVideos: string;
 	totalDuration: string;
-	notes: string;
 	onTitleChange: (text: string) => void;
 	onCreatorChange: (text: string) => void;
 	onTotalVideosChange: (text: string) => void;
 	onTotalDurationChange: (text: string) => void;
-	onNotesChange: (text: string) => void;
 }
 
 export default function VideoFormFields({
@@ -20,12 +18,10 @@ export default function VideoFormFields({
 	creator,
 	totalVideos,
 	totalDuration,
-	notes,
 	onTitleChange,
 	onCreatorChange,
 	onTotalVideosChange,
 	onTotalDurationChange,
-	onNotesChange,
 }: VideoFormFieldsProps) {
 	return (
 		<>
@@ -86,33 +82,18 @@ export default function VideoFormFields({
 
 			{/* Helper text */}
 			<Text style={styles.helperText}>Add video count or duration to track watching progress</Text>
-
-			{/* Notes Input */}
-			<View style={styles.formSection}>
-				<Text style={styles.label}>Notes</Text>
-				<TextInput
-					style={[styles.input, styles.textArea]}
-					placeholder="Add any notes about this video content"
-					placeholderTextColor="#C4C4C4"
-					value={notes}
-					onChangeText={onNotesChange}
-					multiline
-					numberOfLines={4}
-					textAlignVertical="top"
-				/>
-			</View>
 		</>
 	);
 }
 
 const styles = StyleSheet.create({
 	formSection: {
-		marginBottom: 18,
+		marginBottom: 16,
 	},
 	twoColumnContainer: {
 		flexDirection: "row",
 		gap: 16,
-		marginBottom: 8,
+		marginBottom: 16,
 	},
 	columnSection: {
 		flex: 1,

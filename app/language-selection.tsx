@@ -51,19 +51,23 @@ export default function LanguageSelectionScreen() {
 		}
 	};
 
-	const handleLanguageSelect = async (languageCode: string): Promise<void> => {
+	const handleLanguageSelect = (languageCode: string): void => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 		setSelectedLanguage(languageCode);
+	};
+
+	const handleNext = async (): Promise<void> => {
+		if (!selectedLanguage) return;
 
 		try {
 			// Save the selected language to user settings
 			await updateUserSettings({
-				primary_language: languageCode,
+				primary_language: selectedLanguage,
 				notification_enabled: false,
 				notification_time: "19:00",
 			});
 
-			console.log("Selected language saved:", languageCode);
+			console.log("Selected language saved:", selectedLanguage);
 
 			// Navigate to main app
 			router.replace("/(tabs)");
@@ -122,6 +126,16 @@ export default function LanguageSelectionScreen() {
 						</TouchableOpacity>
 					))}
 				</ScrollView>
+
+				{/* Next Button */}
+				<TouchableOpacity
+					style={[styles.nextButton, !selectedLanguage && styles.nextButtonDisabled]}
+					onPress={handleNext}
+					disabled={!selectedLanguage}
+					activeOpacity={0.8}
+				>
+					<Text style={styles.nextButtonText}>Next</Text>
+				</TouchableOpacity>
 			</View>
 		</SafeAreaView>
 	);
@@ -201,5 +215,25 @@ const styles = StyleSheet.create({
 		color: colors.white,
 		fontSize: 14,
 		fontWeight: "600",
+	},
+
+	// Next Button
+	nextButton: {
+		...globalStyles.buttonPrimary,
+		paddingVertical: 18,
+		paddingHorizontal: 48,
+		borderRadius: 5,
+		width: "100%",
+		maxWidth: 330,
+		elevation: 8,
+		marginTop: spacing.lg,
+		alignSelf: "center",
+	},
+	nextButtonDisabled: {
+		backgroundColor: colors.gray300,
+	},
+	nextButtonText: {
+		...globalStyles.buttonPrimaryText,
+		fontSize: 18,
 	},
 });

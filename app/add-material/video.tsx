@@ -46,7 +46,6 @@ export default function AddVideoScreen() {
 	const [creator, setCreator] = useState("");
 	const [totalVideos, setTotalVideos] = useState("");
 	const [totalDuration, setTotalDuration] = useState("");
-	const [notes, setNotes] = useState("");
 
 	// Load subcategories on mount
 	useEffect(() => {
@@ -142,7 +141,6 @@ export default function AddVideoScreen() {
 		setCreator("");
 		setTotalVideos("");
 		setTotalDuration("");
-		setNotes("");
 	};
 
 	return (
@@ -205,12 +203,10 @@ you're looking for you can enter it manually"
 									creator={creator}
 									totalVideos={totalVideos}
 									totalDuration={totalDuration}
-									notes={notes}
 									onTitleChange={setTitle}
 									onCreatorChange={setCreator}
 									onTotalVideosChange={setTotalVideos}
 									onTotalDurationChange={setTotalDuration}
-									onNotesChange={setNotes}
 								/>
 
 								<ActionButtons
@@ -267,7 +263,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	scrollContent: {
-		paddingBottom: spacing.xxl,
+		paddingBottom: 200,
 	},
 	loadingContainer: {
 		flex: 1,

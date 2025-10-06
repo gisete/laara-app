@@ -5,19 +5,15 @@ import { StyleSheet, Text, TextInput, View } from "react-native";
 interface AppFormFieldsProps {
 	appName: string;
 	totalLevels: string;
-	notes: string;
 	onAppNameChange: (text: string) => void;
 	onTotalLevelsChange: (text: string) => void;
-	onNotesChange: (text: string) => void;
 }
 
 export default function AppFormFields({
 	appName,
 	totalLevels,
-	notes,
 	onAppNameChange,
 	onTotalLevelsChange,
-	onNotesChange,
 }: AppFormFieldsProps) {
 	return (
 		<>
@@ -51,28 +47,13 @@ export default function AppFormFields({
 
 			{/* Helper text */}
 			<Text style={styles.helperText}>Add level count to track app progress</Text>
-
-			{/* Notes Input */}
-			<View style={styles.formSection}>
-				<Text style={styles.label}>Notes</Text>
-				<TextInput
-					style={[styles.input, styles.textArea]}
-					placeholder="Add any notes about this app"
-					placeholderTextColor="#C4C4C4"
-					value={notes}
-					onChangeText={onNotesChange}
-					multiline
-					numberOfLines={4}
-					textAlignVertical="top"
-				/>
-			</View>
 		</>
 	);
 }
 
 const styles = StyleSheet.create({
 	formSection: {
-		marginBottom: 18,
+		marginBottom: 16,
 	},
 	label: {
 		fontSize: 14,

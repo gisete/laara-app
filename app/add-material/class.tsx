@@ -45,7 +45,6 @@ export default function AddClassScreen() {
 	const [location, setLocation] = useState("");
 	const [courseDuration, setCourseDuration] = useState("");
 	const [endDate, setEndDate] = useState("");
-	const [notes, setNotes] = useState("");
 
 	// Load subcategories on mount
 	useEffect(() => {
@@ -142,7 +141,6 @@ export default function AddClassScreen() {
 		setLocation("");
 		setCourseDuration("");
 		setEndDate("");
-		setNotes("");
 	};
 
 	return (
@@ -189,13 +187,11 @@ export default function AddClassScreen() {
 									location={location}
 									courseDuration={courseDuration}
 									endDate={endDate}
-									notes={notes}
 									onClassNameChange={setClassName}
 									onInstructorChange={setInstructor}
 									onLocationChange={setLocation}
 									onCourseDurationChange={setCourseDuration}
 									onEndDateChange={setEndDate}
-									onNotesChange={setNotes}
 								/>
 
 								<ActionButtons
@@ -252,7 +248,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	scrollContent: {
-		paddingBottom: spacing.xxl,
+		paddingBottom: 200,
 	},
 	loadingContainer: {
 		flex: 1,

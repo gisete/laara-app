@@ -39,8 +39,12 @@ export default function ActionButtons({
 
 const styles = StyleSheet.create({
 	container: {
-		marginTop: 8,
+		position: "absolute",
+		bottom: 0,
+		left: 0,
+		right: 20,
 		gap: 12,
+		width: "100%",
 	},
 	saveButton: {
 		backgroundColor: "#DC581F",

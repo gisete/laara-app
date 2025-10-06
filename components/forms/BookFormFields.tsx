@@ -7,12 +7,10 @@ interface BookFormFieldsProps {
 	author: string;
 	totalPages: string;
 	totalChapters: string;
-	notes: string;
 	onTitleChange: (text: string) => void;
 	onAuthorChange: (text: string) => void;
 	onTotalPagesChange: (text: string) => void;
 	onTotalChaptersChange: (text: string) => void;
-	onNotesChange: (text: string) => void;
 }
 
 export default function BookFormFields({
@@ -20,12 +18,10 @@ export default function BookFormFields({
 	author,
 	totalPages,
 	totalChapters,
-	notes,
 	onTitleChange,
 	onAuthorChange,
 	onTotalPagesChange,
 	onTotalChaptersChange,
-	onNotesChange,
 }: BookFormFieldsProps) {
 	return (
 		<>
@@ -84,33 +80,18 @@ export default function BookFormFields({
 
 			{/* Helper text */}
 			<Text style={styles.helperText}>Add page count to track reading progress</Text>
-
-			{/* Notes Input */}
-			<View style={styles.formSection}>
-				<Text style={styles.label}>Notes</Text>
-				<TextInput
-					style={[styles.input, styles.textArea]}
-					placeholder="Add any notes about this book"
-					placeholderTextColor="#C4C4C4"
-					value={notes}
-					onChangeText={onNotesChange}
-					multiline
-					numberOfLines={4}
-					textAlignVertical="top"
-				/>
-			</View>
 		</>
 	);
 }
 
 const styles = StyleSheet.create({
 	formSection: {
-		marginBottom: 18,
+		marginBottom: 16,
 	},
 	twoColumnContainer: {
 		flexDirection: "row",
 		gap: 16,
-		marginBottom: 8,
+		marginBottom: 16,
 	},
 	columnSection: {
 		flex: 1,

@@ -46,7 +46,6 @@ export default function AddBookScreen() {
 	const [author, setAuthor] = useState("");
 	const [totalPages, setTotalPages] = useState("");
 	const [totalChapters, setTotalChapters] = useState("");
-	const [notes, setNotes] = useState("");
 
 	// Load subcategories on mount
 	useEffect(() => {
@@ -145,7 +144,6 @@ export default function AddBookScreen() {
 		setAuthor("");
 		setTotalPages("");
 		setTotalChapters("");
-		setNotes("");
 	};
 
 	return (
@@ -211,12 +209,10 @@ looking for you can enter it manually"
 									author={author}
 									totalPages={totalPages}
 									totalChapters={totalChapters}
-									notes={notes}
 									onTitleChange={setTitle}
 									onAuthorChange={setAuthor}
 									onTotalPagesChange={setTotalPages}
 									onTotalChaptersChange={setTotalChapters}
-									onNotesChange={setNotes}
 								/>
 
 								<ActionButtons
@@ -279,7 +275,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	scrollContent: {
-		paddingBottom: spacing.xxl,
+		paddingBottom: 200,
 	},
 
 	// Loading State

@@ -8,13 +8,11 @@ interface ClassFormFieldsProps {
 	location: string;
 	courseDuration: string;
 	endDate: string;
-	notes: string;
 	onClassNameChange: (text: string) => void;
 	onInstructorChange: (text: string) => void;
 	onLocationChange: (text: string) => void;
 	onCourseDurationChange: (text: string) => void;
 	onEndDateChange: (text: string) => void;
-	onNotesChange: (text: string) => void;
 }
 
 export default function ClassFormFields({
@@ -23,13 +21,11 @@ export default function ClassFormFields({
 	location,
 	courseDuration,
 	endDate,
-	notes,
 	onClassNameChange,
 	onInstructorChange,
 	onLocationChange,
 	onCourseDurationChange,
 	onEndDateChange,
-	onNotesChange,
 }: ClassFormFieldsProps) {
 	return (
 		<>
@@ -102,33 +98,18 @@ export default function ClassFormFields({
 
 			{/* Helper text */}
 			<Text style={styles.helperText}>Add duration or end date to track class progress</Text>
-
-			{/* Notes Input */}
-			<View style={styles.formSection}>
-				<Text style={styles.label}>Notes</Text>
-				<TextInput
-					style={[styles.input, styles.textArea]}
-					placeholder="Add any notes about this class"
-					placeholderTextColor="#C4C4C4"
-					value={notes}
-					onChangeText={onNotesChange}
-					multiline
-					numberOfLines={4}
-					textAlignVertical="top"
-				/>
-			</View>
 		</>
 	);
 }
 
 const styles = StyleSheet.create({
 	formSection: {
-		marginBottom: 18,
+		marginBottom: 16,
 	},
 	twoColumnContainer: {
 		flexDirection: "row",
 		gap: 16,
-		marginBottom: 8,
+		marginBottom: 16,
 	},
 	columnSection: {
 		flex: 1,

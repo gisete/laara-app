@@ -44,7 +44,6 @@ export default function AddAppScreen() {
 	const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
 	const [appName, setAppName] = useState("");
 	const [totalLevels, setTotalLevels] = useState("");
-	const [notes, setNotes] = useState("");
 
 	// Load subcategories on mount
 	useEffect(() => {
@@ -138,7 +137,6 @@ export default function AddAppScreen() {
 		setSelectedSubcategory(null);
 		setAppName("");
 		setTotalLevels("");
-		setNotes("");
 	};
 
 	return (
@@ -199,10 +197,8 @@ you're looking for you can enter it manually"
 								<AppFormFields
 									appName={appName}
 									totalLevels={totalLevels}
-									notes={notes}
 									onAppNameChange={setAppName}
 									onTotalLevelsChange={setTotalLevels}
-									onNotesChange={setNotes}
 								/>
 
 								<ActionButtons
@@ -259,7 +255,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	scrollContent: {
-		paddingBottom: spacing.xxl,
+		paddingBottom: 200,
 	},
 	loadingContainer: {
 		flex: 1,
