@@ -1,8 +1,8 @@
-// app/(tabs)/library.tsx - Simplified with component extraction
+// app/(tabs)/library.tsx
 import * as Haptics from "expo-haptics";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
-import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { deleteMaterial, getAllMaterials } from "../../database/queries";
 
@@ -41,6 +41,7 @@ export default function LibraryScreen() {
 	const [materials, setMaterials] = useState<Material[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [selectedFilter, setSelectedFilter] = useState<string>("all");
+	const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
 	const loadMaterials = useCallback(async () => {
 		try {
@@ -82,7 +83,7 @@ export default function LibraryScreen() {
 					try {
 						await deleteMaterial(materialId);
 						loadMaterials(); // Refresh list
-						Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Success);
+						Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 					} catch (error) {
 						console.error("Error deleting material:", error);
 						Alert.alert("Error", "Failed to delete material. Please try again.");
@@ -90,6 +91,11 @@ export default function LibraryScreen() {
 				},
 			},
 		]);
+	};
+
+	const handleEdit = (material: Material) => {
+		// Navigate to the edit screen, passing the material ID
+		router.push(`/edit-material/${material.id}`);
 	};
 
 	// Filter materials based on selected filter
@@ -122,15 +128,27 @@ export default function LibraryScreen() {
 
 						{/* Materials List */}
 						<ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-							<View style={styles.materialsContainer}>
-								{filteredMaterials.map((material) => (
-									<LibraryItem
-										key={material.id}
-										material={material}
-										onLongPress={() => handleDelete(material.id, material.name)}
-									/>
-								))}
-							</View>
+							<Pressable onPress={() => setOpenMenuId(null)}>
+								<View style={styles.materialsContainer}>
+									{filteredMaterials.map((material) => (
+										<LibraryItem
+											key={material.id}
+											material={material}
+											isMenuOpen={openMenuId === material.id}
+											onToggleMenu={() => {
+												setOpenMenuId((prevId) => (prevId === material.id ? null : material.id));
+											}}
+											onCloseMenu={() => setOpenMenuId(null)}
+											onDelete={() => {
+												handleDelete(material.id, material.name);
+											}}
+											onEdit={() => {
+												handleEdit(material);
+											}}
+										/>
+									))}
+								</View>
+							</Pressable>
 						</ScrollView>
 					</>
 				)}
@@ -184,89 +202,5 @@ const styles = StyleSheet.create({
 	// Materials List
 	materialsContainer: {
 		paddingBottom: spacing.lg,
-	},
-	materialCard: {
-		...globalStyles.card,
-		marginBottom: spacing.md,
-		flexDirection: "row",
-	},
-
-	// Cover Image
-	coverPlaceholder: {
-		width: 80,
-		height: 120,
-		borderRadius: 8,
-		alignItems: "center",
-		justifyContent: "center",
-		marginRight: spacing.md,
-	},
-	coverIcon: {
-		fontSize: 40,
-	},
-
-	// Material Info
-	materialInfo: {
-		flex: 1,
-		justifyContent: "space-between",
-	},
-	titleRow: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "flex-start",
-		marginBottom: 6,
-	},
-	materialName: {
-		flex: 1,
-		...globalStyles.bodyLarge,
-		fontWeight: "600",
-		marginRight: spacing.sm,
-	},
-	typeBadge: {
-		...globalStyles.pill,
-		marginRight: 0,
-		marginBottom: 0,
-		paddingVertical: 4,
-		paddingHorizontal: 10,
-	},
-	typeBadgeText: {
-		...globalStyles.pillText,
-		fontSize: 12,
-		textTransform: "capitalize",
-	},
-
-	// Metadata
-	metadataRow: {
-		marginBottom: 4,
-	},
-	metadataText: {
-		...globalStyles.bodyMedium,
-		color: colors.grayMedium,
-	},
-	subtypeText: {
-		...globalStyles.bodyMedium,
-		color: colors.grayMedium,
-		marginBottom: spacing.xs,
-	},
-
-	// Progress
-	progressContainer: {
-		marginTop: spacing.xs,
-	},
-	progressText: {
-		...globalStyles.bodyMedium,
-		fontSize: 13,
-		color: colors.grayMedium,
-		marginBottom: 6,
-	},
-	progressBar: {
-		height: 6,
-		backgroundColor: colors.gray200,
-		borderRadius: 3,
-		overflow: "hidden",
-	},
-	progressFill: {
-		height: "100%",
-		backgroundColor: colors.gray200,
-		borderRadius: 3,
 	},
 });

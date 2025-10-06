@@ -1,49 +1,37 @@
-// components/library/SubcategoryTag.tsx
+// components/tabs/library/SubcategoryTag.tsx
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { colors } from "../../../theme/colors";
 
 interface SubcategoryTagProps {
-	type: string;
+	label: string | null | undefined;
 }
 
-const getCategoryColor = (type: string): string => {
-	switch (type.toLowerCase()) {
-		case "book":
-			return colors.categoryBook;
-		case "audio":
-			return colors.categoryAudio;
-		case "app":
-			return colors.categoryApp;
-		case "class":
-			return colors.categoryClass;
-		case "video":
-			return colors.categoryVideo;
-		default:
-			return colors.gray200;
+export default function SubcategoryTag({ label }: SubcategoryTagProps) {
+	if (!label) {
+		return null;
 	}
-};
-
-export default function SubcategoryTag({ type }: SubcategoryTagProps) {
-	const backgroundColor = getCategoryColor(type);
 
 	return (
-		<View style={[styles.badge, { backgroundColor }]}>
-			<Text style={styles.badgeText}>{type}</Text>
+		<View style={styles.badge}>
+			<Text style={styles.badgeText}>{label}</Text>
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
 	badge: {
+		backgroundColor: colors.grayLight,
 		paddingHorizontal: 10,
 		paddingVertical: 4,
-		borderRadius: 12,
+		borderRadius: 5,
+		alignSelf: "flex-start",
+		marginBottom: 8,
 	},
 	badgeText: {
 		fontSize: 12,
-		fontWeight: "500",
-		color: colors.grayDarkest,
+		fontWeight: "400",
+		color: colors.grayMedium,
 		textTransform: "capitalize",
 	},
 });

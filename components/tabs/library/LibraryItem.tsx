@@ -1,8 +1,11 @@
+// components/tabs/library/LibraryItem.tsx
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import SubcategoryTag from "./SubcategoryTag";
-import ProgressBar from "./ProgressBar";
+import { Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import CardCover from "./CardCover";
+import LibraryItemActions from "./LibraryItemActions";
+import MoreOptionsIcon from "../../icons/MoreOptionsIcon";
+import ProgressBar from "./ProgressBar";
+import SubcategoryTag from "./SubcategoryTag";
 
 interface Material {
 	id: number;
@@ -17,7 +20,11 @@ interface Material {
 
 interface LibraryItemProps {
 	material: Material;
-	onLongPress: () => void;
+	onDelete: () => void;
+	onEdit: () => void;
+	isMenuOpen: boolean;
+	onToggleMenu: () => void;
+	onCloseMenu: () => void;
 }
 
 const getUnitLabel = (type: string, count: number = 1) => {
@@ -33,51 +40,78 @@ const getUnitLabel = (type: string, count: number = 1) => {
 
 const getTypeIcon = (type: string) => {
 	const icons: { [key: string]: string } = {
-		book: "📖",
-		audio: "🎵",
-		video: "🎬",
-		class: "🏫",
-		app: "📱",
+		book: "当",
+		audio: "七",
+		video: "汐",
+		class: "将",
+		app: "導",
 	};
-	return icons[type] || "📚";
+	return icons[type] || "答";
 };
 
-export default function LibraryItem({ material, onLongPress }: LibraryItemProps) {
+export default function LibraryItem({
+	material,
+	onDelete,
+	onEdit,
+	isMenuOpen,
+	onToggleMenu,
+	onCloseMenu,
+}: LibraryItemProps) {
 	const progressPercentage = material.progress_percentage || 0;
 	const currentUnit = material.current_unit || 0;
 	const totalUnits = material.total_units || 0;
 
+	const handleEdit = () => {
+		onCloseMenu();
+		onEdit();
+	};
+
+	const handleDelete = () => {
+		onCloseMenu();
+		onDelete();
+	};
+
 	return (
-		<TouchableOpacity style={styles.card} onLongPress={onLongPress} activeOpacity={0.7}>
-			{/* Simplified - just use CardCover component */}
-			<CardCover type={material.type} />
+		<View>
+			<Pressable style={styles.card} onPress={onCloseMenu}>
+				<CardCover type={material.type} />
 
-			<View style={styles.info}>
-				<View style={styles.titleRow}>
-					<Text style={styles.name} numberOfLines={1}>
-						{material.name}
-					</Text>
-					<SubcategoryTag type={material.type} />
+				<View style={styles.info}>
+					<View style={styles.titleRow}>
+						<Text style={styles.name} numberOfLines={1}>
+							{material.name}
+						</Text>
+						<TouchableOpacity
+							onPress={(e) => {
+								e.stopPropagation();
+								onToggleMenu();
+							}}
+							hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+						>
+							<MoreOptionsIcon />
+						</TouchableOpacity>
+					</View>
+
+					<SubcategoryTag label={material.subtype} />
+
+					{totalUnits > 0 && (
+						<Text style={styles.metadataText}>
+							{getTypeIcon(material.type)} {totalUnits} {getUnitLabel(material.type, totalUnits)}
+						</Text>
+					)}
+
+					{totalUnits > 0 && (
+						<ProgressBar
+							current={currentUnit}
+							total={totalUnits}
+							unitLabel={getUnitLabel(material.type, totalUnits - currentUnit)}
+							percentage={progressPercentage}
+						/>
+					)}
 				</View>
-
-				{totalUnits > 0 && (
-					<Text style={styles.metadataText}>
-						{getTypeIcon(material.type)} {totalUnits} {getUnitLabel(material.type, totalUnits)}
-					</Text>
-				)}
-
-				{material.subtype && <Text style={styles.subtypeText}>📚 {material.subtype}</Text>}
-
-				{totalUnits > 0 && (
-					<ProgressBar
-						current={currentUnit}
-						total={totalUnits}
-						unitLabel={getUnitLabel(material.type, totalUnits - currentUnit)}
-						percentage={progressPercentage}
-					/>
-				)}
-			</View>
-		</TouchableOpacity>
+			</Pressable>
+			{isMenuOpen && <LibraryItemActions onEdit={handleEdit} onDelete={handleDelete} />}
+		</View>
 	);
 }
 
@@ -118,10 +152,5 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 		color: "#9CA3AF",
 		marginBottom: 4,
-	},
-	subtypeText: {
-		fontSize: 14,
-		color: "#9CA3AF",
-		marginBottom: 8,
 	},
 });

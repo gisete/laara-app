@@ -32,9 +32,16 @@ export const addMaterial = (material) => {
 	return new Promise((resolve, reject) => {
 		try {
 			const result = db.runSync(
-				`INSERT INTO materials (name, type, language, author, total_units) 
-         VALUES (?, ?, ?, ?, ?)`,
-				[material.name, material.type, material.language || "english", material.author || "", material.total_units || 0]
+				`INSERT INTO materials (name, type, subtype, language, author, total_units) 
+         VALUES (?, ?, ?, ?, ?, ?)`,
+				[
+					material.name,
+					material.type,
+					material.subtype,
+					material.language || "english",
+					material.author || "",
+					material.total_units || 0,
+				]
 			);
 			console.log("Material added with ID:", result.lastInsertRowId);
 			resolve(result.lastInsertRowId);
