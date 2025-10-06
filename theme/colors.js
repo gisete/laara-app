@@ -18,10 +18,18 @@ export const colors = {
 	grayDark: "#44403C", // Stone 700
 	grayDarkest: "#1C1917", // Stone 900
 
-	// Category Colors
-	categoryBook: "#DBEAFE", // Light Blue
-	categoryAudio: "#FEF3C7", // Light Yellow
-	categoryApp: "#D1FAE5", // Light Green
-	categoryClass: "#FCE7F3", // Light Pink
-	categoryVideo: "#E0E7FF", // Light Indigo
+	categoryBook: "#E0F2FE",
+	categoryBookIcon: "#0C4A6E",
+
+	categoryAudio: "#F3E8FF",
+	categoryAudioIcon: "#581C87",
+
+	categoryVideo: "#FEE2E2",
+	categoryVideoIcon: "#991B1B",
+
+	categoryClass: "#D1FAE5",
+	categoryClassIcon: "#065F46",
+
+	categoryApp: "#FEF3C7",
+	categoryAppIcon: "#92400E",
 };

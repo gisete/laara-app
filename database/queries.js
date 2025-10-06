@@ -6,7 +6,8 @@ import db from "./database.js";
 export const getAllMaterials = () => {
 	return new Promise((resolve, reject) => {
 		try {
-			const result = db.getAllSync("SELECT * FROM materials ORDER BY updated_at DESC");
+			// Show most recently added materials first
+			const result = db.getAllSync("SELECT * FROM materials ORDER BY created_at DESC");
 			resolve(result);
 		} catch (error) {
 			console.error("Error fetching materials:", error);

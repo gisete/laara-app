@@ -1,9 +1,9 @@
-// components/library/CategoryBadge.tsx
+// components/library/SubcategoryTag.tsx
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { colors } from "../../../theme/colors";
 
-interface CategoryBadgeProps {
+interface SubcategoryTagProps {
 	type: string;
 }
 
@@ -24,7 +24,7 @@ const getCategoryColor = (type: string): string => {
 	}
 };
 
-export default function CategoryBadge({ type }: CategoryBadgeProps) {
+export default function SubcategoryTag({ type }: SubcategoryTagProps) {
 	const backgroundColor = getCategoryColor(type);
 
 	return (

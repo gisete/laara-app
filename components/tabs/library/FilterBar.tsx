@@ -37,7 +37,7 @@ export default function FilterBar({ filters, selectedFilter, onFilterChange }: F
 const styles = StyleSheet.create({
 	container: {
 		marginBottom: 20,
-		maxHeight: 44,
+		maxHeight: 40,
 	},
 	content: {
 		gap: 8,
