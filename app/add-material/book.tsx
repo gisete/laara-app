@@ -1,6 +1,6 @@
-// app/add-material/book.tsx - Refactored with reusable components
+// app/add-material/book.tsx - Updated with edit mode support
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
@@ -22,7 +22,7 @@ import BookFormFields from "../../components/forms/BookFormFields";
 import SearchBar from "../../components/forms/SearchBar";
 import SearchEmptyState from "../../components/forms/SearchEmptyState";
 import SubcategorySelector from "../../components/forms/SubcategorySelector";
-import { addMaterial, getSubcategoriesByCategory } from "../../database/queries";
+import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMaterial } from "../../database/queries";
 
 // Import global styles
 import { globalStyles } from "../../theme/styles";
@@ -31,10 +31,16 @@ import { spacing } from "../../theme/spacing";
 import { typography } from "../../theme/typography";
 
 export default function AddBookScreen() {
+	// Get route params to detect edit mode
+	const params = useLocalSearchParams();
+	const materialId = params.id ? parseInt(params.id as string) : null;
+	const isEditMode = materialId !== null;
+
 	// UI State
-	const [showCustomForm, setShowCustomForm] = useState(false);
+	const [showCustomForm, setShowCustomForm] = useState(isEditMode); // Go straight to form in edit mode
 	const [loading, setLoading] = useState(false);
 	const [loadingSubcategories, setLoadingSubcategories] = useState(true);
+	const [loadingMaterial, setLoadingMaterial] = useState(isEditMode);
 	const [searchQuery, setSearchQuery] = useState("");
 
 	// Subcategories from database
@@ -52,6 +58,13 @@ export default function AddBookScreen() {
 		loadSubcategories();
 	}, []);
 
+	// Load material data if in edit mode
+	useEffect(() => {
+		if (isEditMode && materialId) {
+			loadMaterialData();
+		}
+	}, [materialId]);
+
 	const loadSubcategories = async () => {
 		try {
 			setLoadingSubcategories(true);
@@ -67,6 +80,29 @@ export default function AddBookScreen() {
 		}
 	};
 
+	const loadMaterialData = async () => {
+		try {
+			setLoadingMaterial(true);
+			const material = await getMaterialById(materialId!);
+
+			if (material) {
+				// Pre-fill form fields
+				setTitle(material.name);
+				setAuthor(material.author || "");
+				setSelectedSubcategory(material.subtype || null);
+				setTotalPages(material.total_units?.toString() || "");
+				console.log("Material data loaded for editing:", material.name);
+			} else {
+				Alert.alert("Error", "Material not found", [{ text: "OK", onPress: () => router.back() }]);
+			}
+		} catch (error) {
+			console.error("Error loading material:", error);
+			Alert.alert("Error", "Failed to load material data", [{ text: "OK", onPress: () => router.back() }]);
+		} finally {
+			setLoadingMaterial(false);
+		}
+	};
+
 	const handleBack = () => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 		router.back();
@@ -74,11 +110,10 @@ export default function AddBookScreen() {
 
 	const handleAddCustom = () => {
 		setShowCustomForm(true);
-		setSearchQuery(""); // Clear search when entering manual mode
+		setSearchQuery("");
 	};
 
 	const handleSearch = () => {
-		// This will be implemented when API is ready
 		console.log("Searching for:", searchQuery);
 		// TODO: Implement API search
 	};
@@ -114,20 +149,33 @@ export default function AddBookScreen() {
 				source: "custom",
 			};
 
-			const bookId = await addMaterial(bookData);
-			console.log("Book added successfully with ID:", bookId);
+			if (isEditMode && materialId) {
+				// UPDATE existing material
+				await updateMaterial(materialId, bookData);
+				console.log("Book updated successfully");
 
-			// Show success feedback and navigate to Library
-			Alert.alert("Success", "Book added to your library!", [
-				{
-					text: "OK",
-					onPress: () => {
-						// Go back twice to clear the add-material flow
-						router.back();
-						router.back();
+				Alert.alert("Success", "Book updated!", [
+					{
+						text: "OK",
+						onPress: () => router.back(), // Go back once to Library
 					},
-				},
-			]);
+				]);
+			} else {
+				// INSERT new material
+				const bookId = await addMaterial(bookData);
+				console.log("Book added successfully with ID:", bookId);
+
+				Alert.alert("Success", "Book added to your library!", [
+					{
+						text: "OK",
+						onPress: () => {
+							// Go back twice to clear the add-material flow
+							router.back();
+							router.back();
+						},
+					},
+				]);
+			}
 		} catch (error) {
 			console.error("Error saving book:", error);
 			Alert.alert("Error", "Failed to save book. Please try again.");
@@ -137,14 +185,31 @@ export default function AddBookScreen() {
 	};
 
 	const handleCancel = () => {
-		setShowCustomForm(false);
-		// Reset form
-		setSelectedSubcategory(null);
-		setTitle("");
-		setAuthor("");
-		setTotalPages("");
-		setTotalChapters("");
+		if (isEditMode) {
+			// In edit mode, just go back
+			router.back();
+		} else {
+			// In add mode, reset form
+			setShowCustomForm(false);
+			setSelectedSubcategory(null);
+			setTitle("");
+			setAuthor("");
+			setTotalPages("");
+			setTotalChapters("");
+		}
 	};
+
+	// Show loading state while fetching material data in edit mode
+	if (loadingMaterial) {
+		return (
+			<SafeAreaView style={globalStyles.container}>
+				<View style={styles.loadingContainer}>
+					<ActivityIndicator size="large" color={colors.primaryOrange} />
+					<Text style={styles.loadingText}>Loading book data...</Text>
+				</View>
+			</SafeAreaView>
+		);
+	}
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
@@ -161,7 +226,7 @@ export default function AddBookScreen() {
 						<TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
 							<Text style={styles.backButtonText}>←</Text>
 						</TouchableOpacity>
-						<Text style={styles.title}>{showCustomForm ? "Add a book" : "Search Book"}</Text>
+						<Text style={styles.title}>{isEditMode ? "Edit book" : showCustomForm ? "Add a book" : "Search Book"}</Text>
 					</View>
 
 					<ScrollView
@@ -218,7 +283,7 @@ looking for you can enter it manually"
 								<ActionButtons
 									onSave={handleSave}
 									onCancel={handleCancel}
-									saveText="Save Book"
+									saveText={isEditMode ? "Save Changes" : "Save Book"}
 									cancelText="Cancel"
 									loading={loading}
 								/>

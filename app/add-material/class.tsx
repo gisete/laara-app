@@ -1,6 +1,6 @@
-// app/add-material/class.tsx
+// app/add-material/class.tsx - Updated with edit mode support
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
@@ -20,7 +20,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import ActionButtons from "../../components/forms/ActionButtons";
 import ClassFormFields from "../../components/forms/ClassFormFields";
 import SubcategorySelector from "../../components/forms/SubcategorySelector";
-import { addMaterial, getSubcategoriesByCategory } from "../../database/queries";
+import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMaterial } from "../../database/queries";
 
 // Import global styles
 import { globalStyles } from "../../theme/styles";
@@ -29,10 +29,16 @@ import { spacing } from "../../theme/spacing";
 import { typography } from "../../theme/typography";
 
 export default function AddClassScreen() {
+	// Get route params to detect edit mode
+	const params = useLocalSearchParams();
+	const materialId = params.id ? parseInt(params.id as string) : null;
+	const isEditMode = materialId !== null;
+
 	// UI State
 	const [showCustomForm, setShowCustomForm] = useState(true); // Direct to form
 	const [loading, setLoading] = useState(false);
 	const [loadingSubcategories, setLoadingSubcategories] = useState(true);
+	const [loadingMaterial, setLoadingMaterial] = useState(isEditMode);
 	const [searchQuery, setSearchQuery] = useState("");
 
 	// Subcategories from database
@@ -51,6 +57,13 @@ export default function AddClassScreen() {
 		loadSubcategories();
 	}, []);
 
+	// Load material data if in edit mode
+	useEffect(() => {
+		if (isEditMode && materialId) {
+			loadMaterialData();
+		}
+	}, [materialId]);
+
 	const loadSubcategories = async () => {
 		try {
 			setLoadingSubcategories(true);
@@ -63,6 +76,29 @@ export default function AddClassScreen() {
 			Alert.alert("Error", "Failed to load class types. Please try again.");
 		} finally {
 			setLoadingSubcategories(false);
+		}
+	};
+
+	const loadMaterialData = async () => {
+		try {
+			setLoadingMaterial(true);
+			const material = await getMaterialById(materialId!);
+
+			if (material) {
+				// Pre-fill form fields
+				setClassName(material.name);
+				setInstructor(material.author || "");
+				setSelectedSubcategory(material.subtype || null);
+				setCourseDuration(material.total_units?.toString() || "");
+				console.log("Material data loaded for editing:", material.name);
+			} else {
+				Alert.alert("Error", "Material not found", [{ text: "OK", onPress: () => router.back() }]);
+			}
+		} catch (error) {
+			console.error("Error loading material:", error);
+			Alert.alert("Error", "Failed to load material data", [{ text: "OK", onPress: () => router.back() }]);
+		} finally {
+			setLoadingMaterial(false);
 		}
 	};
 
@@ -112,18 +148,32 @@ export default function AddClassScreen() {
 				source: "custom",
 			};
 
-			const classId = await addMaterial(classData);
-			console.log("Class added successfully with ID:", classId);
+			if (isEditMode && materialId) {
+				// UPDATE existing material
+				await updateMaterial(materialId, classData);
+				console.log("Class updated successfully");
 
-			Alert.alert("Success", "Class added to your library!", [
-				{
-					text: "OK",
-					onPress: () => {
-						router.back();
-						router.back();
+				Alert.alert("Success", "Class updated!", [
+					{
+						text: "OK",
+						onPress: () => router.back(), // Go back once to Library
 					},
-				},
-			]);
+				]);
+			} else {
+				// INSERT new material
+				const classId = await addMaterial(classData);
+				console.log("Class added successfully with ID:", classId);
+
+				Alert.alert("Success", "Class added to your library!", [
+					{
+						text: "OK",
+						onPress: () => {
+							router.back();
+							router.back();
+						},
+					},
+				]);
+			}
 		} catch (error) {
 			console.error("Error saving class:", error);
 			Alert.alert("Error", "Failed to save class. Please try again.");
@@ -133,15 +183,32 @@ export default function AddClassScreen() {
 	};
 
 	const handleCancel = () => {
-		setShowCustomForm(false);
-		// Reset form
-		setSelectedSubcategory(null);
-		setClassName("");
-		setInstructor("");
-		setLocation("");
-		setCourseDuration("");
-		setEndDate("");
+		if (isEditMode) {
+			// In edit mode, just go back
+			router.back();
+		} else {
+			// In add mode, reset form
+			setShowCustomForm(false);
+			setSelectedSubcategory(null);
+			setClassName("");
+			setInstructor("");
+			setLocation("");
+			setCourseDuration("");
+			setEndDate("");
+		}
 	};
+
+	// Show loading state while fetching material data in edit mode
+	if (loadingMaterial) {
+		return (
+			<SafeAreaView style={globalStyles.container}>
+				<View style={styles.loadingContainer}>
+					<ActivityIndicator size="large" color={colors.primaryOrange} />
+					<Text style={styles.loadingText}>Loading class data...</Text>
+				</View>
+			</SafeAreaView>
+		);
+	}
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
@@ -158,7 +225,7 @@ export default function AddClassScreen() {
 						<TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
 							<Text style={styles.backButtonText}>←</Text>
 						</TouchableOpacity>
-						<Text style={styles.title}>Add class</Text>
+						<Text style={styles.title}>{isEditMode ? "Edit class" : "Add class"}</Text>
 					</View>
 
 					<ScrollView
@@ -197,7 +264,7 @@ export default function AddClassScreen() {
 								<ActionButtons
 									onSave={handleSave}
 									onCancel={handleCancel}
-									saveText="Save Class"
+									saveText={isEditMode ? "Save Changes" : "Save Class"}
 									cancelText="Cancel"
 									loading={loading}
 								/>

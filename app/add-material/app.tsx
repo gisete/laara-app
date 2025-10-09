@@ -1,6 +1,6 @@
-// app/add-material/app.tsx
+// app/add-material/app.tsx - Updated with edit mode support
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
@@ -22,7 +22,7 @@ import AppFormFields from "../../components/forms/AppFormFields";
 import SearchBar from "../../components/forms/SearchBar";
 import SearchEmptyState from "../../components/forms/SearchEmptyState";
 import SubcategorySelector from "../../components/forms/SubcategorySelector";
-import { addMaterial, getSubcategoriesByCategory } from "../../database/queries";
+import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMaterial } from "../../database/queries";
 
 // Import global styles
 import { globalStyles } from "../../theme/styles";
@@ -31,10 +31,16 @@ import { spacing } from "../../theme/spacing";
 import { typography } from "../../theme/typography";
 
 export default function AddAppScreen() {
+	// Get route params to detect edit mode
+	const params = useLocalSearchParams();
+	const materialId = params.id ? parseInt(params.id as string) : null;
+	const isEditMode = materialId !== null;
+
 	// UI State
 	const [showCustomForm, setShowCustomForm] = useState(true); // Direct to form
 	const [loading, setLoading] = useState(false);
 	const [loadingSubcategories, setLoadingSubcategories] = useState(true);
+	const [loadingMaterial, setLoadingMaterial] = useState(isEditMode);
 	const [searchQuery, setSearchQuery] = useState("");
 
 	// Subcategories from database
@@ -50,6 +56,13 @@ export default function AddAppScreen() {
 		loadSubcategories();
 	}, []);
 
+	// Load material data if in edit mode
+	useEffect(() => {
+		if (isEditMode && materialId) {
+			loadMaterialData();
+		}
+	}, [materialId]);
+
 	const loadSubcategories = async () => {
 		try {
 			setLoadingSubcategories(true);
@@ -62,6 +75,28 @@ export default function AddAppScreen() {
 			Alert.alert("Error", "Failed to load app types. Please try again.");
 		} finally {
 			setLoadingSubcategories(false);
+		}
+	};
+
+	const loadMaterialData = async () => {
+		try {
+			setLoadingMaterial(true);
+			const material = await getMaterialById(materialId!);
+
+			if (material) {
+				// Pre-fill form fields
+				setAppName(material.name);
+				setSelectedSubcategory(material.subtype || null);
+				setTotalLevels(material.total_units?.toString() || "");
+				console.log("Material data loaded for editing:", material.name);
+			} else {
+				Alert.alert("Error", "Material not found", [{ text: "OK", onPress: () => router.back() }]);
+			}
+		} catch (error) {
+			console.error("Error loading material:", error);
+			Alert.alert("Error", "Failed to load material data", [{ text: "OK", onPress: () => router.back() }]);
+		} finally {
+			setLoadingMaterial(false);
 		}
 	};
 
@@ -111,18 +146,32 @@ export default function AddAppScreen() {
 				source: "custom",
 			};
 
-			const appId = await addMaterial(appData);
-			console.log("App added successfully with ID:", appId);
+			if (isEditMode && materialId) {
+				// UPDATE existing material
+				await updateMaterial(materialId, appData);
+				console.log("App updated successfully");
 
-			Alert.alert("Success", "App added to your library!", [
-				{
-					text: "OK",
-					onPress: () => {
-						router.back();
-						router.back();
+				Alert.alert("Success", "App updated!", [
+					{
+						text: "OK",
+						onPress: () => router.back(), // Go back once to Library
 					},
-				},
-			]);
+				]);
+			} else {
+				// INSERT new material
+				const appId = await addMaterial(appData);
+				console.log("App added successfully with ID:", appId);
+
+				Alert.alert("Success", "App added to your library!", [
+					{
+						text: "OK",
+						onPress: () => {
+							router.back();
+							router.back();
+						},
+					},
+				]);
+			}
 		} catch (error) {
 			console.error("Error saving app:", error);
 			Alert.alert("Error", "Failed to save app. Please try again.");
@@ -132,12 +181,29 @@ export default function AddAppScreen() {
 	};
 
 	const handleCancel = () => {
-		setShowCustomForm(false);
-		// Reset form
-		setSelectedSubcategory(null);
-		setAppName("");
-		setTotalLevels("");
+		if (isEditMode) {
+			// In edit mode, just go back
+			router.back();
+		} else {
+			// In add mode, reset form
+			setShowCustomForm(false);
+			setSelectedSubcategory(null);
+			setAppName("");
+			setTotalLevels("");
+		}
 	};
+
+	// Show loading state while fetching material data in edit mode
+	if (loadingMaterial) {
+		return (
+			<SafeAreaView style={globalStyles.container}>
+				<View style={styles.loadingContainer}>
+					<ActivityIndicator size="large" color={colors.primaryOrange} />
+					<Text style={styles.loadingText}>Loading app data...</Text>
+				</View>
+			</SafeAreaView>
+		);
+	}
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
@@ -154,7 +220,7 @@ export default function AddAppScreen() {
 						<TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
 							<Text style={styles.backButtonText}>←</Text>
 						</TouchableOpacity>
-						<Text style={styles.title}>{showCustomForm ? "Add app" : "Search App"}</Text>
+						<Text style={styles.title}>{isEditMode ? "Edit app" : showCustomForm ? "Add app" : "Search App"}</Text>
 					</View>
 
 					<ScrollView
@@ -204,7 +270,7 @@ you're looking for you can enter it manually"
 								<ActionButtons
 									onSave={handleSave}
 									onCancel={handleCancel}
-									saveText="Save App"
+									saveText={isEditMode ? "Save Changes" : "Save App"}
 									cancelText="Cancel"
 									loading={loading}
 								/>

@@ -52,6 +52,24 @@ export const addMaterial = (material) => {
 	});
 };
 
+export const updateMaterial = (materialId, material) => {
+	return new Promise((resolve, reject) => {
+		try {
+			db.runSync(
+				`UPDATE materials 
+         SET name = ?, subtype = ?, author = ?, total_units = ?, updated_at = CURRENT_TIMESTAMP 
+         WHERE id = ?`,
+				[material.name, material.subtype || null, material.author || null, material.total_units || 0, materialId]
+			);
+			console.log("Material updated successfully:", materialId);
+			resolve();
+		} catch (error) {
+			console.error("Error updating material:", error);
+			reject(error);
+		}
+	});
+};
+
 export const updateMaterialProgress = (materialId, currentUnit, progressPercentage) => {
 	return new Promise((resolve, reject) => {
 		try {

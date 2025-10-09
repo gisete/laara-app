@@ -7,6 +7,7 @@ import ItemMetadata from "./ItemMetadata";
 import MoreOptionsIcon from "../../icons/MoreOptionsIcon";
 import ProgressBar from "./ProgressBar";
 import SubcategoryTag from "./SubcategoryTag";
+import { router } from "expo-router";
 
 interface Material {
 	id: number;
@@ -53,7 +54,7 @@ export default function LibraryItem({
 
 	const handleEdit = () => {
 		onCloseMenu();
-		onEdit();
+		router.push(`/add-material/${material.type}?id=${material.id}`);
 	};
 
 	const handleDelete = () => {

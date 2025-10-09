@@ -1,6 +1,6 @@
-// app/add-material/video.tsx
+// app/add-material/video.tsx - Updated with edit mode support
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
@@ -22,7 +22,7 @@ import VideoFormFields from "../../components/forms/VideoFormFields";
 import SearchBar from "../../components/forms/SearchBar";
 import SearchEmptyState from "../../components/forms/SearchEmptyState";
 import SubcategorySelector from "../../components/forms/SubcategorySelector";
-import { addMaterial, getSubcategoriesByCategory } from "../../database/queries";
+import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMaterial } from "../../database/queries";
 
 // Import global styles
 import { globalStyles } from "../../theme/styles";
@@ -31,10 +31,16 @@ import { spacing } from "../../theme/spacing";
 import { typography } from "../../theme/typography";
 
 export default function AddVideoScreen() {
+	// Get route params to detect edit mode
+	const params = useLocalSearchParams();
+	const materialId = params.id ? parseInt(params.id as string) : null;
+	const isEditMode = materialId !== null;
+
 	// UI State
 	const [showCustomForm, setShowCustomForm] = useState(true); // Direct to form
 	const [loading, setLoading] = useState(false);
 	const [loadingSubcategories, setLoadingSubcategories] = useState(true);
+	const [loadingMaterial, setLoadingMaterial] = useState(isEditMode);
 	const [searchQuery, setSearchQuery] = useState("");
 
 	// Subcategories from database
@@ -52,6 +58,13 @@ export default function AddVideoScreen() {
 		loadSubcategories();
 	}, []);
 
+	// Load material data if in edit mode
+	useEffect(() => {
+		if (isEditMode && materialId) {
+			loadMaterialData();
+		}
+	}, [materialId]);
+
 	const loadSubcategories = async () => {
 		try {
 			setLoadingSubcategories(true);
@@ -64,6 +77,29 @@ export default function AddVideoScreen() {
 			Alert.alert("Error", "Failed to load video types. Please try again.");
 		} finally {
 			setLoadingSubcategories(false);
+		}
+	};
+
+	const loadMaterialData = async () => {
+		try {
+			setLoadingMaterial(true);
+			const material = await getMaterialById(materialId!);
+
+			if (material) {
+				// Pre-fill form fields
+				setTitle(material.name);
+				setCreator(material.author || "");
+				setSelectedSubcategory(material.subtype || null);
+				setTotalVideos(material.total_units?.toString() || "");
+				console.log("Material data loaded for editing:", material.name);
+			} else {
+				Alert.alert("Error", "Material not found", [{ text: "OK", onPress: () => router.back() }]);
+			}
+		} catch (error) {
+			console.error("Error loading material:", error);
+			Alert.alert("Error", "Failed to load material data", [{ text: "OK", onPress: () => router.back() }]);
+		} finally {
+			setLoadingMaterial(false);
 		}
 	};
 
@@ -113,18 +149,32 @@ export default function AddVideoScreen() {
 				source: "custom",
 			};
 
-			const videoId = await addMaterial(videoData);
-			console.log("Video added successfully with ID:", videoId);
+			if (isEditMode && materialId) {
+				// UPDATE existing material
+				await updateMaterial(materialId, videoData);
+				console.log("Video updated successfully");
 
-			Alert.alert("Success", "Video added to your library!", [
-				{
-					text: "OK",
-					onPress: () => {
-						router.back();
-						router.back();
+				Alert.alert("Success", "Video updated!", [
+					{
+						text: "OK",
+						onPress: () => router.back(), // Go back once to Library
 					},
-				},
-			]);
+				]);
+			} else {
+				// INSERT new material
+				const videoId = await addMaterial(videoData);
+				console.log("Video added successfully with ID:", videoId);
+
+				Alert.alert("Success", "Video added to your library!", [
+					{
+						text: "OK",
+						onPress: () => {
+							router.back();
+							router.back();
+						},
+					},
+				]);
+			}
 		} catch (error) {
 			console.error("Error saving video:", error);
 			Alert.alert("Error", "Failed to save video. Please try again.");
@@ -134,14 +184,31 @@ export default function AddVideoScreen() {
 	};
 
 	const handleCancel = () => {
-		setShowCustomForm(false);
-		// Reset form
-		setSelectedSubcategory(null);
-		setTitle("");
-		setCreator("");
-		setTotalVideos("");
-		setTotalDuration("");
+		if (isEditMode) {
+			// In edit mode, just go back
+			router.back();
+		} else {
+			// In add mode, reset form
+			setShowCustomForm(false);
+			setSelectedSubcategory(null);
+			setTitle("");
+			setCreator("");
+			setTotalVideos("");
+			setTotalDuration("");
+		}
 	};
+
+	// Show loading state while fetching material data in edit mode
+	if (loadingMaterial) {
+		return (
+			<SafeAreaView style={globalStyles.container}>
+				<View style={styles.loadingContainer}>
+					<ActivityIndicator size="large" color={colors.primaryOrange} />
+					<Text style={styles.loadingText}>Loading video data...</Text>
+				</View>
+			</SafeAreaView>
+		);
+	}
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
@@ -158,7 +225,7 @@ export default function AddVideoScreen() {
 						<TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
 							<Text style={styles.backButtonText}>←</Text>
 						</TouchableOpacity>
-						<Text style={styles.title}>{showCustomForm ? "Add video" : "Search Video"}</Text>
+						<Text style={styles.title}>{isEditMode ? "Edit video" : showCustomForm ? "Add video" : "Search Video"}</Text>
 					</View>
 
 					<ScrollView
@@ -212,7 +279,7 @@ you're looking for you can enter it manually"
 								<ActionButtons
 									onSave={handleSave}
 									onCancel={handleCancel}
-									saveText="Save Video"
+									saveText={isEditMode ? "Save Changes" : "Save Video"}
 									cancelText="Cancel"
 									loading={loading}
 								/>
