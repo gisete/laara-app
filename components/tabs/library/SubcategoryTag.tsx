@@ -22,16 +22,16 @@ export default function SubcategoryTag({ label }: SubcategoryTagProps) {
 const styles = StyleSheet.create({
 	badge: {
 		backgroundColor: colors.grayLight,
-		paddingHorizontal: 10,
+		paddingHorizontal: 6,
 		paddingVertical: 4,
 		borderRadius: 5,
 		alignSelf: "flex-start",
 		marginBottom: 8,
 	},
 	badgeText: {
-		fontSize: 12,
+		fontSize: 14,
 		fontWeight: "400",
-		color: colors.grayMedium,
+		color: colors.gray600,
 		textTransform: "capitalize",
 	},
 });

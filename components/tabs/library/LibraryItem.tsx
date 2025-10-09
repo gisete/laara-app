@@ -3,6 +3,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import CardCover from "./CardCover";
 import LibraryItemActions from "./LibraryItemActions";
+import ItemMetadata from "./ItemMetadata";
 import MoreOptionsIcon from "../../icons/MoreOptionsIcon";
 import ProgressBar from "./ProgressBar";
 import SubcategoryTag from "./SubcategoryTag";
@@ -31,22 +32,11 @@ const getUnitLabel = (type: string, count: number = 1) => {
 	const labels: { [key: string]: string } = {
 		book: count === 1 ? "page" : "pages",
 		audio: count === 1 ? "episode" : "episodes",
-		video: count === 1 ? "episode" : "episodes",
+		video: count === 1 ? "video" : "videos",
 		class: count === 1 ? "lesson" : "lessons",
 		app: count === 1 ? "level" : "levels",
 	};
 	return labels[type] || "units";
-};
-
-const getTypeIcon = (type: string) => {
-	const icons: { [key: string]: string } = {
-		book: "当",
-		audio: "七",
-		video: "汐",
-		class: "将",
-		app: "導",
-	};
-	return icons[type] || "答";
 };
 
 export default function LibraryItem({
@@ -94,12 +84,10 @@ export default function LibraryItem({
 
 					<SubcategoryTag label={material.subtype} />
 
-					{totalUnits > 0 && (
-						<Text style={styles.metadataText}>
-							{getTypeIcon(material.type)} {totalUnits} {getUnitLabel(material.type, totalUnits)}
-						</Text>
-					)}
+					{/* Metadata component */}
+					<ItemMetadata type={material.type} subtype={material.subtype} totalUnits={material.total_units} />
 
+					{/* Progress bar - only show if material has units */}
 					{totalUnits > 0 && (
 						<ProgressBar
 							current={currentUnit}
@@ -119,8 +107,8 @@ const styles = StyleSheet.create({
 	card: {
 		backgroundColor: "#FFFFFF",
 		borderRadius: 8,
-		padding: 16,
-		marginBottom: 16,
+		padding: 12,
+		marginBottom: 10,
 		flexDirection: "row",
 		shadowColor: "#000",
 		shadowOffset: {

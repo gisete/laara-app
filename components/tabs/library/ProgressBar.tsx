@@ -1,6 +1,7 @@
 // components/library/ProgressBar.tsx
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { colors } from "../../../theme/colors";
 
 interface ProgressBarProps {
 	current: number;
@@ -30,18 +31,18 @@ const styles = StyleSheet.create({
 	},
 	progressText: {
 		fontSize: 13,
-		color: "#6B7280",
+		color: colors.grayMedium,
 		marginBottom: 6,
 	},
 	progressBar: {
-		height: 10,
-		backgroundColor: "#E5E7EB",
+		height: 12,
+		backgroundColor: colors.grayLight,
 		borderRadius: 10,
 		overflow: "hidden",
 	},
 	progressFill: {
 		height: "100%",
-		backgroundColor: "#D6CCC2",
+		backgroundColor: colors.grayMedium,
 		borderRadius: 3,
 	},
 });
