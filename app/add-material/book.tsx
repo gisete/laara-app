@@ -204,7 +204,7 @@ export default function AddBookScreen() {
 		return (
 			<SafeAreaView style={globalStyles.container}>
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={colors.primaryOrange} />
+					<ActivityIndicator size="large" color={colors.primaryAccent} />
 					<Text style={styles.loadingText}>Loading book data...</Text>
 				</View>
 			</SafeAreaView>
@@ -237,7 +237,7 @@ export default function AddBookScreen() {
 						{loadingSubcategories ? (
 							// Loading state while fetching subcategories
 							<View style={styles.loadingContainer}>
-								<ActivityIndicator size="large" color="#DC581F" />
+								<ActivityIndicator size="large" color={colors.primaryAccent} />
 								<Text style={styles.loadingText}>Loading book types...</Text>
 							</View>
 						) : !showCustomForm ? (

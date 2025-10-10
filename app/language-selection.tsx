@@ -1,4 +1,4 @@
-// app/language-selection.tsx - Language selection screen
+// app/language-selection.tsx - Updated with comprehensive language list
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -13,7 +13,8 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getAllActiveLanguages, updateUserSettings } from "../database/queries";
+import { getFeaturedLanguages, getAllNonFeaturedLanguages, updateUserSettings } from "../database/queries";
+import SearchBar from "../components/forms/SearchBar";
 
 // Import global styles
 import { globalStyles } from "../theme/styles";
@@ -26,12 +27,17 @@ interface Language {
 	code: string;
 	name: string;
 	flag: string;
+	greeting: string | null;
+	is_featured: boolean;
 	display_order: number;
 }
 
 export default function LanguageSelectionScreen() {
 	const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
-	const [languages, setLanguages] = useState<Language[]>([]);
+	const [featuredLanguages, setFeaturedLanguages] = useState<Language[]>([]);
+	const [allLanguages, setAllLanguages] = useState<Language[]>([]);
+	const [filteredLanguages, setFilteredLanguages] = useState<Language[]>([]);
+	const [searchQuery, setSearchQuery] = useState("");
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
@@ -41,8 +47,12 @@ export default function LanguageSelectionScreen() {
 	const loadLanguages = async () => {
 		try {
 			setLoading(true);
-			const languagesData = await getAllActiveLanguages();
-			setLanguages(languagesData);
+			const featured = await getFeaturedLanguages();
+			const all = await getAllNonFeaturedLanguages();
+			setFeaturedLanguages(featured);
+			setAllLanguages(all);
+			setFilteredLanguages(all); // Initially show all
+			console.log(`Loaded ${featured.length} featured + ${all.length} other languages`);
 		} catch (error) {
 			console.error("Error loading languages:", error);
 			Alert.alert("Error", "Failed to load languages. Please try again.");
@@ -56,10 +66,22 @@ export default function LanguageSelectionScreen() {
 		setSelectedLanguage(languageCode);
 	};
 
+	const handleSearch = (query: string) => {
+		setSearchQuery(query);
+		if (query.trim() === "") {
+			setFilteredLanguages(allLanguages);
+		} else {
+			const filtered = allLanguages.filter((lang) => lang.name.toLowerCase().includes(query.toLowerCase()));
+			setFilteredLanguages(filtered);
+		}
+	};
+
 	const handleNext = async (): Promise<void> => {
 		if (!selectedLanguage) return;
 
 		try {
+			Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
 			// Save the selected language to user settings
 			await updateUserSettings({
 				primary_language: selectedLanguage,
@@ -77,13 +99,11 @@ export default function LanguageSelectionScreen() {
 		}
 	};
 
-	const selectedLanguageName = languages.find((lang) => lang.code === selectedLanguage)?.name;
-
 	if (loading) {
 		return (
 			<SafeAreaView style={globalStyles.container}>
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={colors.primaryOrange} />
+					<ActivityIndicator size="large" color={colors.primaryAccent} />
 					<Text style={styles.loadingText}>Loading languages...</Text>
 				</View>
 			</SafeAreaView>
@@ -107,24 +127,64 @@ export default function LanguageSelectionScreen() {
 					showsVerticalScrollIndicator={false}
 					contentContainerStyle={styles.languageListContent}
 				>
-					{languages.map((language) => (
-						<TouchableOpacity
-							key={language.id}
-							style={[styles.languageItem, selectedLanguage === language.code && styles.languageItemSelected]}
-							onPress={() => handleLanguageSelect(language.code)}
-							activeOpacity={0.7}
-						>
-							<Text style={styles.flag}>{language.flag}</Text>
-							<Text style={[styles.languageName, selectedLanguage === language.code && styles.languageNameSelected]}>
-								{language.name}
-							</Text>
-							{selectedLanguage === language.code && (
-								<View style={styles.checkmark}>
-									<Text style={styles.checkmarkText}>✓</Text>
-								</View>
-							)}
-						</TouchableOpacity>
-					))}
+					{/* Featured Languages Section */}
+					<View style={styles.featuredSection}>
+						{featuredLanguages.map((language) => (
+							<TouchableOpacity
+								key={language.id}
+								style={[styles.languageItem, selectedLanguage === language.code && styles.languageItemSelected]}
+								onPress={() => handleLanguageSelect(language.code)}
+								activeOpacity={0.7}
+							>
+								<Text style={styles.flag}>{language.flag}</Text>
+								<Text style={[styles.languageName, selectedLanguage === language.code && styles.languageNameSelected]}>
+									{language.name}
+								</Text>
+								{selectedLanguage === language.code && (
+									<View style={styles.checkmark}>
+										<Text style={styles.checkmarkText}>✓</Text>
+									</View>
+								)}
+							</TouchableOpacity>
+						))}
+					</View>
+
+					{/* Divider */}
+					<View style={styles.divider} />
+
+					{/* All Languages Section */}
+					<View style={styles.allLanguagesSection}>
+						<Text style={styles.sectionTitle}>All Languages</Text>
+
+						{/* Search Bar */}
+						<SearchBar value={searchQuery} onChangeText={handleSearch} placeholder="Search languages..." />
+
+						{/* Alphabetical List */}
+						{filteredLanguages.length > 0 ? (
+							filteredLanguages.map((language) => (
+								<TouchableOpacity
+									key={language.id}
+									style={[styles.languageItem, selectedLanguage === language.code && styles.languageItemSelected]}
+									onPress={() => handleLanguageSelect(language.code)}
+									activeOpacity={0.7}
+								>
+									<Text style={styles.flag}>{language.flag}</Text>
+									<Text
+										style={[styles.languageName, selectedLanguage === language.code && styles.languageNameSelected]}
+									>
+										{language.name}
+									</Text>
+									{selectedLanguage === language.code && (
+										<View style={styles.checkmark}>
+											<Text style={styles.checkmarkText}>✓</Text>
+										</View>
+									)}
+								</TouchableOpacity>
+							))
+						) : (
+							<Text style={styles.noResultsText}>No languages found</Text>
+						)}
+					</View>
 				</ScrollView>
 
 				{/* Next Button */}
@@ -164,7 +224,7 @@ const styles = StyleSheet.create({
 	// Header
 	header: {
 		alignItems: "flex-start",
-		marginBottom: spacing.md,
+		marginBottom: spacing.xl,
 	},
 	title: {
 		...typography.headingMedium,
@@ -178,7 +238,6 @@ const styles = StyleSheet.create({
 		fontSize: 18,
 		color: colors.grayMedium,
 		textAlign: "left",
-		marginTop: spacing.xl,
 	},
 
 	// Language List
@@ -186,8 +245,15 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	languageListContent: {
-		paddingBottom: spacing.xl,
+		paddingBottom: 120, // Extra space for button
 	},
+
+	// Featured Section
+	featuredSection: {
+		marginBottom: 0,
+	},
+
+	// Language Item
 	languageItem: {
 		...globalStyles.selectionCard,
 	},
@@ -205,7 +271,7 @@ const styles = StyleSheet.create({
 		fontWeight: "500",
 	},
 	languageNameSelected: {
-		color: colors.primaryOrange,
+		color: colors.primaryAccent,
 		fontWeight: "600",
 	},
 	checkmark: {
@@ -215,6 +281,33 @@ const styles = StyleSheet.create({
 		color: colors.white,
 		fontSize: 14,
 		fontWeight: "600",
+	},
+
+	// Divider
+	divider: {
+		height: 1,
+		backgroundColor: colors.gray200,
+		marginVertical: spacing.xl,
+	},
+
+	// All Languages Section
+	allLanguagesSection: {
+		marginTop: spacing.md,
+	},
+	sectionTitle: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: colors.grayMedium,
+		marginBottom: spacing.md,
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+	},
+	noResultsText: {
+		...globalStyles.bodyMedium,
+		color: colors.grayMedium,
+		textAlign: "center",
+		marginTop: spacing.lg,
+		fontStyle: "italic",
 	},
 
 	// Next Button

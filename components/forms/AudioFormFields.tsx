@@ -1,6 +1,7 @@
 // components/forms/AudioFormFields.tsx
 import React from "react";
 import { StyleSheet, Text, TextInput, View, TouchableOpacity } from "react-native";
+import { colors } from "../../theme/colors";
 
 interface AudioFormFieldsProps {
 	title: string;
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
 		marginBottom: 8,
 	},
 	required: {
-		color: "#DC581F",
+		color: colors.primaryAccent,
 	},
 	input: {
 		backgroundColor: "#F9F9F9",
@@ -173,8 +174,8 @@ const styles = StyleSheet.create({
 		marginRight: 12,
 	},
 	checkboxChecked: {
-		backgroundColor: "#DC581F",
-		borderColor: "#DC581F",
+		backgroundColor: colors.primaryAccent,
+		borderColor: colors.primaryAccent,
 	},
 	checkmark: {
 		color: "#FFFFFF",

@@ -198,7 +198,7 @@ export default function AddAppScreen() {
 		return (
 			<SafeAreaView style={globalStyles.container}>
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={colors.primaryOrange} />
+					<ActivityIndicator size="large" color={colors.primaryAccent} />
 					<Text style={styles.loadingText}>Loading app data...</Text>
 				</View>
 			</SafeAreaView>
@@ -230,7 +230,7 @@ export default function AddAppScreen() {
 					>
 						{loadingSubcategories ? (
 							<View style={styles.loadingContainer}>
-								<ActivityIndicator size="large" color="#DC581F" />
+								<ActivityIndicator size="large" color={colors.primaryAccent} />
 								<Text style={styles.loadingText}>Loading app types...</Text>
 							</View>
 						) : !showCustomForm ? (

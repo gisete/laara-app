@@ -1,6 +1,7 @@
 // components/navigation/TabIcon.tsx
 import React from "react";
 import { StyleSheet, View } from "react-native";
+import { colors } from "../../theme/colors";
 
 import LibraryIcon from "../icons/NavLibraryIcon";
 import ReportsIcon from "../icons/NavReportsIcon";
@@ -13,7 +14,7 @@ interface TabIconProps {
 }
 
 export default function TabIcon({ focused, iconName }: TabIconProps) {
-	const iconColor = focused ? "#DC581F" : "#9CA3AF";
+	const iconColor = focused ? colors.primaryAccent : "#9CA3AF";
 	const iconSize = 24;
 
 	const renderIcon = () => {

@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.gray200,
 	},
 	studyDay: {
-		backgroundColor: colors.primaryOrange,
+		backgroundColor: colors.primaryAccent,
 	},
 	dayName: {
 		fontSize: 12,

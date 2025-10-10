@@ -203,7 +203,7 @@ export default function AddClassScreen() {
 		return (
 			<SafeAreaView style={globalStyles.container}>
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={colors.primaryOrange} />
+					<ActivityIndicator size="large" color={colors.primaryAccent} />
 					<Text style={styles.loadingText}>Loading class data...</Text>
 				</View>
 			</SafeAreaView>
@@ -235,7 +235,7 @@ export default function AddClassScreen() {
 					>
 						{loadingSubcategories ? (
 							<View style={styles.loadingContainer}>
-								<ActivityIndicator size="large" color="#DC581F" />
+								<ActivityIndicator size="large" color={colors.primaryAccent} />
 								<Text style={styles.loadingText}>Loading class types...</Text>
 							</View>
 						) : (

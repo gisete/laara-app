@@ -180,18 +180,6 @@ export const getAllActiveLanguages = () => {
 	});
 };
 
-export const getLanguageByCode = (languageCode) => {
-	return new Promise((resolve, reject) => {
-		try {
-			const result = db.getFirstSync("SELECT * FROM languages WHERE code = ? AND is_active = TRUE", [languageCode]);
-			resolve(result);
-		} catch (error) {
-			console.error("Error fetching language by code:", error);
-			reject(error);
-		}
-	});
-};
-
 export const addCustomLanguage = (language) => {
 	return new Promise((resolve, reject) => {
 		try {
@@ -205,6 +193,62 @@ export const addCustomLanguage = (language) => {
 			resolve(result.lastInsertRowId);
 		} catch (error) {
 			console.error("Error adding custom language:", error);
+			reject(error);
+		}
+	});
+};
+
+// Get featured languages (for top section)
+export const getFeaturedLanguages = () => {
+	return new Promise((resolve, reject) => {
+		try {
+			const result = db.getAllSync(
+				"SELECT * FROM languages WHERE is_featured = 1 AND is_active = 1 ORDER BY display_order ASC"
+			);
+			resolve(result);
+		} catch (error) {
+			console.error("Error fetching featured languages:", error);
+			reject(error);
+		}
+	});
+};
+
+// Get all non-featured languages alphabetically (for "All Languages" section)
+export const getAllNonFeaturedLanguages = () => {
+	return new Promise((resolve, reject) => {
+		try {
+			const result = db.getAllSync("SELECT * FROM languages WHERE is_featured = 0 AND is_active = 1 ORDER BY name ASC");
+			resolve(result);
+		} catch (error) {
+			console.error("Error fetching all languages:", error);
+			reject(error);
+		}
+	});
+};
+
+// Get language by code (for TopBar greeting feature)
+export const getLanguageByCode = (code) => {
+	return new Promise((resolve, reject) => {
+		try {
+			const result = db.getFirstSync("SELECT * FROM languages WHERE code = ? AND is_active = 1", [code]);
+			resolve(result);
+		} catch (error) {
+			console.error("Error fetching language by code:", error);
+			reject(error);
+		}
+	});
+};
+
+// Search languages by name
+export const searchLanguages = (query) => {
+	return new Promise((resolve, reject) => {
+		try {
+			const result = db.getAllSync("SELECT * FROM languages WHERE name LIKE ? AND is_active = 1 ORDER BY name ASC", [
+				`%${query}%`,
+			]);
+			resolve(result);
+		} catch (error) {
+			console.error("Error searching languages:", error);
 			reject(error);
 		}
 	});

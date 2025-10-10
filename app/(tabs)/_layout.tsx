@@ -2,6 +2,7 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { StyleSheet } from "react-native";
+import { colors } from "../../theme/colors";
 import TabIcon from "../../components/navigation/TabIcon";
 
 export default function TabLayout() {
@@ -11,7 +12,7 @@ export default function TabLayout() {
 				headerShown: false,
 				tabBarStyle: styles.tabBar,
 				tabBarLabelStyle: styles.tabLabel,
-				tabBarActiveTintColor: "#DC581F",
+				tabBarActiveTintColor: colors.primaryAccent,
 				tabBarInactiveTintColor: "#6B7280",
 				tabBarItemStyle: styles.tabItem,
 				tabBarIconStyle: styles.tabIconStyle,

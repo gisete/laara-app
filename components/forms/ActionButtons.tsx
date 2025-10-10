@@ -1,6 +1,7 @@
 // components/forms/ActionButtons.tsx
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { colors } from "../../theme/colors";
 
 interface ActionButtonsProps {
 	onSave: () => void;
@@ -47,7 +48,7 @@ const styles = StyleSheet.create({
 		width: "100%",
 	},
 	saveButton: {
-		backgroundColor: "#DC581F",
+		backgroundColor: colors.primaryAccent,
 		paddingVertical: 16,
 		borderRadius: 8,
 		alignItems: "center",

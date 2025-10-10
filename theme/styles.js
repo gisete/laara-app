@@ -28,7 +28,7 @@ export const globalStyles = StyleSheet.create({
 
 	// Button styles
 	buttonPrimary: {
-		backgroundColor: colors.primaryOrange,
+		backgroundColor: colors.primaryAccent,
 		paddingVertical: 14,
 		paddingHorizontal: 28,
 		borderRadius: borderRadius.sm,
@@ -159,7 +159,7 @@ export const globalStyles = StyleSheet.create({
 		width: 24,
 		height: 24,
 		borderRadius: 12,
-		backgroundColor: colors.primaryOrange,
+		backgroundColor: colors.primaryAccent,
 		alignItems: "center",
 		justifyContent: "center",
 	},

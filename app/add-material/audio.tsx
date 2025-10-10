@@ -211,7 +211,7 @@ export default function AddAudioScreen() {
 		return (
 			<SafeAreaView style={globalStyles.container}>
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={colors.primaryOrange} />
+					<ActivityIndicator size="large" color={colors.primaryAccent} />
 					<Text style={styles.loadingText}>Loading audio data...</Text>
 				</View>
 			</SafeAreaView>
@@ -243,7 +243,7 @@ export default function AddAudioScreen() {
 					>
 						{loadingSubcategories ? (
 							<View style={styles.loadingContainer}>
-								<ActivityIndicator size="large" color="#DC581F" />
+								<ActivityIndicator size="large" color={colors.primaryAccent} />
 								<Text style={styles.loadingText}>Loading audio types...</Text>
 							</View>
 						) : !showCustomForm ? (

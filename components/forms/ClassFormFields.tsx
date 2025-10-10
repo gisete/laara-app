@@ -1,6 +1,7 @@
 // components/forms/ClassFormFields.tsx
 import React from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
+import { colors } from "../../theme/colors";
 
 interface ClassFormFieldsProps {
 	className: string;
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
 		marginBottom: 8,
 	},
 	required: {
-		color: "#DC581F",
+		color: colors.primaryAccent,
 	},
 	input: {
 		backgroundColor: "#F9F9F9",

@@ -73,7 +73,7 @@ export default function AddMaterialCategoryScreen() {
 		return (
 			<SafeAreaView style={globalStyles.container}>
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={colors.primaryOrange} />
+					<ActivityIndicator size="large" color={colors.primaryAccent} />
 					<Text style={styles.loadingText}>Loading categories...</Text>
 				</View>
 			</SafeAreaView>

@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
 		marginBottom: 8,
 	},
 	required: {
-		color: "#DC581F",
+		color: colors.primaryAccent,
 	},
 	grid: {
 		flexDirection: "row",
