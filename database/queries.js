@@ -303,7 +303,7 @@ export const getAllActiveCategories = () => {
 	return new Promise((resolve, reject) => {
 		try {
 			const result = db.getAllSync(
-				"SELECT * FROM material_categories WHERE is_active = TRUE ORDER BY display_order ASC"
+				"SELECT * FROM categories WHERE is_active = TRUE ORDER BY display_order ASC"
 			);
 			resolve(result);
 		} catch (error) {
@@ -316,7 +316,7 @@ export const getAllActiveCategories = () => {
 export const getCategoryByCode = (categoryCode) => {
 	return new Promise((resolve, reject) => {
 		try {
-			const result = db.getFirstSync("SELECT * FROM material_categories WHERE code = ? AND is_active = TRUE", [
+			const result = db.getFirstSync("SELECT * FROM categories WHERE code = ? AND is_active = TRUE", [
 				categoryCode,
 			]);
 			resolve(result);
@@ -331,7 +331,7 @@ export const addCustomCategory = (category) => {
 	return new Promise((resolve, reject) => {
 		try {
 			const result = db.runSync(
-				"INSERT INTO material_categories (code, name, description, image_path, display_order) VALUES (?, ?, ?, ?, ?)",
+				"INSERT INTO categories (code, name, description, image_path, display_order) VALUES (?, ?, ?, ?, ?)",
 				[category.code, category.name, category.description, category.image_path || null, category.display_order || 999]
 			);
 			console.log("Custom category added with ID:", result.lastInsertRowId);
@@ -347,7 +347,10 @@ export const getSubcategoriesByCategory = (categoryCode) => {
 	return new Promise((resolve, reject) => {
 		try {
 			const result = db.getAllSync(
-				"SELECT * FROM material_subcategories WHERE category_code = ? AND is_active = TRUE ORDER BY display_order ASC",
+				`SELECT s.* FROM subcategories s
+         JOIN categories c ON s.category_id = c.id
+         WHERE c.code = ? AND s.is_active = TRUE
+         ORDER BY s.display_order ASC`,
 				[categoryCode]
 			);
 			resolve(result);
@@ -362,7 +365,10 @@ export const getAllActiveSubcategories = () => {
 	return new Promise((resolve, reject) => {
 		try {
 			const result = db.getAllSync(
-				"SELECT * FROM material_subcategories WHERE is_active = TRUE ORDER BY category_code, display_order ASC"
+				`SELECT s.*, c.code as category_code FROM subcategories s
+         JOIN categories c ON s.category_id = c.id
+         WHERE s.is_active = TRUE
+         ORDER BY c.code, s.display_order ASC`
 			);
 			resolve(result);
 		} catch (error) {
@@ -375,9 +381,16 @@ export const getAllActiveSubcategories = () => {
 export const addCustomSubcategory = (subcategory) => {
 	return new Promise((resolve, reject) => {
 		try {
+			// First, get the category_id from the category_code
+			const category = db.getFirstSync("SELECT id FROM categories WHERE code = ?", [subcategory.category_code]);
+
+			if (!category) {
+				throw new Error(`Category with code '${subcategory.category_code}' not found`);
+			}
+
 			const result = db.runSync(
-				"INSERT INTO material_subcategories (category_code, name, display_order) VALUES (?, ?, ?)",
-				[subcategory.category_code, subcategory.name, subcategory.display_order || 999]
+				"INSERT INTO subcategories (category_id, name, display_order) VALUES (?, ?, ?)",
+				[category.id, subcategory.name, subcategory.display_order || 999]
 			);
 			console.log("Custom subcategory added with ID:", result.lastInsertRowId);
 			resolve(result.lastInsertRowId);
