@@ -1,100 +1,120 @@
-// app/(tabs)/index.tsx - Study screen with new add-item route
-import { router } from "expo-router";
+// app/(tabs)/index.tsx - Complete Study Screen Implementation
 import React, { useEffect, useState } from "react";
-import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getAllMaterials } from "../../database/queries";
+import { router, useFocusEffect } from "expo-router";
+import * as Haptics from "expo-haptics";
+
+// Import database queries
+import { getAllMaterials, getStudyDaysInMonth, getRecentMaterials } from "../../database/queries";
 
 // Import components
-import EmptyState from "../../components/EmptyState";
 import TopBar from "../../components/ui/TopBar";
+import EmptyState from "../../components/EmptyState";
+import CalendarWeek from "../../components/tabs/study/CalendarWeek";
+import RecentMaterials from "../../components/tabs/study/RecentMaterials";
 
-// Import global styles
+// Import theme
 import { globalStyles } from "../../theme/styles";
 import { colors } from "../../theme/colors";
 import { spacing, borderRadius } from "../../theme/spacing";
+import { typography } from "../../theme/typography";
 
 export default function StudyScreen() {
 	const [materials, setMaterials] = useState([]);
+	const [recentMaterials, setRecentMaterials] = useState([]);
+	const [studyDays, setStudyDays] = useState<string[]>([]);
 	const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		loadMaterials();
-	}, []);
+	// Reload data when screen comes into focus (when user returns from other screens)
+	useFocusEffect(
+		React.useCallback(() => {
+			loadStudyData();
+		}, [])
+	);
 
-	const loadMaterials = async () => {
+	const loadStudyData = async () => {
 		try {
 			setLoading(true);
+
+			// Check if user has materials
 			const materialsData = await getAllMaterials();
 			setMaterials(materialsData);
+
+			// Load study days for current month
+			const now = new Date();
+			const year = now.getFullYear();
+			const month = now.getMonth() + 1;
+			const daysData = await getStudyDaysInMonth(year, month);
+			setStudyDays(daysData);
+
+			// Load recent materials (only if materials exist)
+			if (materialsData.length > 0) {
+				const recentData = await getRecentMaterials(3);
+				setRecentMaterials(recentData);
+			}
 		} catch (error) {
-			console.error("Error loading materials:", error);
+			console.error("Error loading study data:", error);
 		} finally {
 			setLoading(false);
 		}
 	};
+
+	const handleLogSession = () => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+		// TODO: Navigate to session logging screen
+		console.log("Open session logging screen");
+		// router.push('/log-session');
+	};
+
+	const handleContinueSession = (materialId: number) => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+		// TODO: Navigate to session logging screen with pre-selected material
+		console.log("Continue session for material:", materialId);
+		// router.push(`/log-session?materialId=${materialId}`);
+	};
+
+	if (loading) {
+		return (
+			<SafeAreaView style={globalStyles.container}>
+				<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+				<View style={styles.loadingContainer}>
+					<ActivityIndicator size="large" color={colors.primaryAccent} />
+				</View>
+			</SafeAreaView>
+		);
+	}
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
 			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
 			<View style={styles.content}>
-				{/* TopBar now handles language loading internally */}
 				<TopBar />
 
-				{/* Conditional content based on materials */}
-				{!loading && materials.length === 0 ? (
-					// Navigate to dedicated add-new-item screen instead of library
+				{/* Show empty state if no materials */}
+				{materials.length === 0 ? (
 					<EmptyState onAddNew={() => router.push("/add-material")} />
 				) : (
-					// Show main study content when materials exist
 					<ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-						{/* Calendar Week View */}
-						<View style={styles.calendarContainer}>
-							<View style={styles.calendarHeader}>
-								<TouchableOpacity style={styles.navigationButton}>
-									<Text style={styles.navigationText}>‹</Text>
-								</TouchableOpacity>
+						{/* Calendar Week */}
+						<CalendarWeek
+							studyDays={studyDays}
+							onDayPress={undefined} // Navigation deferred for future
+						/>
 
-								<Text style={styles.monthText}>December 2024</Text>
+						{/* Today Label */}
+						<Text style={styles.todayLabel}>Today</Text>
 
-								<TouchableOpacity style={styles.navigationButton}>
-									<Text style={styles.navigationText}>›</Text>
-								</TouchableOpacity>
-							</View>
+						{/* Log Session Button */}
+						<TouchableOpacity style={styles.logSessionButton} onPress={handleLogSession} activeOpacity={0.9}>
+							<Text style={styles.logSessionText}>Log Study Session</Text>
+						</TouchableOpacity>
 
-							{/* Week days */}
-							<View style={styles.weekContainer}>
-								{["M", "T", "W", "T", "F", "S", "S"].map((day, index) => {
-									const dates = [13, 14, 15, 16, 17, 18, 19];
-									const isToday = index === 4; // Friday (17th)
-									const hasStudied = index === 1 || index === 2; // Tuesday and Wednesday
-
-									return (
-										<TouchableOpacity
-											key={index}
-											style={[styles.dayContainer, isToday && styles.currentDay, hasStudied && styles.studyDay]}
-										>
-											<Text style={[styles.dayName, isToday && styles.currentDayText]}>{day}</Text>
-											<Text style={[styles.dayNumber, isToday && styles.currentDayText]}>{dates[index]}</Text>
-										</TouchableOpacity>
-									);
-								})}
-							</View>
-						</View>
-
-						{/* Log Study Session Button */}
-						<View style={styles.actionContainer}>
-							<TouchableOpacity style={styles.logSessionButton}>
-								<Text style={styles.logSessionText}>Log Study Session</Text>
-							</TouchableOpacity>
-						</View>
-
-						{/* Today's Sessions (if any) */}
-						<View style={styles.sessionsContainer}>
-							<Text style={styles.sessionsTitle}>Today's Sessions</Text>
-							<Text style={styles.noSessionsText}>No sessions logged yet</Text>
-						</View>
+						{/* Recent Materials - only show if sessions exist */}
+						{recentMaterials.length > 0 && (
+							<RecentMaterials materials={recentMaterials} onContinue={handleContinueSession} />
+						)}
 					</ScrollView>
 				)}
 			</View>
@@ -105,101 +125,38 @@ export default function StudyScreen() {
 const styles = StyleSheet.create({
 	content: {
 		flex: 1,
-		paddingHorizontal: spacing.xl,
+		paddingHorizontal: spacing.xl, // 32
+	},
+	loadingContainer: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
 	},
 	scrollContent: {
 		flex: 1,
 	},
-
-	// Calendar
-	calendarContainer: {
-		backgroundColor: colors.grayLightest,
-		borderRadius: borderRadius.md,
-		padding: spacing.lg,
-		marginBottom: spacing.lg,
-	},
-	calendarHeader: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-		marginBottom: spacing.lg,
-	},
-	navigationButton: {
-		width: 32,
-		height: 32,
-		borderRadius: 16,
-		backgroundColor: colors.white,
-		alignItems: "center",
-		justifyContent: "center",
-	},
-	navigationText: {
-		fontSize: 18,
-		color: colors.grayMedium,
-		fontWeight: "600",
-	},
-	monthText: {
-		fontSize: 18,
-		fontWeight: "600",
-		color: colors.grayDarkest,
-	},
-	weekContainer: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-	},
-	dayContainer: {
-		alignItems: "center",
-		paddingVertical: spacing.sm,
-		paddingHorizontal: spacing.xs,
-		borderRadius: borderRadius.sm,
-		minWidth: 36,
-	},
-	currentDay: {
-		backgroundColor: colors.gray200,
-	},
-	studyDay: {
-		backgroundColor: colors.primaryAccent,
-	},
-	dayName: {
-		fontSize: 12,
-		color: colors.grayMedium,
-		marginBottom: 4,
-		fontWeight: "500",
-	},
-	dayNumber: {
-		fontSize: 16,
-		color: colors.grayDarkest,
-		fontWeight: "600",
-	},
-	currentDayText: {
-		color: colors.grayDarkest,
-	},
-
-	// Action Button
-	actionContainer: {
-		marginBottom: spacing.lg,
+	todayLabel: {
+		...typography.headingSmall,
+		color: colors.grayDarkest, // #211E1C
+		marginTop: spacing.lg, // 24
+		marginBottom: spacing.md, // 16
 	},
 	logSessionButton: {
-		...globalStyles.buttonPrimary,
+		backgroundColor: colors.primaryAccent, // #D9635B - Coral/red accent
 		paddingVertical: 16,
 		borderRadius: 5,
+		alignItems: "center",
+		justifyContent: "center",
+		marginBottom: spacing.xl, // 32
+		shadowColor: colors.primaryAccent,
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.3,
+		shadowRadius: 8,
 		elevation: 8,
 	},
 	logSessionText: {
-		...globalStyles.buttonPrimaryText,
+		color: colors.white,
 		fontSize: 16,
-	},
-
-	// Sessions
-	sessionsContainer: {
-		marginBottom: spacing.lg,
-	},
-	sessionsTitle: {
-		...globalStyles.headingSmall,
-		marginBottom: spacing.sm,
-	},
-	noSessionsText: {
-		...globalStyles.bodyMedium,
-		color: colors.grayMedium,
-		fontStyle: "italic",
+		fontWeight: "600",
 	},
 });

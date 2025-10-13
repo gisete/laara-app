@@ -302,9 +302,7 @@ export const formatDate = (date) => {
 export const getAllActiveCategories = () => {
 	return new Promise((resolve, reject) => {
 		try {
-			const result = db.getAllSync(
-				"SELECT * FROM categories WHERE is_active = TRUE ORDER BY display_order ASC"
-			);
+			const result = db.getAllSync("SELECT * FROM categories WHERE is_active = TRUE ORDER BY display_order ASC");
 			resolve(result);
 		} catch (error) {
 			console.error("Error fetching active categories:", error);
@@ -316,9 +314,7 @@ export const getAllActiveCategories = () => {
 export const getCategoryByCode = (categoryCode) => {
 	return new Promise((resolve, reject) => {
 		try {
-			const result = db.getFirstSync("SELECT * FROM categories WHERE code = ? AND is_active = TRUE", [
-				categoryCode,
-			]);
+			const result = db.getFirstSync("SELECT * FROM categories WHERE code = ? AND is_active = TRUE", [categoryCode]);
 			resolve(result);
 		} catch (error) {
 			console.error("Error fetching category by code:", error);
@@ -388,14 +384,42 @@ export const addCustomSubcategory = (subcategory) => {
 				throw new Error(`Category with code '${subcategory.category_code}' not found`);
 			}
 
-			const result = db.runSync(
-				"INSERT INTO subcategories (category_id, name, display_order) VALUES (?, ?, ?)",
-				[category.id, subcategory.name, subcategory.display_order || 999]
-			);
+			const result = db.runSync("INSERT INTO subcategories (category_id, name, display_order) VALUES (?, ?, ?)", [
+				category.id,
+				subcategory.name,
+				subcategory.display_order || 999,
+			]);
 			console.log("Custom subcategory added with ID:", result.lastInsertRowId);
 			resolve(result.lastInsertRowId);
 		} catch (error) {
 			console.error("Error adding custom subcategory:", error);
+			reject(error);
+		}
+	});
+};
+
+export const getRecentMaterials = (limit = 3) => {
+	return new Promise((resolve, reject) => {
+		try {
+			const result = db.getAllSync(
+				`SELECT DISTINCT 
+          m.id, 
+          m.name, 
+          m.type, 
+          m.subtype,
+          ss.session_time as last_session,
+          ss.units_studied,
+          ss.duration_minutes,
+          ss.session_date
+         FROM materials m
+         INNER JOIN study_sessions ss ON m.id = ss.material_id
+         ORDER BY ss.session_time DESC
+         LIMIT ?`,
+				[limit]
+			);
+			resolve(result);
+		} catch (error) {
+			console.error("Error getting recent materials:", error);
 			reject(error);
 		}
 	});

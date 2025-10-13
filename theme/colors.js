@@ -1,6 +1,6 @@
 export const colors = {
 	// Primary Colors
-	primaryAccent: "#D9635B",
+	primaryAccent: "#E86E55",
 	primaryAccentLight: "#EF9381",
 
 	// Whites & Backgrounds
