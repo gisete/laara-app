@@ -52,34 +52,18 @@ export const addMaterial = (material) => {
 	});
 };
 
-export const updateMaterial = (materialId, material) => {
+export const updateMaterialProgress = (materialId, unitsToAdd, progressPercentage) => {
 	return new Promise((resolve, reject) => {
 		try {
 			db.runSync(
 				`UPDATE materials 
-         SET name = ?, subtype = ?, author = ?, total_units = ?, updated_at = CURRENT_TIMESTAMP 
+         SET current_unit = current_unit + ?, 
+             progress_percentage = ?, 
+             updated_at = CURRENT_TIMESTAMP 
          WHERE id = ?`,
-				[material.name, material.subtype || null, material.author || null, material.total_units || 0, materialId]
+				[unitsToAdd, progressPercentage, materialId]
 			);
-			console.log("Material updated successfully:", materialId);
-			resolve();
-		} catch (error) {
-			console.error("Error updating material:", error);
-			reject(error);
-		}
-	});
-};
-
-export const updateMaterialProgress = (materialId, currentUnit, progressPercentage) => {
-	return new Promise((resolve, reject) => {
-		try {
-			db.runSync(
-				`UPDATE materials 
-         SET current_unit = ?, progress_percentage = ?, updated_at = CURRENT_TIMESTAMP 
-         WHERE id = ?`,
-				[currentUnit, progressPercentage, materialId]
-			);
-			console.log("Material progress updated:", { materialId, currentUnit, progressPercentage });
+			console.log("Material progress updated:", { materialId, unitsToAdd, progressPercentage });
 			resolve();
 		} catch (error) {
 			console.error("Error updating material progress:", error);
@@ -103,19 +87,14 @@ export const deleteMaterial = (materialId) => {
 
 // ============ STUDY SESSIONS QUERIES ============
 
-export const addStudySession = (session) => {
+export const addStudySession = (sessionData) => {
 	return new Promise((resolve, reject) => {
 		try {
 			const result = db.runSync(
-				`INSERT INTO study_sessions (material_id, units_studied, duration_minutes, session_date, notes) 
-         VALUES (?, ?, ?, ?, ?)`,
-				[
-					session.material_id,
-					session.units_studied || 0,
-					session.duration_minutes || 0,
-					session.session_date,
-					session.notes || "",
-				]
+				`INSERT INTO study_sessions 
+         (material_id, session_date, duration_minutes, units_studied) 
+         VALUES (?, ?, ?, ?)`,
+				[sessionData.material_id, sessionData.session_date, sessionData.duration_minutes, sessionData.units_studied]
 			);
 			console.log("Study session added with ID:", result.lastInsertRowId);
 			resolve(result.lastInsertRowId);
@@ -151,11 +130,12 @@ export const getStudyDaysInMonth = (year, month) => {
 			const startDate = `${year}-${month.toString().padStart(2, "0")}-01`;
 			const endDate = `${year}-${month.toString().padStart(2, "0")}-31`;
 
+			// Query daily_sessions instead of study_sessions
 			const result = db.getAllSync(
 				`SELECT DISTINCT session_date 
-         FROM study_sessions 
-         WHERE session_date BETWEEN ? AND ? 
-         ORDER BY session_date`,
+				FROM daily_sessions 
+				WHERE session_date BETWEEN ? AND ? 
+				ORDER BY session_date`,
 				[startDate, endDate]
 			);
 			resolve(result.map((row) => row.session_date));
@@ -402,24 +382,289 @@ export const getRecentMaterials = (limit = 3) => {
 	return new Promise((resolve, reject) => {
 		try {
 			const result = db.getAllSync(
-				`SELECT DISTINCT 
-          m.id, 
-          m.name, 
-          m.type, 
-          m.subtype,
-          ss.session_time as last_session,
-          ss.units_studied,
-          ss.duration_minutes,
-          ss.session_date
-         FROM materials m
-         INNER JOIN study_sessions ss ON m.id = ss.material_id
-         ORDER BY ss.session_time DESC
-         LIMIT ?`,
+				`SELECT 
+					m.id, 
+					m.name, 
+					m.type, 
+					m.subtype,
+					MAX(ss.session_time) as last_session,
+					ss.units_studied,
+					ss.duration_minutes,
+					ss.session_date
+				FROM materials m
+				INNER JOIN study_sessions ss ON m.id = ss.material_id
+				GROUP BY m.id
+				ORDER BY MAX(ss.session_time) DESC
+				LIMIT ?`,
 				[limit]
 			);
 			resolve(result);
 		} catch (error) {
 			console.error("Error getting recent materials:", error);
+			reject(error);
+		}
+	});
+};
+
+// ============ DAILY SESSIONS & ACTIVITIES QUERIES ============
+
+/**
+ * Get or create today's session
+ * @param {string} date - Date in YYYY-MM-DD format
+ * @returns {Promise<object>} Session object with id
+ */
+export const getOrCreateTodaySession = (date) => {
+	return new Promise((resolve, reject) => {
+		try {
+			// Try to get existing session
+			let session = db.getFirstSync("SELECT * FROM daily_sessions WHERE session_date = ?", [date]);
+
+			// If no session exists, create one
+			if (!session) {
+				const result = db.runSync("INSERT INTO daily_sessions (session_date, total_duration) VALUES (?, 0)", [date]);
+				session = {
+					id: result.lastInsertRowId,
+					session_date: date,
+					total_duration: 0,
+					created_at: new Date().toISOString(),
+					updated_at: new Date().toISOString(),
+				};
+				console.log("Created new session:", session.id);
+			}
+
+			resolve(session);
+		} catch (error) {
+			console.error("Error getting or creating session:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
+ * Get today's session with all activities
+ * @param {string} date - Date in YYYY-MM-DD format
+ * @returns {Promise<object|null>} Session object with activities array, or null
+ */
+export const getTodaySession = (date) => {
+	return new Promise((resolve, reject) => {
+		try {
+			const session = db.getFirstSync("SELECT * FROM daily_sessions WHERE session_date = ?", [date]);
+
+			if (!session) {
+				resolve(null);
+				return;
+			}
+
+			// Get all activities for this session
+			const activities = db.getAllSync(
+				`SELECT 
+					sa.*,
+					m.name as material_name,
+					m.type as material_type,
+					m.subtype as material_subtype
+				FROM session_activities sa
+				JOIN materials m ON sa.material_id = m.id
+				WHERE sa.session_id = ?
+				ORDER BY sa.created_at ASC`,
+				[session.id]
+			);
+
+			session.activities = activities || [];
+			resolve(session);
+		} catch (error) {
+			console.error("Error getting today's session:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
+ * Get recent sessions (excluding today)
+ * @param {number} limit - Number of sessions to retrieve
+ * @returns {Promise<Array>} Array of session objects with activities
+ */
+export const getRecentSessions = (limit = 3) => {
+	return new Promise((resolve, reject) => {
+		try {
+			const today = new Date().toISOString().split("T")[0];
+
+			const sessions = db.getAllSync(
+				`SELECT * FROM daily_sessions 
+				WHERE session_date < ? 
+				ORDER BY session_date DESC 
+				LIMIT ?`,
+				[today, limit]
+			);
+
+			// Get activities for each session
+			const sessionsWithActivities = sessions.map((session) => {
+				const activities = db.getAllSync(
+					`SELECT 
+						sa.*,
+						m.name as material_name,
+						m.type as material_type,
+						m.subtype as material_subtype
+					FROM session_activities sa
+					JOIN materials m ON sa.material_id = m.id
+					WHERE sa.session_id = ?
+					ORDER BY sa.created_at ASC`,
+					[session.id]
+				);
+				return { ...session, activities: activities || [] };
+			});
+
+			resolve(sessionsWithActivities);
+		} catch (error) {
+			console.error("Error getting recent sessions:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
+ * Add an activity to a session
+ * @param {object} activityData - { session_id, material_id, duration_minutes, units_studied }
+ * @returns {Promise<number>} Activity ID
+ */
+export const addSessionActivity = (activityData) => {
+	return new Promise((resolve, reject) => {
+		try {
+			const result = db.runSync(
+				`INSERT INTO session_activities 
+				(session_id, material_id, duration_minutes, units_studied) 
+				VALUES (?, ?, ?, ?)`,
+				[
+					activityData.session_id,
+					activityData.material_id,
+					activityData.duration_minutes,
+					activityData.units_studied || null,
+				]
+			);
+			console.log("Activity added with ID:", result.lastInsertRowId);
+			resolve(result.lastInsertRowId);
+		} catch (error) {
+			console.error("Error adding activity:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
+ * Update session's total duration (sum of all activities)
+ * @param {number} sessionId - Session ID
+ * @returns {Promise<void>}
+ */
+export const updateSessionTotalDuration = (sessionId) => {
+	return new Promise((resolve, reject) => {
+		try {
+			// Calculate total duration from all activities
+			const result = db.getFirstSync(
+				`SELECT COALESCE(SUM(duration_minutes), 0) as total 
+				FROM session_activities 
+				WHERE session_id = ?`,
+				[sessionId]
+			);
+
+			// Update session
+			db.runSync("UPDATE daily_sessions SET total_duration = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [
+				result.total,
+				sessionId,
+			]);
+
+			console.log("Session total duration updated:", result.total);
+			resolve();
+		} catch (error) {
+			console.error("Error updating session duration:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
+ * Get activities for a specific session
+ * @param {number} sessionId - Session ID
+ * @returns {Promise<Array>} Array of activities with material info
+ */
+export const getSessionActivities = (sessionId) => {
+	return new Promise((resolve, reject) => {
+		try {
+			const activities = db.getAllSync(
+				`SELECT 
+					sa.*,
+					m.name as material_name,
+					m.type as material_type,
+					m.subtype as material_subtype
+				FROM session_activities sa
+				JOIN materials m ON sa.material_id = m.id
+				WHERE sa.session_id = ?
+				ORDER BY sa.created_at ASC`,
+				[sessionId]
+			);
+			resolve(activities || []);
+		} catch (error) {
+			console.error("Error getting session activities:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
+ * Get recently studied materials (from activities)
+ * @param {number} limit - Number of materials to retrieve
+ * @returns {Promise<Array>} Array of unique materials
+ */
+export const getRecentlyStudiedMaterials = (limit = 3) => {
+	return new Promise((resolve, reject) => {
+		try {
+			const materials = db.getAllSync(
+				`SELECT DISTINCT
+					m.id,
+					m.name,
+					m.type,
+					m.subtype,
+					m.total_units,
+					m.current_unit,
+					m.progress_percentage,
+					MAX(sa.created_at) as last_studied
+				FROM materials m
+				JOIN session_activities sa ON m.id = sa.material_id
+				GROUP BY m.id
+				ORDER BY MAX(sa.created_at) DESC
+				LIMIT ?`,
+				[limit]
+			);
+			resolve(materials || []);
+		} catch (error) {
+			console.error("Error getting recently studied materials:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
+ * Delete an activity
+ * @param {number} activityId - Activity ID
+ * @returns {Promise<void>}
+ */
+export const deleteSessionActivity = (activityId) => {
+	return new Promise((resolve, reject) => {
+		try {
+			// Get session_id before deleting
+			const activity = db.getFirstSync("SELECT session_id FROM session_activities WHERE id = ?", [activityId]);
+
+			if (!activity) {
+				reject(new Error("Activity not found"));
+				return;
+			}
+
+			// Delete activity
+			db.runSync("DELETE FROM session_activities WHERE id = ?", [activityId]);
+			console.log("Activity deleted:", activityId);
+
+			// Update session total duration
+			updateSessionTotalDuration(activity.session_id).then(resolve).catch(reject);
+		} catch (error) {
+			console.error("Error deleting activity:", error);
 			reject(error);
 		}
 	});

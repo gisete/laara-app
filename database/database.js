@@ -101,6 +101,38 @@ export const initDatabase = () => {
         );
       `);
 
+			// Create daily_sessions table
+			db.execSync(`
+        CREATE TABLE IF NOT EXISTS daily_sessions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          session_date TEXT NOT NULL UNIQUE,
+          total_duration INTEGER DEFAULT 0,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
+			db.execSync("CREATE INDEX IF NOT EXISTS idx_daily_sessions_date ON daily_sessions(session_date)");
+
+			// Create session_activities table
+			db.execSync(`
+        CREATE TABLE IF NOT EXISTS session_activities (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          session_id INTEGER NOT NULL,
+          material_id INTEGER NOT NULL,
+          duration_minutes INTEGER NOT NULL,
+          units_studied INTEGER,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (session_id) REFERENCES daily_sessions(id) ON DELETE CASCADE,
+          FOREIGN KEY (material_id) REFERENCES materials(id) ON DELETE CASCADE
+        );
+      `);
+
+			db.execSync("CREATE INDEX IF NOT EXISTS idx_session_activities_session ON session_activities(session_id)");
+			db.execSync("CREATE INDEX IF NOT EXISTS idx_session_activities_material ON session_activities(material_id)");
+
+			console.log("Daily sessions and activities tables created successfully");
+
 			// Insert default settings if not exists
 			const settingsExist = db.getFirstSync("SELECT id FROM user_settings WHERE id = 1");
 			if (!settingsExist) {
