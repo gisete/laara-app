@@ -49,7 +49,7 @@ const MaterialCard = ({ material, onPress }: MaterialCardProps) => {
 		} else if (material.type === "class") {
 			return `Session ${current}/${total}`;
 		} else if (material.type === "app") {
-			return `Level ${current}/${total}`;
+			return `Lesson ${current}/${total}`;
 		}
 		return null;
 	};

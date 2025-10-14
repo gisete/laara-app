@@ -34,8 +34,8 @@ const getUnitLabel = (type: string, count: number = 1) => {
 		book: count === 1 ? "page" : "pages",
 		audio: count === 1 ? "episode" : "episodes",
 		video: count === 1 ? "video" : "videos",
-		class: count === 1 ? "lesson" : "lessons",
-		app: count === 1 ? "level" : "levels",
+		class: count === 1 ? "session" : "sessions",
+		app: count === 1 ? "lesson" : "lessons",
 	};
 	return labels[type] || "units";
 };

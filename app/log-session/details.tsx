@@ -11,7 +11,6 @@ import {
 	StatusBar,
 	StyleSheet,
 	Text,
-	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
@@ -27,14 +26,16 @@ import {
 
 // Import components
 import CardCover from "../../components/tabs/library/CardCover";
+import ActivityDetailsForm from "../../components/logSession/ActivityDetailsForm";
+
+// Import utils
+import { validateActivityForm } from "../../utils/activityLogValidation";
 
 // Import theme
 import { globalStyles } from "../../theme/styles";
 import { colors } from "../../theme/colors";
 import { spacing, borderRadius } from "../../theme/spacing";
 import { typography } from "../../theme/typography";
-
-const quickTimeOptions = [15, 30, 45, 60];
 
 export default function SessionDetailsScreen() {
 	const params = useLocalSearchParams();
@@ -51,7 +52,6 @@ export default function SessionDetailsScreen() {
 	const [unitsStudied, setUnitsStudied] = useState("");
 
 	const handleQuickTimeSelect = (minutes: number) => {
-		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 		setTimeMode("quick");
 		setSelectedQuickTime(minutes);
 		setCustomTime(""); // Clear custom input
@@ -69,25 +69,28 @@ export default function SessionDetailsScreen() {
 		return null;
 	};
 
-	const validateForm = (): boolean => {
-		const timeValue = getTimeValue();
-
-		if (!timeValue || timeValue <= 0 || isNaN(timeValue)) {
-			Alert.alert("Required Field", "Please enter time studied");
-			return false;
-		}
-
-		return true;
-	};
-
 	const handleSaveActivity = async () => {
-		if (!validateForm()) return;
+		const timeValue = getTimeValue();
+		const totalProgress = params.totalProgress ? parseInt(params.totalProgress as string, 10) : null;
+		const currentProgress = params.currentProgress ? parseInt(params.currentProgress as string, 10) : 0;
+
+		// Validate form using utility function
+		const isValid = validateActivityForm({
+			materialType: params.materialType as string,
+			totalProgress,
+			currentProgress,
+			timeValue,
+			pagesRead,
+			chaptersRead,
+			unitsStudied,
+		});
+
+		if (!isValid) return;
 
 		try {
 			Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 			setLoading(true);
 
-			const timeValue = getTimeValue();
 			const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
 			// Step 1: Get or create today's session
@@ -126,14 +129,9 @@ export default function SessionDetailsScreen() {
 			// Step 5: Update material progress (if units provided)
 			if (unitsValue) {
 				const materialId = parseInt(params.materialId as string, 10);
-				const currentProgress = parseInt(params.currentProgress as string, 10) || 0;
-				const totalProgress = parseInt(params.totalProgress as string, 10) || 0;
-
-				// Calculate new current unit (add units studied to current progress)
 				const newCurrentUnit = currentProgress + unitsValue;
-
-				// Calculate progress percentage
-				const progressPercentage = totalProgress > 0 ? Math.min((newCurrentUnit / totalProgress) * 100, 100) : 0;
+				const progressPercentage =
+					totalProgress && totalProgress > 0 ? Math.min((newCurrentUnit / totalProgress) * 100, 100) : 0;
 
 				await updateMaterialProgress(materialId, newCurrentUnit, progressPercentage);
 				console.log("Material progress updated:", { newCurrentUnit, progressPercentage });
@@ -188,124 +186,21 @@ export default function SessionDetailsScreen() {
 						</View>
 					</View>
 
-					{/* Time Studied Section */}
-					<View style={styles.section}>
-						<Text style={styles.sectionLabel}>
-							Time Studied <Text style={styles.required}>*</Text>
-						</Text>
-
-						{/* Quick Time Buttons */}
-						<View style={styles.quickTimeContainer}>
-							{quickTimeOptions.map((minutes) => (
-								<TouchableOpacity
-									key={minutes}
-									style={[styles.quickTimeButton, selectedQuickTime === minutes && styles.quickTimeButtonSelected]}
-									onPress={() => handleQuickTimeSelect(minutes)}
-									activeOpacity={0.7}
-								>
-									<Text style={[styles.quickTimeText, selectedQuickTime === minutes && styles.quickTimeTextSelected]}>
-										{minutes}
-									</Text>
-								</TouchableOpacity>
-							))}
-						</View>
-
-						{/* Custom Time Input */}
-						<Text style={styles.customTimeLabel}>Or enter custom amount</Text>
-						<TextInput
-							style={styles.input}
-							value={customTime}
-							onChangeText={handleCustomTimeChange}
-							placeholder="e.g., 90 minutes"
-							keyboardType="numeric"
-							placeholderTextColor={colors.grayMedium}
-						/>
-					</View>
-
-					{/* Type-Specific Units */}
-					{params.materialType === "book" && (
-						<>
-							<View style={styles.section}>
-								<Text style={styles.sectionLabel}>Pages Read</Text>
-								<TextInput
-									style={styles.input}
-									value={pagesRead}
-									onChangeText={setPagesRead}
-									placeholder="e.g., 25 pages"
-									keyboardType="numeric"
-									placeholderTextColor={colors.grayMedium}
-								/>
-							</View>
-
-							<View style={styles.section}>
-								<Text style={styles.sectionLabel}>Chapters Read</Text>
-								<TextInput
-									style={styles.input}
-									value={chaptersRead}
-									onChangeText={setChaptersRead}
-									placeholder="e.g., 2 chapters"
-									keyboardType="numeric"
-									placeholderTextColor={colors.grayMedium}
-								/>
-							</View>
-						</>
-					)}
-
-					{params.materialType === "audio" && (
-						<View style={styles.section}>
-							<Text style={styles.sectionLabel}>Episodes Completed</Text>
-							<TextInput
-								style={styles.input}
-								value={unitsStudied}
-								onChangeText={setUnitsStudied}
-								placeholder="e.g., 3 episodes"
-								keyboardType="numeric"
-								placeholderTextColor={colors.grayMedium}
-							/>
-						</View>
-					)}
-
-					{params.materialType === "video" && (
-						<View style={styles.section}>
-							<Text style={styles.sectionLabel}>Videos Watched</Text>
-							<TextInput
-								style={styles.input}
-								value={unitsStudied}
-								onChangeChange={setUnitsStudied}
-								placeholder="e.g., 5 videos"
-								keyboardType="numeric"
-								placeholderTextColor={colors.grayMedium}
-							/>
-						</View>
-					)}
-
-					{params.materialType === "class" && (
-						<View style={styles.section}>
-							<Text style={styles.sectionLabel}>Sessions Attended</Text>
-							<TextInput
-								style={styles.input}
-								value={unitsStudied}
-								onChangeText={setUnitsStudied}
-								placeholder="e.g., 1 session"
-								keyboardType="numeric"
-								placeholderTextColor={colors.grayMedium}
-							/>
-						</View>
-					)}
-
-					{params.materialType === "app" && (
-						<View style={styles.section}>
-							<Text style={styles.sectionLabel}>Lessons Completed</Text>
-							<TextInput
-								style={styles.input}
-								value={unitsStudied}
-								onChangeText={setUnitsStudied}
-								placeholder="e.g., 10 lessons"
-								keyboardType="numeric"
-								placeholderTextColor={colors.grayMedium}
-							/>
-						</View>
-					)}
+					{/* Activity Details Form Component */}
+					<ActivityDetailsForm
+						materialType={params.materialType as string}
+						timeMode={timeMode}
+						selectedQuickTime={selectedQuickTime}
+						customTime={customTime}
+						onQuickTimeSelect={handleQuickTimeSelect}
+						onCustomTimeChange={handleCustomTimeChange}
+						pagesRead={pagesRead}
+						chaptersRead={chaptersRead}
+						unitsStudied={unitsStudied}
+						onPagesReadChange={setPagesRead}
+						onChaptersReadChange={setChaptersRead}
+						onUnitsStudiedChange={setUnitsStudied}
+					/>
 
 					{/* Extra space for keyboard */}
 					<View style={{ height: 200 }} />
@@ -374,60 +269,6 @@ const styles = StyleSheet.create({
 		color: colors.grayMedium,
 		marginTop: 2,
 		textTransform: "capitalize",
-	},
-	section: {
-		marginBottom: spacing.lg,
-	},
-	sectionLabel: {
-		...typography.bodyMedium,
-		fontWeight: "600",
-		color: colors.grayDarkest,
-		marginBottom: spacing.sm,
-	},
-	required: {
-		color: colors.primaryAccent,
-	},
-	quickTimeContainer: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		marginBottom: spacing.md,
-	},
-	quickTimeButton: {
-		flex: 1,
-		paddingVertical: spacing.sm,
-		marginHorizontal: 4,
-		backgroundColor: colors.grayLightest,
-		borderRadius: borderRadius.sm,
-		borderWidth: 1,
-		borderColor: colors.gray200,
-		alignItems: "center",
-	},
-	quickTimeButtonSelected: {
-		backgroundColor: colors.primaryAccent,
-		borderColor: colors.primaryAccent,
-	},
-	quickTimeText: {
-		...typography.bodyMedium,
-		color: colors.grayDarkest,
-		fontWeight: "600",
-	},
-	quickTimeTextSelected: {
-		color: colors.white,
-	},
-	customTimeLabel: {
-		...typography.bodySmall,
-		color: colors.grayMedium,
-		marginBottom: spacing.xs,
-	},
-	input: {
-		backgroundColor: colors.white,
-		borderWidth: 1,
-		borderColor: colors.gray200,
-		borderRadius: borderRadius.sm,
-		paddingVertical: spacing.sm,
-		paddingHorizontal: spacing.md,
-		fontSize: 16,
-		color: colors.grayDarkest,
 	},
 	actionButtons: {
 		flexDirection: "row",

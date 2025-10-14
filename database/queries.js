@@ -6,8 +6,36 @@ import db from "./database.js";
 export const getAllMaterials = () => {
 	return new Promise((resolve, reject) => {
 		try {
-			// Show most recently added materials first
-			const result = db.getAllSync("SELECT * FROM materials ORDER BY created_at DESC");
+			// Calculate progress percentage for each material type and sort by it
+			const result = db.getAllSync(
+				`SELECT *,
+				CASE 
+					-- Book progress: current_unit is pages
+					WHEN type = 'book' AND total_units > 0 
+						THEN (CAST(current_unit AS REAL) / total_units) * 100
+					
+					-- Audio progress: current_unit is episodes
+					WHEN type = 'audio' AND total_units > 0 
+						THEN (CAST(current_unit AS REAL) / total_units) * 100
+					
+					-- Video progress: current_unit is videos
+					WHEN type = 'video' AND total_units > 0 
+						THEN (CAST(current_unit AS REAL) / total_units) * 100
+					
+					-- Class progress: current_unit is sessions
+					WHEN type = 'class' AND total_units > 0 
+						THEN (CAST(current_unit AS REAL) / total_units) * 100
+					
+					-- App progress: current_unit is lessons/levels
+					WHEN type = 'app' AND total_units > 0 
+						THEN (CAST(current_unit AS REAL) / total_units) * 100
+					
+					-- No total set or total is 0
+					ELSE 0
+				END as calculated_progress
+				FROM materials
+				ORDER BY calculated_progress DESC, name ASC`
+			);
 			resolve(result);
 		} catch (error) {
 			console.error("Error fetching materials:", error);

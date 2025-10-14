@@ -33,12 +33,12 @@ export default function AppFormFields({
 				/>
 			</View>
 
-			{/* Total Levels/Units Input */}
+			{/* Total Lessons Input */}
 			<View style={styles.formSection}>
-				<Text style={styles.label}>Total levels/units</Text>
+				<Text style={styles.label}>Total Lessons</Text>
 				<TextInput
 					style={styles.input}
-					placeholder="0"
+					placeholder="e.g., 50 lessons"
 					placeholderTextColor="#C4C4C4"
 					value={totalLevels}
 					onChangeText={onTotalLevelsChange}
@@ -47,7 +47,7 @@ export default function AppFormFields({
 			</View>
 
 			{/* Helper text */}
-			<Text style={styles.helperText}>Add level count to track app progress</Text>
+			<Text style={styles.helperText}>Optional - track your progress through the app</Text>
 		</>
 	);
 }
