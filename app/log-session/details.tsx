@@ -22,20 +22,20 @@ import {
 	addSessionActivity,
 	updateSessionTotalDuration,
 	updateMaterialProgress,
-} from "../../database/queries";
+} from "@database/queries";
 
 // Import components
-import CardCover from "../../components/tabs/library/CardCover";
-import ActivityDetailsForm from "../../components/logSession/ActivityDetailsForm";
+import CardCover from "@components/tabs/library/CardCover";
+import ActivityDetailsForm from "@components/logSession/ActivityDetailsForm";
 
 // Import utils
-import { validateActivityForm } from "../../utils/activityLogValidation";
+import { validateActivityForm } from "@utils/activityLogValidation";
 
 // Import theme
-import { globalStyles } from "../../theme/styles";
-import { colors } from "../../theme/colors";
-import { spacing, borderRadius } from "../../theme/spacing";
-import { typography } from "../../theme/typography";
+import { globalStyles } from "@theme/styles";
+import { colors } from "@theme/colors";
+import { spacing, borderRadius } from "@theme/spacing";
+import { typography } from "@theme/typography";
 
 export default function SessionDetailsScreen() {
 	const params = useLocalSearchParams();

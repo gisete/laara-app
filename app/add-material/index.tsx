@@ -4,22 +4,22 @@ import React, { useEffect, useState } from "react";
 import { SvgProps } from "react-native-svg";
 import { ActivityIndicator, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getAllActiveCategories } from "../../database/queries";
+import { getAllActiveCategories } from "@database/queries";
 
-import CategoryCard from "../../components/addMaterial/CategoryCard";
+import CategoryCard from "@components/addMaterial/CategoryCard";
 
-import AudioIcon from "../../components/icons/AudioIcon";
-import BookIcon from "../../components/icons/BookIcon";
-import VideoIcon from "../../components/icons/VideoIcon";
-import AppIcon from "../../components/icons/AppIcon";
-import ClassIcon from "../../components/icons/ClassIcon";
-import MyIcon from "../../components/icons/AudioIcon"; // A default fallback icon
+import AudioIcon from "@components/icons/AudioIcon";
+import BookIcon from "@components/icons/BookIcon";
+import VideoIcon from "@components/icons/VideoIcon";
+import AppIcon from "@components/icons/AppIcon";
+import ClassIcon from "@components/icons/ClassIcon";
+import MyIcon from "@components/icons/AudioIcon"; // A default fallback icon
 
 // Import global styles
-import { globalStyles } from "../../theme/styles";
-import { colors } from "../../theme/colors";
-import { spacing } from "../../theme/spacing";
-import { typography } from "../../theme/typography";
+import { globalStyles } from "@theme/styles";
+import { colors } from "@theme/colors";
+import { spacing } from "@theme/spacing";
+import { typography } from "@theme/typography";
 
 interface Category {
 	id: number;

@@ -6,11 +6,11 @@ import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-nativ
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // Import your global styles and the new SVG component
-import { globalStyles } from "../theme/styles";
-import { colors } from "../theme/colors";
-import { spacing } from "../theme/spacing";
-import { typography } from "../theme/typography";
-import IntroIllustration from "../components/svgGraphics/IntroScreen";
+import { globalStyles } from "@theme/styles";
+import { colors } from "@theme/colors";
+import { spacing } from "@theme/spacing";
+import { typography } from "@theme/typography";
+import IntroIllustration from "@components/svgGraphics/IntroScreen";
 
 export default function WelcomeScreen() {
 	const handleGetStarted = (): void => {

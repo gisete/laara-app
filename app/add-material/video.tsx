@@ -17,18 +17,18 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // Import reusable components
-import ActionButtons from "../../components/forms/ActionButtons";
-import VideoFormFields from "../../components/forms/VideoFormFields";
-import SearchBar from "../../components/forms/SearchBar";
-import SearchEmptyState from "../../components/forms/SearchEmptyState";
-import SubcategorySelector from "../../components/forms/SubcategorySelector";
-import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMaterial } from "../../database/queries";
+import ActionButtons from "@components/forms/ActionButtons";
+import VideoFormFields from "@components/forms/VideoFormFields";
+import SearchBar from "@components/forms/SearchBar";
+import SearchEmptyState from "@components/forms/SearchEmptyState";
+import SubcategorySelector from "@components/forms/SubcategorySelector";
+import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMaterial } from "@database/queries";
 
 // Import global styles
-import { globalStyles } from "../../theme/styles";
-import { colors } from "../../theme/colors";
-import { spacing } from "../../theme/spacing";
-import { typography } from "../../theme/typography";
+import { globalStyles } from "@theme/styles";
+import { colors } from "@theme/colors";
+import { spacing } from "@theme/spacing";
+import { typography } from "@theme/typography";
 
 export default function AddVideoScreen() {
 	// Get route params to detect edit mode

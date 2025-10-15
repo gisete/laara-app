@@ -6,16 +6,16 @@ import { ActivityIndicator, Alert, FlatList, StatusBar, StyleSheet, Text, Toucha
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // Import database queries
-import { getAllMaterials, getRecentlyStudiedMaterials } from "../../database/queries";
+import { getAllMaterials, getRecentlyStudiedMaterials } from "@database/queries";
 
 // Import components
-import CardCover from "../../components/tabs/library/CardCover";
+import CardCover from "@components/tabs/library/CardCover";
 
 // Import theme
-import { globalStyles } from "../../theme/styles";
-import { colors } from "../../theme/colors";
-import { spacing, borderRadius } from "../../theme/spacing";
-import { typography } from "../../theme/typography";
+import { globalStyles } from "@theme/styles";
+import { colors } from "@theme/colors";
+import { spacing, borderRadius } from "@theme/spacing";
+import { typography } from "@theme/typography";
 
 interface Material {
 	id: number;

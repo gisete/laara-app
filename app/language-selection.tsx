@@ -13,14 +13,14 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getFeaturedLanguages, getAllNonFeaturedLanguages, updateUserSettings } from "../database/queries";
-import SearchBar from "../components/forms/SearchBar";
+import { getFeaturedLanguages, getAllNonFeaturedLanguages, updateUserSettings } from "@database/queries";
+import SearchBar from "@components/forms/SearchBar";
 
 // Import global styles
-import { globalStyles } from "../theme/styles";
-import { colors } from "../theme/colors";
-import { spacing, borderRadius } from "../theme/spacing";
-import { typography } from "../theme/typography";
+import { globalStyles } from "@theme/styles";
+import { colors } from "@theme/colors";
+import { spacing, borderRadius } from "@theme/spacing";
+import { typography } from "@theme/typography";
 
 interface Language {
 	id: number;

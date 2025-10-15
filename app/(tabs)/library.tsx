@@ -4,18 +4,18 @@ import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { deleteMaterial, getAllMaterials } from "../../database/queries";
+import { deleteMaterial, getAllMaterials } from "@database/queries";
 
 // Import components
-import EmptyState from "../../components/EmptyState";
-import FilterBar from "../../components/tabs/library/FilterBar";
-import LibraryItem from "../../components/tabs/library/LibraryItem";
+import EmptyState from "@components/EmptyState";
+import FilterBar from "@components/tabs/library/FilterBar";
+import LibraryItem from "@components/tabs/library/LibraryItem";
 
 // Import global styles
-import { globalStyles } from "../../theme/styles";
-import { colors } from "../../theme/colors";
-import { spacing } from "../../theme/spacing";
-import { typography } from "../../theme/typography";
+import { globalStyles } from "@theme/styles";
+import { colors } from "@theme/colors";
+import { spacing } from "@theme/spacing";
+import { typography } from "@theme/typography";
 
 interface Material {
 	id: number;

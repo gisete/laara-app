@@ -4,7 +4,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { initDatabase } from "../database/database";
+import { initDatabase } from "@database/database";
 
 SplashScreen.preventAutoHideAsync();
 

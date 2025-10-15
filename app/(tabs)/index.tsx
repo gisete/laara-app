@@ -8,19 +8,19 @@ import { router, useFocusEffect } from "expo-router";
 import * as Haptics from "expo-haptics";
 
 // Import database queries
-import { getAllMaterials, getTodaySession, getRecentSessions, getStudyDaysInMonth } from "../../database/queries";
+import { getAllMaterials, getTodaySession, getRecentSessions, getStudyDaysInMonth } from "@database/queries";
 
 // Import components
-import TopBar from "../../components/ui/TopBar";
-import EmptyState from "../../components/EmptyState";
-import CalendarWeek from "../../components/tabs/study/CalendarWeek";
-import CardCover from "../../components/tabs/library/CardCover";
+import TopBar from "@components/ui/TopBar";
+import EmptyState from "@components/EmptyState";
+import CalendarWeek from "@components/tabs/study/CalendarWeek";
+import CardCover from "@components/tabs/library/CardCover";
 
 // Import theme
-import { globalStyles } from "../../theme/styles";
-import { colors } from "../../theme/colors";
-import { spacing, borderRadius } from "../../theme/spacing";
-import { typography } from "../../theme/typography";
+import { globalStyles } from "@theme/styles";
+import { colors } from "@theme/colors";
+import { spacing, borderRadius } from "@theme/spacing";
+import { typography } from "@theme/typography";
 
 interface Activity {
 	id: number;
