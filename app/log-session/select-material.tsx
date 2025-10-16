@@ -1,6 +1,6 @@
-// app/log-session/select-material.tsx
+// app/log-session/select-material.tsx - Updated with date param support
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -80,6 +80,10 @@ const EmptyMaterialState = ({ onAddMaterial }: { onAddMaterial: () => void }) =>
 );
 
 export default function SelectMaterialScreen() {
+	const params = useLocalSearchParams();
+	// Get the date from params, or default to today
+	const sessionDate = (params.date as string) || new Date().toISOString().split("T")[0];
+
 	const [allMaterials, setAllMaterials] = useState<Material[]>([]);
 	const [recentMaterials, setRecentMaterials] = useState<Material[]>([]);
 	const [remainingMaterials, setRemainingMaterials] = useState<Material[]>([]);
@@ -143,6 +147,7 @@ export default function SelectMaterialScreen() {
 				materialSubtype: material.subtype || "",
 				currentProgress: (material.current_unit || 0).toString(),
 				totalProgress: (material.total_units || 0).toString(),
+				date: sessionDate, // Forward the date
 			},
 		});
 	};

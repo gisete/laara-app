@@ -1,12 +1,14 @@
 // components/study/CalendarWeek.tsx
 import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import * as Haptics from "expo-haptics";
 import { colors } from "@theme/colors";
-import { spacing, borderRadius } from "@theme/spacing";
+import { spacing } from "@theme/spacing";
 
 interface CalendarWeekProps {
 	studyDays: string[]; // Array of dates in 'YYYY-MM-DD' format
-	onDayPress?: (date: string) => void; // Optional for future
+	selectedDate: string; // Currently selected date in YYYY-MM-DD format
+	onDayPress: (date: string) => void; // Callback when day is pressed
 }
 
 /**
@@ -52,12 +54,13 @@ const getDayLetter = (date: Date): string => {
 	return days[date.getDay()];
 };
 
-export default function CalendarWeek({ studyDays, onDayPress }: CalendarWeekProps) {
+export default function CalendarWeek({ studyDays, selectedDate, onDayPress }: CalendarWeekProps) {
 	const weekDates = getCurrentWeekDates();
 
 	const renderDay = (date: Date, index: number) => {
 		const dateString = formatDateToYYYYMMDD(date);
 		const isTodayDate = isToday(date);
+		const isSelected = dateString === selectedDate;
 		const hasStudySession = studyDays.includes(dateString);
 		const dayLetter = getDayLetter(date);
 		const dayNumber = date.getDate();
@@ -67,15 +70,21 @@ export default function CalendarWeek({ studyDays, onDayPress }: CalendarWeekProp
 				key={index}
 				style={[
 					styles.dayContainer,
-					isTodayDate && styles.todayContainer,
-					!isTodayDate && hasStudySession && styles.studyDayContainer,
+					isSelected && styles.selectedDayContainer,
+					!isSelected && isTodayDate && styles.todayContainer,
+					!isSelected && !isTodayDate && hasStudySession && styles.studyDayContainer,
 				]}
-				onPress={() => onDayPress?.(dateString)}
-				activeOpacity={onDayPress ? 0.7 : 1}
-				disabled={!onDayPress}
+				onPress={() => {
+					Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+					onDayPress(dateString);
+				}}
+				activeOpacity={0.7}
 			>
-				<Text style={[styles.dayLetter, isTodayDate && styles.todayText]}>{dayLetter}</Text>
-				<Text style={[styles.dayNumber, isTodayDate && styles.todayText]}>{dayNumber}</Text>
+				<Text style={[styles.dayLetter, isSelected && styles.selectedText]}>{dayLetter}</Text>
+				<Text style={[styles.dayNumber, isSelected && styles.selectedText]}>{dayNumber}</Text>
+				{/* Show dot for days with sessions */}
+				{hasStudySession && !isSelected && <View style={styles.sessionDot} />}
+				{hasStudySession && isSelected && <View style={[styles.sessionDot, styles.sessionDotSelected]} />}
 			</TouchableOpacity>
 		);
 	};
@@ -100,8 +109,12 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		paddingVertical: spacing.sm,
 		paddingHorizontal: spacing.xs,
-		borderRadius: "100%",
+		borderRadius: 100,
 		minWidth: 40,
+		position: "relative",
+	},
+	selectedDayContainer: {
+		backgroundColor: colors.grayDark, // #44403C - Stone 700
 	},
 	todayContainer: {
 		backgroundColor: colors.grayDark, // #44403C - Stone 700
@@ -120,7 +133,19 @@ const styles = StyleSheet.create({
 		color: colors.grayDarkest, // #211E1C - Stone 900
 		fontWeight: "600",
 	},
-	todayText: {
-		color: colors.white, // White text on today's dark background
+	selectedText: {
+		color: colors.white,
+	},
+	sessionDot: {
+		width: 6,
+		height: 6,
+		borderRadius: 3,
+		backgroundColor: colors.primaryAccent,
+		marginTop: 4,
+		position: "absolute",
+		bottom: 4,
+	},
+	sessionDotSelected: {
+		backgroundColor: colors.white,
 	},
 });

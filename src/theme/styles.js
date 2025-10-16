@@ -61,13 +61,13 @@ export const globalStyles = StyleSheet.create({
 		paddingHorizontal: 28,
 		borderRadius: borderRadius.sm,
 		borderWidth: 1.5,
-		borderColor: colors.gray600,
+		borderColor: colors.grayDark,
 		alignItems: "center",
 		justifyContent: "center",
 	},
 
 	buttonSecondaryOutlineText: {
-		color: colors.gray600,
+		color: colors.grayDark,
 		...typography.button,
 	},
 
@@ -114,19 +114,18 @@ export const globalStyles = StyleSheet.create({
 
 	// Selection card styles
 	selectionCard: {
-		backgroundColor: "white",
-		borderWidth: 1.5,
-		borderColor: colors.gray200,
+		borderBottomWidth: 1,
+		borderBottomColor: colors.gray200,
 		borderRadius: borderRadius.sm,
 		padding: spacing.md,
+		paddingVertical: spacing.sm,
 		flexDirection: "row",
 		alignItems: "center",
-		marginBottom: spacing.xs,
 	},
 
 	selectionCardSelected: {
-		backgroundColor: colors.grayLightest,
-		borderColor: colors.grayDarkest,
+		backgroundColor: "#F1EDEA",
+		borderColor: colors.grayLightMedium,
 	},
 
 	selectionCardIcon: {

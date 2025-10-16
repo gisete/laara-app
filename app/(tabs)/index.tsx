@@ -1,6 +1,4 @@
-// app/(tabs)/index.tsx - Updated Study Screen
-// Replace the entire file with this updated version
-
+// app/(tabs)/index.tsx - Updated Study Screen with Calendar Click Feature
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -8,7 +6,7 @@ import { router, useFocusEffect } from "expo-router";
 import * as Haptics from "expo-haptics";
 
 // Import database queries
-import { getAllMaterials, getTodaySession, getRecentSessions, getStudyDaysInMonth } from "@database/queries";
+import { getAllMaterials, getSessionByDate, getRecentSessions, getStudyDaysInMonth } from "@database/queries";
 
 // Import components
 import TopBar from "@components/ui/TopBar";
@@ -46,11 +44,14 @@ export default function StudyScreen() {
 	const [studyDays, setStudyDays] = useState<string[]>([]);
 	const [loading, setLoading] = useState(true);
 
-	// Reload data when screen comes into focus
+	// NEW: Selected date state (defaults to today)
+	const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split("T")[0]);
+
+	// Reload data when screen comes into focus or when selectedDate changes
 	useFocusEffect(
 		React.useCallback(() => {
 			loadStudyData();
-		}, [])
+		}, [selectedDate])
 	);
 
 	const loadStudyData = async () => {
@@ -61,23 +62,20 @@ export default function StudyScreen() {
 			const materialsData = await getAllMaterials();
 			setMaterials(materialsData);
 
-			// Get today's date
-			const today = new Date().toISOString().split("T")[0];
-
-			// Load today's session (if exists)
-			const todayData = await getTodaySession(today);
-			setTodaySession(todayData);
+			// Load session for the selected date (not always today)
+			const sessionData = await getSessionByDate(selectedDate);
+			setTodaySession(sessionData);
 
 			// Load study days for calendar
-			const now = new Date();
-			const year = now.getFullYear();
-			const month = now.getMonth() + 1;
+			const selectedDateObj = new Date(selectedDate);
+			const year = selectedDateObj.getFullYear();
+			const month = selectedDateObj.getMonth() + 1;
 			const daysData = await getStudyDaysInMonth(year, month);
 			setStudyDays(daysData);
 
-			// Load recent sessions (only if no activity today)
+			// Load recent sessions (only if no activity on selected date)
 			let recentData = [];
-			if (!todayData) {
+			if (!sessionData) {
 				recentData = await getRecentSessions(3);
 				setRecentSessions(recentData);
 			} else {
@@ -86,7 +84,8 @@ export default function StudyScreen() {
 
 			console.log("Study data loaded:", {
 				materials: materialsData.length,
-				todayActivities: todayData?.activities?.length || 0,
+				selectedDate,
+				activities: sessionData?.activities?.length || 0,
 				recentSessions: recentData.length,
 			});
 		} catch (error) {
@@ -96,9 +95,52 @@ export default function StudyScreen() {
 		}
 	};
 
+	// NEW: Handle day press in calendar
+	const handleDayPress = (dateString: string) => {
+		console.log("Day pressed:", dateString);
+		setSelectedDate(dateString);
+		// loadStudyData will be triggered automatically by useEffect
+	};
+
+	// NEW: Get full day name (e.g., "MONDAY", "TUESDAY")
+	const getDayName = (dateString: string): string => {
+		const date = new Date(dateString);
+		const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+		return days[date.getDay()];
+	};
+
+	// NEW: Check if selected date is today
+	const isSelectedDateToday = (): boolean => {
+		const today = new Date().toISOString().split("T")[0];
+		return selectedDate === today;
+	};
+
+	// NEW: Format selected date for display (e.g., "October 14")
+	const formatSelectedDate = (): string => {
+		const date = new Date(selectedDate);
+		return date.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+	};
+
+	// NEW: Get section title based on selected date
+	const getSectionTitle = (): string => {
+		if (isSelectedDateToday()) {
+			return "Today's Session";
+		} else {
+			const dayName = getDayName(selectedDate);
+			// Capitalize first letter, lowercase rest: "Monday's Session"
+			const formattedDay = dayName.charAt(0) + dayName.slice(1).toLowerCase();
+			return `${formattedDay}'s Session`;
+		}
+	};
+
 	const handleLogSession = () => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-		router.push("/log-session/select-material");
+		router.push({
+			pathname: "/log-session/select-material",
+			params: {
+				date: selectedDate, // Pass selected date
+			},
+		});
 	};
 
 	const getRelativeDate = (dateString: string): string => {
@@ -178,11 +220,14 @@ export default function StudyScreen() {
 					<EmptyState onAddNew={() => router.push("/add-material")} />
 				) : (
 					<ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-						{/* Calendar Week */}
-						<CalendarWeek studyDays={studyDays} onDayPress={undefined} />
+						{/* Calendar Week - NOW WITH CLICK HANDLERS */}
+						<CalendarWeek studyDays={studyDays} selectedDate={selectedDate} onDayPress={handleDayPress} />
 
-						{/* Today Label */}
-						<Text style={styles.todayLabel}>Today</Text>
+						{/* Dynamic Title - "TODAY" or day name */}
+						<Text style={styles.todayLabel}>{isSelectedDateToday() ? "TODAY" : getDayName(selectedDate)}</Text>
+
+						{/* Date Display */}
+						<Text style={styles.dateLabel}>{formatSelectedDate()}</Text>
 
 						{/* Log Session / Add Activity Button */}
 						<TouchableOpacity style={styles.logSessionButton} onPress={handleLogSession} activeOpacity={0.9}>
@@ -195,7 +240,8 @@ export default function StudyScreen() {
 						{todaySession && todaySession.activities.length > 0 && (
 							<View style={styles.todaySessionContainer}>
 								<View style={styles.sessionHeader}>
-									<Text style={styles.sectionTitle}>Today's Session</Text>
+									{/* Dynamic section title */}
+									<Text style={styles.sectionTitle}>{getSectionTitle()}</Text>
 									<Text style={styles.sessionSummary}>
 										{formatDuration(todaySession.total_duration)} •{" "}
 										{todaySession.activities.length === 1
@@ -222,7 +268,7 @@ export default function StudyScreen() {
 							</View>
 						)}
 
-						{/* Recent Sessions (only show if no activities today) */}
+						{/* Recent Sessions (only show if no activities on selected date) */}
 						{(!todaySession || todaySession.activities.length === 0) && recentSessions.length > 0 && (
 							<View style={styles.recentSessionsContainer}>
 								<Text style={styles.sectionTitle}>Recent Sessions</Text>
@@ -267,6 +313,11 @@ const styles = StyleSheet.create({
 		...typography.headingSmall,
 		color: colors.grayDarkest,
 		marginTop: spacing.lg,
+		marginBottom: 4,
+	},
+	dateLabel: {
+		fontSize: 16,
+		color: colors.grayMedium,
 		marginBottom: spacing.md,
 	},
 	logSessionButton: {

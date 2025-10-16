@@ -1,4 +1,4 @@
-// app/log-session/details.tsx
+// app/log-session/details.tsx - Updated with date param support
 import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
@@ -41,6 +41,9 @@ export default function SessionDetailsScreen() {
 	const params = useLocalSearchParams();
 	const [loading, setLoading] = useState(false);
 
+	// Get date from params, or default to today
+	const sessionDate = (params.date as string) || new Date().toISOString().split("T")[0];
+
 	// Time state
 	const [timeMode, setTimeMode] = useState<"quick" | "custom" | null>(null);
 	const [selectedQuickTime, setSelectedQuickTime] = useState<number | null>(null);
@@ -72,81 +75,67 @@ export default function SessionDetailsScreen() {
 	const handleSaveActivity = async () => {
 		const timeValue = getTimeValue();
 		const totalProgress = params.totalProgress ? parseInt(params.totalProgress as string, 10) : null;
-		const currentProgress = params.currentProgress ? parseInt(params.currentProgress as string, 10) : 0;
+		const currentProgress = params.currentProgress ? parseInt(params.currentProgress as string, 10) : null;
+		const materialType = params.materialType as string;
 
-		// Validate form using utility function
-		const isValid = validateActivityForm({
-			materialType: params.materialType as string,
-			totalProgress,
-			currentProgress,
+		// Validate form
+		const validation = validateActivityForm({
 			timeValue,
+			materialType,
 			pagesRead,
 			chaptersRead,
 			unitsStudied,
+			totalProgress,
+			currentProgress,
 		});
 
-		if (!isValid) return;
+		if (!validation.isValid) {
+			Alert.alert("Invalid Input", validation.message);
+			return;
+		}
 
 		try {
-			Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 			setLoading(true);
 
-			const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+			// Use the date from params (could be today or a past day)
+			const session = await getOrCreateTodaySession(sessionDate);
 
-			// Step 1: Get or create today's session
-			const session = await getOrCreateTodaySession(today);
-			console.log("Got session:", session.id);
+			// Calculate duration
+			const duration = timeValue || 0;
 
-			// Step 2: Determine units_studied based on material type
-			let unitsValue: number | null = null;
-
-			if (params.materialType === "book") {
-				// Prioritize pages over chapters
-				if (pagesRead && parseInt(pagesRead, 10) > 0) {
-					unitsValue = parseInt(pagesRead, 10);
-				} else if (chaptersRead && parseInt(chaptersRead, 10) > 0) {
-					unitsValue = parseInt(chaptersRead, 10);
-				}
-			} else if (unitsStudied && parseInt(unitsStudied, 10) > 0) {
-				unitsValue = parseInt(unitsStudied, 10);
+			// Calculate units based on material type
+			let units = null;
+			if (materialType === "book") {
+				const pages = parseInt(pagesRead) || 0;
+				const chapters = parseInt(chaptersRead) || 0;
+				units = pages > 0 ? pages : chapters;
+			} else {
+				units = parseInt(unitsStudied) || null;
 			}
 
-			// Step 3: Add activity to session
-			const activityData = {
+			// Add activity to session
+			await addSessionActivity({
 				session_id: session.id,
-				material_id: parseInt(params.materialId as string, 10),
-				duration_minutes: timeValue!,
-				units_studied: unitsValue,
-			};
+				material_id: parseInt(params.materialId as string),
+				duration_minutes: duration,
+				units_studied: units,
+			});
 
-			await addSessionActivity(activityData);
-			console.log("Activity added:", activityData);
-
-			// Step 4: Update session's total duration
+			// Update session total duration
 			await updateSessionTotalDuration(session.id);
-			console.log("Session total duration updated");
 
-			// Step 5: Update material progress (if units provided)
-			if (unitsValue) {
-				const materialId = parseInt(params.materialId as string, 10);
-				const newCurrentUnit = currentProgress + unitsValue;
-				const progressPercentage =
-					totalProgress && totalProgress > 0 ? Math.min((newCurrentUnit / totalProgress) * 100, 100) : 0;
-
-				await updateMaterialProgress(materialId, newCurrentUnit, progressPercentage);
-				console.log("Material progress updated:", { newCurrentUnit, progressPercentage });
+			// Update material progress if units were logged
+			if (units && units > 0) {
+				await updateMaterialProgress(parseInt(params.materialId as string), units);
 			}
 
-			// Success feedback
+			console.log("Activity saved successfully for date:", sessionDate);
+
+			// Show success feedback
 			Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-			// Navigate back to Study screen
-			router.replace("/(tabs)");
-
-			// Show success alert
-			setTimeout(() => {
-				Alert.alert("Success", "✓ Activity logged");
-			}, 300);
+			// Navigate back to study screen
+			router.push("/(tabs)");
 		} catch (error) {
 			console.error("Error saving activity:", error);
 			Alert.alert("Error", "Failed to save activity. Please try again.");
@@ -219,7 +208,7 @@ export default function SessionDetailsScreen() {
 						activeOpacity={0.7}
 					>
 						{loading ? (
-							<ActivityIndicator color={colors.white} />
+							<ActivityIndicator size="small" color={colors.white} />
 						) : (
 							<Text style={styles.saveButtonText}>Save Activity</Text>
 						)}
@@ -241,7 +230,10 @@ const styles = StyleSheet.create({
 	backButton: {
 		width: 40,
 		height: 40,
-		paddingVertical: spacing.md,
+		alignItems: "center",
+		justifyContent: "center",
+		marginTop: spacing.sm,
+		marginBottom: spacing.md,
 	},
 	backButtonText: {
 		fontSize: 28,
@@ -251,9 +243,11 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "center",
 		padding: spacing.md,
-		backgroundColor: colors.grayLightest,
-		borderRadius: borderRadius.md,
+		backgroundColor: colors.white,
+		borderRadius: borderRadius.sm,
 		marginBottom: spacing.xl,
+		borderWidth: 1,
+		borderColor: colors.gray200,
 	},
 	materialInfo: {
 		marginLeft: spacing.md,
@@ -263,47 +257,47 @@ const styles = StyleSheet.create({
 		...typography.bodyLarge,
 		fontWeight: "600",
 		color: colors.grayDarkest,
+		marginBottom: 4,
 	},
 	materialSubtype: {
 		...typography.bodySmall,
 		color: colors.grayMedium,
-		marginTop: 2,
 		textTransform: "capitalize",
 	},
 	actionButtons: {
 		flexDirection: "row",
+		gap: spacing.md,
 		paddingHorizontal: spacing.lg,
 		paddingVertical: spacing.md,
 		backgroundColor: colors.white,
 		borderTopWidth: 1,
 		borderTopColor: colors.gray200,
-		gap: spacing.sm,
 	},
 	cancelButton: {
 		flex: 1,
-		paddingVertical: spacing.md,
-		backgroundColor: colors.gray200,
+		paddingVertical: 16,
 		borderRadius: borderRadius.sm,
 		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: colors.gray100,
 	},
 	cancelButtonText: {
-		...typography.bodyMedium,
+		...typography.button,
 		color: colors.grayDarkest,
-		fontWeight: "600",
 	},
 	saveButton: {
 		flex: 1,
-		paddingVertical: spacing.md,
-		backgroundColor: colors.primaryAccent,
+		paddingVertical: 16,
 		borderRadius: borderRadius.sm,
 		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: colors.primaryAccent,
 	},
 	saveButtonDisabled: {
-		opacity: 0.6,
+		backgroundColor: colors.gray300,
 	},
 	saveButtonText: {
-		...typography.bodyMedium,
+		...typography.button,
 		color: colors.white,
-		fontWeight: "600",
 	},
 });

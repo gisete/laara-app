@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
 	badgeText: {
 		fontSize: 14,
 		fontWeight: "400",
-		color: colors.gray600,
+		color: colors.grayDark,
 		textTransform: "capitalize",
 	},
 });

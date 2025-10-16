@@ -12,9 +12,9 @@ export const colors = {
 	grayLight: "#F5F5F4", // Stone 100
 	gray200: "#E7E5E4", // Stone 200
 	gray300: "#D6D3D1", // Stone 300
+	grayLightMedium: "#A8A19C", // Stone 400
 	grayMedium: "#78716C", // Stone 500
-	gray600: "#57534E", // Stone 600
-	grayDark: "#44403C", // Stone 700
+	grayDark: "#514C49", // Stone 700
 	grayDarkest: "#211E1C", // Stone 900
 
 	categoryBook: "#E0F2FE",

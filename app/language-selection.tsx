@@ -204,7 +204,7 @@ export default function LanguageSelectionScreen() {
 const styles = StyleSheet.create({
 	content: {
 		flex: 1,
-		paddingHorizontal: spacing.lg,
+		paddingHorizontal: spacing.md,
 		paddingTop: spacing.xxl,
 		paddingBottom: spacing.xl,
 	},
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
 	// Header
 	header: {
 		alignItems: "flex-start",
-		marginBottom: spacing.xl,
+		marginBottom: spacing.sm,
 	},
 	title: {
 		...typography.headingMedium,
@@ -236,8 +236,9 @@ const styles = StyleSheet.create({
 	subtitle: {
 		...globalStyles.bodyLarge,
 		fontSize: 18,
-		color: colors.grayMedium,
+		color: colors.grayDarkest,
 		textAlign: "left",
+		marginTop: spacing.lg,
 	},
 
 	// Language List
@@ -268,7 +269,8 @@ const styles = StyleSheet.create({
 		flex: 1,
 		...globalStyles.bodyMedium,
 		fontSize: 16,
-		fontWeight: "500",
+		fontWeight: "400",
+		color: colors.grayDark,
 	},
 	languageNameSelected: {
 		color: colors.primaryAccent,
@@ -314,10 +316,9 @@ const styles = StyleSheet.create({
 	nextButton: {
 		...globalStyles.buttonPrimary,
 		paddingVertical: 18,
-		paddingHorizontal: 48,
+		paddingHorizontal: spacing.md,
 		borderRadius: 5,
 		width: "100%",
-		maxWidth: 330,
 		elevation: 8,
 		marginTop: spacing.lg,
 		alignSelf: "center",

@@ -507,6 +507,44 @@ export const getTodaySession = (date) => {
 };
 
 /**
+ * Get session for a specific date with all activities
+ * @param {string} date - Date in YYYY-MM-DD format
+ * @returns {Promise<object|null>} Session object with activities array, or null
+ */
+export const getSessionByDate = (date) => {
+	return new Promise((resolve, reject) => {
+		try {
+			const session = db.getFirstSync("SELECT * FROM daily_sessions WHERE session_date = ?", [date]);
+
+			if (!session) {
+				resolve(null);
+				return;
+			}
+
+			// Get all activities for this session
+			const activities = db.getAllSync(
+				`SELECT 
+					sa.*,
+					m.name as material_name,
+					m.type as material_type,
+					m.subtype as material_subtype
+				FROM session_activities sa
+				JOIN materials m ON sa.material_id = m.id
+				WHERE sa.session_id = ?
+				ORDER BY sa.created_at ASC`,
+				[session.id]
+			);
+
+			session.activities = activities || [];
+			resolve(session);
+		} catch (error) {
+			console.error("Error getting session by date:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
  * Get recent sessions (excluding today)
  * @param {number} limit - Number of sessions to retrieve
  * @returns {Promise<Array>} Array of session objects with activities
