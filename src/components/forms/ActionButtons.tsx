@@ -1,6 +1,7 @@
 // components/forms/ActionButtons.tsx
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import * as Haptics from "expo-haptics";
 import { colors } from "@theme/colors";
 
 interface ActionButtonsProps {
@@ -20,6 +21,11 @@ export default function ActionButtons({
 	loading = false,
 	saveDisabled = false,
 }: ActionButtonsProps) {
+	const handleCancel = () => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+		onCancel();
+	};
+
 	return (
 		<View style={styles.container}>
 			<TouchableOpacity
@@ -31,7 +37,7 @@ export default function ActionButtons({
 				<Text style={styles.saveButtonText}>{loading ? "Saving..." : saveText}</Text>
 			</TouchableOpacity>
 
-			<TouchableOpacity style={styles.cancelButton} onPress={onCancel} activeOpacity={0.8} disabled={loading}>
+			<TouchableOpacity style={styles.cancelButton} onPress={handleCancel} activeOpacity={0.8}>
 				<Text style={styles.cancelButtonText}>{cancelText}</Text>
 			</TouchableOpacity>
 		</View>

@@ -1,4 +1,4 @@
-// app/add-material/class.tsx - Updated with edit mode support
+// app/add-material/class.tsx - UPDATED with new field order (NO SEARCH STATE)
 import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -11,53 +11,42 @@ import {
 	StatusBar,
 	StyleSheet,
 	Text,
+	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// Import reusable components
 import ActionButtons from "@components/forms/ActionButtons";
-import ClassFormFields from "@components/forms/ClassFormFields";
 import SubcategorySelector from "@components/forms/SubcategorySelector";
 import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMaterial } from "@database/queries";
 
-// Import global styles
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
 import { spacing } from "@theme/spacing";
 import { typography } from "@theme/typography";
 
 export default function AddClassScreen() {
-	// Get route params to detect edit mode
 	const params = useLocalSearchParams();
 	const materialId = params.id ? parseInt(params.id as string) : null;
 	const isEditMode = materialId !== null;
 
-	// UI State
-	const [showCustomForm, setShowCustomForm] = useState(true); // Direct to form
 	const [loading, setLoading] = useState(false);
 	const [loadingSubcategories, setLoadingSubcategories] = useState(true);
 	const [loadingMaterial, setLoadingMaterial] = useState(isEditMode);
-	const [searchQuery, setSearchQuery] = useState("");
 
-	// Subcategories from database
 	const [subcategories, setSubcategories] = useState<string[]>([]);
 
-	// Form State
-	const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+	// Form State - NEW ORDER: Title, Type, Instructor, Sessions
 	const [className, setClassName] = useState("");
+	const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
 	const [instructor, setInstructor] = useState("");
-	const [location, setLocation] = useState("");
-	const [courseDuration, setCourseDuration] = useState("");
-	const [endDate, setEndDate] = useState("");
+	const [totalSessions, setTotalSessions] = useState("");
 
-	// Load subcategories on mount
 	useEffect(() => {
 		loadSubcategories();
 	}, []);
 
-	// Load material data if in edit mode
 	useEffect(() => {
 		if (isEditMode && materialId) {
 			loadMaterialData();
@@ -70,7 +59,6 @@ export default function AddClassScreen() {
 			const subcategoriesData = await getSubcategoriesByCategory("class");
 			const subcategoryNames = subcategoriesData.map((sub) => sub.name);
 			setSubcategories(subcategoryNames);
-			console.log("Loaded class subcategories:", subcategoryNames);
 		} catch (error) {
 			console.error("Error loading subcategories:", error);
 			Alert.alert("Error", "Failed to load class types. Please try again.");
@@ -85,12 +73,10 @@ export default function AddClassScreen() {
 			const material = await getMaterialById(materialId!);
 
 			if (material) {
-				// Pre-fill form fields
 				setClassName(material.name);
-				setInstructor(material.author || "");
 				setSelectedSubcategory(material.subtype || null);
-				setCourseDuration(material.total_units?.toString() || "");
-				console.log("Material data loaded for editing:", material.name);
+				setInstructor(material.author || "");
+				setTotalSessions(material.total_units?.toString() || "");
 			} else {
 				Alert.alert("Error", "Material not found", [{ text: "OK", onPress: () => router.back() }]);
 			}
@@ -105,16 +91,6 @@ export default function AddClassScreen() {
 	const handleBack = () => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 		router.back();
-	};
-
-	const handleAddCustom = () => {
-		setShowCustomForm(true);
-		setSearchQuery("");
-	};
-
-	const handleSearch = () => {
-		console.log("Searching for:", searchQuery);
-		// TODO: Implement API search
 	};
 
 	const validateForm = (): boolean => {
@@ -143,27 +119,16 @@ export default function AddClassScreen() {
 				type: "class",
 				subtype: selectedSubcategory,
 				author: instructor.trim() || null,
-				total_units: courseDuration ? parseInt(courseDuration, 10) : null,
-				language: "english", // TODO: Get from user settings
+				total_units: totalSessions ? parseInt(totalSessions, 10) : null,
+				language: "english",
 				source: "custom",
 			};
 
 			if (isEditMode && materialId) {
-				// UPDATE existing material
 				await updateMaterial(materialId, classData);
-				console.log("Class updated successfully");
-
-				Alert.alert("Success", "Class updated!", [
-					{
-						text: "OK",
-						onPress: () => router.back(), // Go back once to Library
-					},
-				]);
+				Alert.alert("Success", "Class updated!", [{ text: "OK", onPress: () => router.back() }]);
 			} else {
-				// INSERT new material
-				const classId = await addMaterial(classData);
-				console.log("Class added successfully with ID:", classId);
-
+				await addMaterial(classData);
 				Alert.alert("Success", "Class added to your library!", [
 					{
 						text: "OK",
@@ -183,22 +148,9 @@ export default function AddClassScreen() {
 	};
 
 	const handleCancel = () => {
-		if (isEditMode) {
-			// In edit mode, just go back
-			router.back();
-		} else {
-			// In add mode, reset form
-			setShowCustomForm(false);
-			setSelectedSubcategory(null);
-			setClassName("");
-			setInstructor("");
-			setLocation("");
-			setCourseDuration("");
-			setEndDate("");
-		}
+		router.back();
 	};
 
-	// Show loading state while fetching material data in edit mode
 	if (loadingMaterial) {
 		return (
 			<SafeAreaView style={globalStyles.container}>
@@ -220,7 +172,6 @@ export default function AddClassScreen() {
 				keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
 			>
 				<View style={styles.content}>
-					{/* Header with back button and title */}
 					<View style={styles.header}>
 						<TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
 							<Text style={styles.backButtonText}>←</Text>
@@ -240,6 +191,22 @@ export default function AddClassScreen() {
 							</View>
 						) : (
 							<>
+								{/* NEW FIELD ORDER: Title → Type → Instructor → Sessions */}
+
+								{/* 1. TITLE - NOW FIRST */}
+								<View style={styles.formSection}>
+									<Text style={styles.label}>Title</Text>
+									<TextInput
+										style={styles.input}
+										placeholder="Enter class name"
+										placeholderTextColor="#C4C4C4"
+										value={className}
+										onChangeText={setClassName}
+										autoCapitalize="words"
+									/>
+								</View>
+
+								{/* 2. TYPE - NOW SECOND (DROPDOWN) */}
 								<SubcategorySelector
 									categories={subcategories}
 									selectedCategory={selectedSubcategory}
@@ -248,18 +215,31 @@ export default function AddClassScreen() {
 									required={false}
 								/>
 
-								<ClassFormFields
-									className={className}
-									instructor={instructor}
-									location={location}
-									courseDuration={courseDuration}
-									endDate={endDate}
-									onClassNameChange={setClassName}
-									onInstructorChange={setInstructor}
-									onLocationChange={setLocation}
-									onCourseDurationChange={setCourseDuration}
-									onEndDateChange={setEndDate}
-								/>
+								{/* 3. INSTRUCTOR - NOW THIRD */}
+								<View style={styles.formSection}>
+									<Text style={styles.label}>Instructor</Text>
+									<TextInput
+										style={styles.input}
+										placeholder="Enter instructor name"
+										placeholderTextColor="#C4C4C4"
+										value={instructor}
+										onChangeText={setInstructor}
+										autoCapitalize="words"
+									/>
+								</View>
+
+								{/* 4. TOTAL SESSIONS - NOW FOURTH */}
+								<View style={styles.formSection}>
+									<Text style={styles.label}>Total sessions</Text>
+									<TextInput
+										style={styles.input}
+										placeholder="0"
+										placeholderTextColor="#C4C4C4"
+										value={totalSessions}
+										onChangeText={setTotalSessions}
+										keyboardType="number-pad"
+									/>
+								</View>
 
 								<ActionButtons
 									onSave={handleSave}
@@ -327,5 +307,24 @@ const styles = StyleSheet.create({
 		marginTop: spacing.md,
 		...globalStyles.bodyMedium,
 		color: colors.grayMedium,
+	},
+	formSection: {
+		marginBottom: 16,
+	},
+	label: {
+		fontSize: 14,
+		fontWeight: "500",
+		color: "#111827",
+		marginBottom: 8,
+	},
+	input: {
+		backgroundColor: "#F9F9F9",
+		borderRadius: 5,
+		paddingHorizontal: 16,
+		paddingVertical: 14,
+		fontSize: 16,
+		color: "#111827",
+		borderWidth: 1,
+		borderColor: "#E5E7EB",
 	},
 });

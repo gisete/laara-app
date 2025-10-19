@@ -1,4 +1,4 @@
-// app/add-material/video.tsx - Updated with edit mode support
+// app/add-material/video.tsx - UPDATED with new field order (NO SEARCH STATE)
 import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -11,54 +11,42 @@ import {
 	StatusBar,
 	StyleSheet,
 	Text,
+	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// Import reusable components
 import ActionButtons from "@components/forms/ActionButtons";
-import VideoFormFields from "@components/forms/VideoFormFields";
-import SearchBar from "@components/forms/SearchBar";
-import SearchEmptyState from "@components/forms/SearchEmptyState";
 import SubcategorySelector from "@components/forms/SubcategorySelector";
 import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMaterial } from "@database/queries";
 
-// Import global styles
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
 import { spacing } from "@theme/spacing";
 import { typography } from "@theme/typography";
 
 export default function AddVideoScreen() {
-	// Get route params to detect edit mode
 	const params = useLocalSearchParams();
 	const materialId = params.id ? parseInt(params.id as string) : null;
 	const isEditMode = materialId !== null;
 
-	// UI State
-	const [showCustomForm, setShowCustomForm] = useState(true); // Direct to form
 	const [loading, setLoading] = useState(false);
 	const [loadingSubcategories, setLoadingSubcategories] = useState(true);
 	const [loadingMaterial, setLoadingMaterial] = useState(isEditMode);
-	const [searchQuery, setSearchQuery] = useState("");
 
-	// Subcategories from database
 	const [subcategories, setSubcategories] = useState<string[]>([]);
 
-	// Form State
-	const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+	// Form State - NEW ORDER: Title, Type, Creator, Videos
 	const [title, setTitle] = useState("");
+	const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
 	const [creator, setCreator] = useState("");
 	const [totalVideos, setTotalVideos] = useState("");
-	const [totalDuration, setTotalDuration] = useState("");
 
-	// Load subcategories on mount
 	useEffect(() => {
 		loadSubcategories();
 	}, []);
 
-	// Load material data if in edit mode
 	useEffect(() => {
 		if (isEditMode && materialId) {
 			loadMaterialData();
@@ -71,7 +59,6 @@ export default function AddVideoScreen() {
 			const subcategoriesData = await getSubcategoriesByCategory("video");
 			const subcategoryNames = subcategoriesData.map((sub) => sub.name);
 			setSubcategories(subcategoryNames);
-			console.log("Loaded video subcategories:", subcategoryNames);
 		} catch (error) {
 			console.error("Error loading subcategories:", error);
 			Alert.alert("Error", "Failed to load video types. Please try again.");
@@ -86,12 +73,10 @@ export default function AddVideoScreen() {
 			const material = await getMaterialById(materialId!);
 
 			if (material) {
-				// Pre-fill form fields
 				setTitle(material.name);
-				setCreator(material.author || "");
 				setSelectedSubcategory(material.subtype || null);
+				setCreator(material.author || "");
 				setTotalVideos(material.total_units?.toString() || "");
-				console.log("Material data loaded for editing:", material.name);
 			} else {
 				Alert.alert("Error", "Material not found", [{ text: "OK", onPress: () => router.back() }]);
 			}
@@ -106,16 +91,6 @@ export default function AddVideoScreen() {
 	const handleBack = () => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 		router.back();
-	};
-
-	const handleAddCustom = () => {
-		setShowCustomForm(true);
-		setSearchQuery("");
-	};
-
-	const handleSearch = () => {
-		console.log("Searching for:", searchQuery);
-		// TODO: Implement API search
 	};
 
 	const validateForm = (): boolean => {
@@ -145,26 +120,15 @@ export default function AddVideoScreen() {
 				subtype: selectedSubcategory,
 				author: creator.trim() || null,
 				total_units: totalVideos ? parseInt(totalVideos, 10) : null,
-				language: "english", // TODO: Get from user settings
+				language: "english",
 				source: "custom",
 			};
 
 			if (isEditMode && materialId) {
-				// UPDATE existing material
 				await updateMaterial(materialId, videoData);
-				console.log("Video updated successfully");
-
-				Alert.alert("Success", "Video updated!", [
-					{
-						text: "OK",
-						onPress: () => router.back(), // Go back once to Library
-					},
-				]);
+				Alert.alert("Success", "Video updated!", [{ text: "OK", onPress: () => router.back() }]);
 			} else {
-				// INSERT new material
-				const videoId = await addMaterial(videoData);
-				console.log("Video added successfully with ID:", videoId);
-
+				await addMaterial(videoData);
 				Alert.alert("Success", "Video added to your library!", [
 					{
 						text: "OK",
@@ -184,21 +148,9 @@ export default function AddVideoScreen() {
 	};
 
 	const handleCancel = () => {
-		if (isEditMode) {
-			// In edit mode, just go back
-			router.back();
-		} else {
-			// In add mode, reset form
-			setShowCustomForm(false);
-			setSelectedSubcategory(null);
-			setTitle("");
-			setCreator("");
-			setTotalVideos("");
-			setTotalDuration("");
-		}
+		router.back();
 	};
 
-	// Show loading state while fetching material data in edit mode
 	if (loadingMaterial) {
 		return (
 			<SafeAreaView style={globalStyles.container}>
@@ -220,12 +172,11 @@ export default function AddVideoScreen() {
 				keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
 			>
 				<View style={styles.content}>
-					{/* Header with back button and title */}
 					<View style={styles.header}>
 						<TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
 							<Text style={styles.backButtonText}>←</Text>
 						</TouchableOpacity>
-						<Text style={styles.title}>{isEditMode ? "Edit video" : showCustomForm ? "Add video" : "Search Video"}</Text>
+						<Text style={styles.title}>{isEditMode ? "Edit video" : "Add video"}</Text>
 					</View>
 
 					<ScrollView
@@ -238,25 +189,24 @@ export default function AddVideoScreen() {
 								<ActivityIndicator size="large" color={colors.primaryAccent} />
 								<Text style={styles.loadingText}>Loading video types...</Text>
 							</View>
-						) : !showCustomForm ? (
-							<>
-								<SearchBar
-									value={searchQuery}
-									onChangeText={setSearchQuery}
-									onSubmit={handleSearch}
-									placeholder="Search by title"
-								/>
-
-								<SearchEmptyState
-									onManualAdd={handleAddCustom}
-									helperText="If you're offline or can't find the video content
-you're looking for you can enter it manually"
-									buttonText="Enter manually"
-									illustration={require("../../assets/images/graphics/laptop.png")}
-								/>
-							</>
 						) : (
 							<>
+								{/* NEW FIELD ORDER: Title → Type → Creator → Videos */}
+
+								{/* 1. TITLE - NOW FIRST */}
+								<View style={styles.formSection}>
+									<Text style={styles.label}>Title</Text>
+									<TextInput
+										style={styles.input}
+										placeholder="Enter video title"
+										placeholderTextColor="#C4C4C4"
+										value={title}
+										onChangeText={setTitle}
+										autoCapitalize="words"
+									/>
+								</View>
+
+								{/* 2. TYPE - NOW SECOND (DROPDOWN) */}
 								<SubcategorySelector
 									categories={subcategories}
 									selectedCategory={selectedSubcategory}
@@ -265,16 +215,31 @@ you're looking for you can enter it manually"
 									required={false}
 								/>
 
-								<VideoFormFields
-									title={title}
-									creator={creator}
-									totalVideos={totalVideos}
-									totalDuration={totalDuration}
-									onTitleChange={setTitle}
-									onCreatorChange={setCreator}
-									onTotalVideosChange={setTotalVideos}
-									onTotalDurationChange={setTotalDuration}
-								/>
+								{/* 3. CREATOR/CHANNEL - NOW THIRD */}
+								<View style={styles.formSection}>
+									<Text style={styles.label}>Creator/Channel</Text>
+									<TextInput
+										style={styles.input}
+										placeholder="Enter creator or channel name"
+										placeholderTextColor="#C4C4C4"
+										value={creator}
+										onChangeText={setCreator}
+										autoCapitalize="words"
+									/>
+								</View>
+
+								{/* 4. TOTAL VIDEOS - NOW FOURTH */}
+								<View style={styles.formSection}>
+									<Text style={styles.label}>Total videos</Text>
+									<TextInput
+										style={styles.input}
+										placeholder="0"
+										placeholderTextColor="#C4C4C4"
+										value={totalVideos}
+										onChangeText={setTotalVideos}
+										keyboardType="number-pad"
+									/>
+								</View>
 
 								<ActionButtons
 									onSave={handleSave}
@@ -342,5 +307,24 @@ const styles = StyleSheet.create({
 		marginTop: spacing.md,
 		...globalStyles.bodyMedium,
 		color: colors.grayMedium,
+	},
+	formSection: {
+		marginBottom: 16,
+	},
+	label: {
+		fontSize: 14,
+		fontWeight: "500",
+		color: "#111827",
+		marginBottom: 8,
+	},
+	input: {
+		backgroundColor: "#F9F9F9",
+		borderRadius: 5,
+		paddingHorizontal: 16,
+		paddingVertical: 14,
+		fontSize: 16,
+		color: "#111827",
+		borderWidth: 1,
+		borderColor: "#E5E7EB",
 	},
 });

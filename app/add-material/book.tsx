@@ -1,4 +1,4 @@
-// app/add-material/book.tsx - Updated with edit mode support
+// app/add-material/book.tsx - UPDATED with new field order
 import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -11,6 +11,7 @@ import {
 	StatusBar,
 	StyleSheet,
 	Text,
+	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
@@ -18,7 +19,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // Import reusable components
 import ActionButtons from "@components/forms/ActionButtons";
-import BookFormFields from "@components/forms/BookFormFields";
 import SearchBar from "@components/forms/SearchBar";
 import SearchEmptyState from "@components/forms/SearchEmptyState";
 import SubcategorySelector from "@components/forms/SubcategorySelector";
@@ -31,13 +31,12 @@ import { spacing } from "@theme/spacing";
 import { typography } from "@theme/typography";
 
 export default function AddBookScreen() {
-	// Get route params to detect edit mode
 	const params = useLocalSearchParams();
 	const materialId = params.id ? parseInt(params.id as string) : null;
 	const isEditMode = materialId !== null;
 
 	// UI State
-	const [showCustomForm, setShowCustomForm] = useState(isEditMode); // Go straight to form in edit mode
+	const [showCustomForm, setShowCustomForm] = useState(isEditMode);
 	const [loading, setLoading] = useState(false);
 	const [loadingSubcategories, setLoadingSubcategories] = useState(true);
 	const [loadingMaterial, setLoadingMaterial] = useState(isEditMode);
@@ -46,9 +45,9 @@ export default function AddBookScreen() {
 	// Subcategories from database
 	const [subcategories, setSubcategories] = useState<string[]>([]);
 
-	// Form State
-	const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+	// Form State - NEW ORDER: Title, Type, Author, Pages/Chapters
 	const [title, setTitle] = useState("");
+	const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
 	const [author, setAuthor] = useState("");
 	const [totalPages, setTotalPages] = useState("");
 	const [totalChapters, setTotalChapters] = useState("");
@@ -86,10 +85,9 @@ export default function AddBookScreen() {
 			const material = await getMaterialById(materialId!);
 
 			if (material) {
-				// Pre-fill form fields
 				setTitle(material.name);
-				setAuthor(material.author || "");
 				setSelectedSubcategory(material.subtype || null);
+				setAuthor(material.author || "");
 				setTotalPages(material.total_units?.toString() || "");
 				console.log("Material data loaded for editing:", material.name);
 			} else {
@@ -115,7 +113,6 @@ export default function AddBookScreen() {
 
 	const handleSearch = () => {
 		console.log("Searching for:", searchQuery);
-		// TODO: Implement API search
 	};
 
 	const validateForm = (): boolean => {
@@ -145,31 +142,19 @@ export default function AddBookScreen() {
 				subtype: selectedSubcategory,
 				author: author.trim() || null,
 				total_units: totalPages ? parseInt(totalPages, 10) : null,
-				language: "english", // TODO: Get from user settings
+				language: "english",
 				source: "custom",
 			};
 
 			if (isEditMode && materialId) {
-				// UPDATE existing material
 				await updateMaterial(materialId, bookData);
-				console.log("Book updated successfully");
-
-				Alert.alert("Success", "Book updated!", [
-					{
-						text: "OK",
-						onPress: () => router.back(), // Go back once to Library
-					},
-				]);
+				Alert.alert("Success", "Book updated!", [{ text: "OK", onPress: () => router.back() }]);
 			} else {
-				// INSERT new material
-				const bookId = await addMaterial(bookData);
-				console.log("Book added successfully with ID:", bookId);
-
+				await addMaterial(bookData);
 				Alert.alert("Success", "Book added to your library!", [
 					{
 						text: "OK",
 						onPress: () => {
-							// Go back twice to clear the add-material flow
 							router.back();
 							router.back();
 						},
@@ -186,10 +171,8 @@ export default function AddBookScreen() {
 
 	const handleCancel = () => {
 		if (isEditMode) {
-			// In edit mode, just go back
 			router.back();
 		} else {
-			// In add mode, reset form
 			setShowCustomForm(false);
 			setSelectedSubcategory(null);
 			setTitle("");
@@ -199,7 +182,6 @@ export default function AddBookScreen() {
 		}
 	};
 
-	// Show loading state while fetching material data in edit mode
 	if (loadingMaterial) {
 		return (
 			<SafeAreaView style={globalStyles.container}>
@@ -221,7 +203,7 @@ export default function AddBookScreen() {
 				keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
 			>
 				<View style={styles.content}>
-					{/* Header with back button and title in same row */}
+					{/* Header */}
 					<View style={styles.header}>
 						<TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
 							<Text style={styles.backButtonText}>←</Text>
@@ -235,13 +217,11 @@ export default function AddBookScreen() {
 						contentContainerStyle={styles.scrollContent}
 					>
 						{loadingSubcategories ? (
-							// Loading state while fetching subcategories
 							<View style={styles.loadingContainer}>
 								<ActivityIndicator size="large" color={colors.primaryAccent} />
 								<Text style={styles.loadingText}>Loading book types...</Text>
 							</View>
 						) : !showCustomForm ? (
-							// SEARCH STATE - Using reusable components
 							<>
 								<SearchBar
 									value={searchQuery}
@@ -249,18 +229,31 @@ export default function AddBookScreen() {
 									onSubmit={handleSearch}
 									placeholder="Search by title or ISBN"
 								/>
-
 								<SearchEmptyState
 									onManualAdd={handleAddCustom}
-									helperText="If you're offline or can't find the book you're
-looking for you can enter it manually"
+									helperText="If you're offline or can't find the book you're looking for you can enter it manually"
 									buttonText="Enter manually"
-									illustration={require("../../assets/images/graphics/add-book.png")}
+									illustration={true}
 								/>
 							</>
 						) : (
-							// FORM STATE - Custom book form with reusable components
 							<>
+								{/* NEW FIELD ORDER: Title → Type → Author → Pages/Chapters */}
+
+								{/* 1. TITLE - NOW FIRST */}
+								<View style={styles.formSection}>
+									<Text style={styles.label}>Title</Text>
+									<TextInput
+										style={styles.input}
+										placeholder="Enter book title"
+										placeholderTextColor="#C4C4C4"
+										value={title}
+										onChangeText={setTitle}
+										autoCapitalize="words"
+									/>
+								</View>
+
+								{/* 2. TYPE - NOW SECOND (DROPDOWN) */}
 								<SubcategorySelector
 									categories={subcategories}
 									selectedCategory={selectedSubcategory}
@@ -269,16 +262,47 @@ looking for you can enter it manually"
 									required={false}
 								/>
 
-								<BookFormFields
-									title={title}
-									author={author}
-									totalPages={totalPages}
-									totalChapters={totalChapters}
-									onTitleChange={setTitle}
-									onAuthorChange={setAuthor}
-									onTotalPagesChange={setTotalPages}
-									onTotalChaptersChange={setTotalChapters}
-								/>
+								{/* 3. AUTHOR - NOW THIRD */}
+								<View style={styles.formSection}>
+									<Text style={styles.label}>Author</Text>
+									<TextInput
+										style={styles.input}
+										placeholder="Enter author name"
+										placeholderTextColor="#C4C4C4"
+										value={author}
+										onChangeText={setAuthor}
+										autoCapitalize="words"
+									/>
+								</View>
+
+								{/* 4. PAGES/CHAPTERS - NOW FOURTH */}
+								<View style={styles.twoColumnContainer}>
+									<View style={styles.columnSection}>
+										<Text style={styles.label}>Total pages</Text>
+										<TextInput
+											style={styles.input}
+											placeholder="0"
+											placeholderTextColor="#C4C4C4"
+											value={totalPages}
+											onChangeText={setTotalPages}
+											keyboardType="number-pad"
+										/>
+									</View>
+
+									<View style={styles.columnSection}>
+										<Text style={styles.label}>Number of chapters</Text>
+										<TextInput
+											style={styles.input}
+											placeholder="0"
+											placeholderTextColor="#C4C4C4"
+											value={totalChapters}
+											onChangeText={setTotalChapters}
+											keyboardType="number-pad"
+										/>
+									</View>
+								</View>
+
+								<Text style={styles.helperText}>Add page count to track reading progress</Text>
 
 								<ActionButtons
 									onSave={handleSave}
@@ -304,8 +328,6 @@ const styles = StyleSheet.create({
 		flex: 1,
 		paddingHorizontal: spacing.lg,
 	},
-
-	// Header
 	header: {
 		flexDirection: "row",
 		alignItems: "center",
@@ -324,8 +346,6 @@ const styles = StyleSheet.create({
 		fontSize: 28,
 		color: colors.grayDarkest,
 	},
-
-	// Title
 	title: {
 		fontSize: 18,
 		...typography.headingSmall,
@@ -334,16 +354,12 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		marginRight: 40,
 	},
-
-	// Scroll View
 	scrollView: {
 		flex: 1,
 	},
 	scrollContent: {
 		paddingBottom: 200,
 	},
-
-	// Loading State
 	loadingContainer: {
 		flex: 1,
 		justifyContent: "center",
@@ -354,5 +370,39 @@ const styles = StyleSheet.create({
 		marginTop: spacing.md,
 		...globalStyles.bodyMedium,
 		color: colors.grayMedium,
+	},
+	// NEW FORM FIELD STYLES
+	formSection: {
+		marginBottom: 16,
+	},
+	label: {
+		fontSize: 14,
+		fontWeight: "500",
+		color: "#111827",
+		marginBottom: 8,
+	},
+	input: {
+		backgroundColor: "#F9F9F9",
+		borderRadius: 5,
+		paddingHorizontal: 16,
+		paddingVertical: 14,
+		fontSize: 16,
+		color: "#111827",
+		borderWidth: 1,
+		borderColor: "#E5E7EB",
+	},
+	twoColumnContainer: {
+		flexDirection: "row",
+		gap: 16,
+		marginBottom: 16,
+	},
+	columnSection: {
+		flex: 1,
+	},
+	helperText: {
+		fontSize: 14,
+		color: "#6B7280",
+		marginBottom: 24,
+		fontStyle: "italic",
 	},
 });
