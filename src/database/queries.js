@@ -735,3 +735,37 @@ export const deleteSessionActivity = (activityId) => {
 		}
 	});
 };
+
+/**
+ * Update user's proficiency level
+ * @param {string|null} level - CEFR level ('A1', 'A2', 'B1', 'B2', 'C1', 'C2') or null
+ * @returns {Promise<void>}
+ */
+export const updateUserLevel = (level) => {
+	return new Promise((resolve, reject) => {
+		try {
+			db.runSync("UPDATE user_settings SET proficiency_level = ? WHERE id = 1", [level]);
+			console.log("User level updated to:", level);
+			resolve();
+		} catch (error) {
+			console.error("Error updating user level:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
+ * Get user's current proficiency level
+ * @returns {Promise<string|null>} CEFR level or null
+ */
+export const getUserLevel = () => {
+	return new Promise((resolve, reject) => {
+		try {
+			const result = db.getFirstSync("SELECT proficiency_level FROM user_settings WHERE id = 1");
+			resolve(result?.proficiency_level || null);
+		} catch (error) {
+			console.error("Error getting user level:", error);
+			reject(error);
+		}
+	});
+};

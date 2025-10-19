@@ -133,6 +133,24 @@ export const initDatabase = () => {
 
 			console.log("Daily sessions and activities tables created successfully");
 
+			try {
+				const columns = db.getAllSync("PRAGMA table_info(user_settings)");
+				const hasProficiencyLevel = columns.some((col) => col.name === "proficiency_level");
+
+				if (!hasProficiencyLevel) {
+					console.log("Adding proficiency_level column to user_settings...");
+					db.execSync(`
+      ALTER TABLE user_settings 
+      ADD COLUMN proficiency_level TEXT DEFAULT NULL;
+    `);
+					console.log("proficiency_level column added successfully");
+				} else {
+					console.log("proficiency_level column already exists");
+				}
+			} catch (error) {
+				console.error("Error adding proficiency_level column:", error);
+			}
+
 			// Insert default settings if not exists
 			const settingsExist = db.getFirstSync("SELECT id FROM user_settings WHERE id = 1");
 			if (!settingsExist) {

@@ -91,8 +91,16 @@ export default function LanguageSelectionScreen() {
 
 			console.log("Selected language saved:", selectedLanguage);
 
-			// Navigate to main app
-			router.replace("/(tabs)");
+			// Find the language name to pass to level selection
+			const languageName =
+				[...featuredLanguages, ...allLanguages].find((lang) => lang.code === selectedLanguage)?.name ||
+				selectedLanguage;
+
+			// Navigate to level selection screen with language name
+			router.push({
+				pathname: "/onboarding/level-selection",
+				params: { language: languageName },
+			});
 		} catch (error) {
 			console.error("Error saving language preference:", error);
 			Alert.alert("Error", "Failed to save language preference. Please try again.");
