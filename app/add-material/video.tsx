@@ -18,7 +18,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import ActionButtons from "@components/forms/ActionButtons";
-import SubcategorySelector from "@components/forms/SubcategorySelector";
+import TypeSelectorModal from "@components/forms/TypeSelectorModal";
 import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMaterial } from "@database/queries";
 
 import { globalStyles } from "@theme/styles";
@@ -206,13 +206,12 @@ export default function AddVideoScreen() {
 									/>
 								</View>
 
-								{/* 2. TYPE - NOW SECOND (DROPDOWN) */}
-								<SubcategorySelector
+								{/* 2. TYPE - NOW SECOND (BOTTOM SHEET) */}
+								<TypeSelectorModal
 									categories={subcategories}
 									selectedCategory={selectedSubcategory}
 									onSelectCategory={setSelectedSubcategory}
 									label="Type"
-									required={false}
 								/>
 
 								{/* 3. CREATOR/CHANNEL - NOW THIRD */}

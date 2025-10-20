@@ -1,4 +1,4 @@
-// app/add-material/book.tsx - UPDATED with new field order
+// app/add-material/book.tsx
 import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -21,7 +21,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import ActionButtons from "@components/forms/ActionButtons";
 import SearchBar from "@components/forms/SearchBar";
 import SearchEmptyState from "@components/forms/SearchEmptyState";
-import SubcategorySelector from "@components/forms/SubcategorySelector";
+import TypeSelectorModal from "@components/forms/TypeSelectorModal";
 import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMaterial } from "@database/queries";
 
 // Import global styles
@@ -240,7 +240,7 @@ export default function AddBookScreen() {
 							<>
 								{/* NEW FIELD ORDER: Title → Type → Author → Pages/Chapters */}
 
-								{/* 1. TITLE - NOW FIRST */}
+								{/* 1. TITLE - FIRST */}
 								<View style={styles.formSection}>
 									<Text style={styles.label}>Title</Text>
 									<TextInput
@@ -253,16 +253,15 @@ export default function AddBookScreen() {
 									/>
 								</View>
 
-								{/* 2. TYPE - NOW SECOND (DROPDOWN) */}
-								<SubcategorySelector
+								{/* 2. TYPE - SECOND (BOTTOM SHEET) */}
+								<TypeSelectorModal
 									categories={subcategories}
 									selectedCategory={selectedSubcategory}
 									onSelectCategory={setSelectedSubcategory}
 									label="Type"
-									required={false}
 								/>
 
-								{/* 3. AUTHOR - NOW THIRD */}
+								{/* 3. AUTHOR - THIRD */}
 								<View style={styles.formSection}>
 									<Text style={styles.label}>Author</Text>
 									<TextInput
@@ -275,7 +274,7 @@ export default function AddBookScreen() {
 									/>
 								</View>
 
-								{/* 4. PAGES/CHAPTERS - NOW FOURTH */}
+								{/* 4. PAGES/CHAPTERS - FOURTH */}
 								<View style={styles.twoColumnContainer}>
 									<View style={styles.columnSection}>
 										<Text style={styles.label}>Total pages</Text>
@@ -307,7 +306,7 @@ export default function AddBookScreen() {
 								<ActionButtons
 									onSave={handleSave}
 									onCancel={handleCancel}
-									saveText={isEditMode ? "Save Changes" : "Save Book"}
+									saveText={isEditMode ? "Save Changes" : "Add to Library"}
 									cancelText="Cancel"
 									loading={loading}
 								/>
@@ -326,83 +325,82 @@ const styles = StyleSheet.create({
 	},
 	content: {
 		flex: 1,
-		paddingHorizontal: spacing.lg,
+		backgroundColor: colors.white,
 	},
 	header: {
 		flexDirection: "row",
 		alignItems: "center",
-		paddingTop: spacing.xs,
-		paddingBottom: spacing.lg,
+		paddingHorizontal: spacing.lg,
+		paddingVertical: spacing.md,
+		backgroundColor: colors.gray50,
+		borderBottomWidth: 1,
+		borderBottomColor: colors.gray200,
 	},
 	backButton: {
 		width: 40,
 		height: 40,
-		borderRadius: 20,
-		backgroundColor: "transparent",
-		alignItems: "center",
 		justifyContent: "center",
+		alignItems: "center",
+		marginRight: spacing.sm,
 	},
 	backButtonText: {
 		fontSize: 28,
-		color: colors.grayDarkest,
+		color: colors.gray900,
 	},
 	title: {
-		fontSize: 18,
-		...typography.headingSmall,
-		color: colors.grayDarkest,
+		...typography.h2,
 		flex: 1,
-		textAlign: "center",
-		marginRight: 40,
 	},
 	scrollView: {
 		flex: 1,
 	},
 	scrollContent: {
-		paddingBottom: 200,
+		padding: spacing.lg,
+		paddingBottom: spacing.xl * 2,
 	},
 	loadingContainer: {
 		flex: 1,
 		justifyContent: "center",
 		alignItems: "center",
-		paddingVertical: 100,
+		paddingTop: spacing.xl * 2,
 	},
 	loadingText: {
 		marginTop: spacing.md,
-		...globalStyles.bodyMedium,
-		color: colors.grayMedium,
+		...typography.body,
+		color: colors.gray600,
 	},
-	// NEW FORM FIELD STYLES
 	formSection: {
-		marginBottom: 16,
+		marginBottom: spacing.lg,
 	},
 	label: {
 		fontSize: 14,
 		fontWeight: "500",
-		color: "#111827",
-		marginBottom: 8,
+		color: colors.gray900,
+		marginBottom: spacing.sm,
 	},
 	input: {
-		backgroundColor: "#F9F9F9",
+		backgroundColor: colors.gray50,
 		borderRadius: 5,
-		paddingHorizontal: 16,
+		paddingHorizontal: spacing.md,
 		paddingVertical: 14,
 		fontSize: 16,
-		color: "#111827",
+		color: colors.gray900,
 		borderWidth: 1,
-		borderColor: "#E5E7EB",
+		borderColor: colors.gray200,
 	},
 	twoColumnContainer: {
 		flexDirection: "row",
-		gap: 16,
-		marginBottom: 16,
+		justifyContent: "space-between",
+		marginBottom: spacing.sm,
+		gap: spacing.md,
 	},
 	columnSection: {
 		flex: 1,
 	},
 	helperText: {
-		fontSize: 14,
-		color: "#6B7280",
-		marginBottom: 24,
+		fontSize: 13,
+		color: colors.gray500,
+		marginBottom: spacing.xl,
 		fontStyle: "italic",
 	},
 });

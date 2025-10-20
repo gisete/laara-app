@@ -20,7 +20,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import ActionButtons from "@components/forms/ActionButtons";
 import SearchBar from "@components/forms/SearchBar";
 import SearchEmptyState from "@components/forms/SearchEmptyState";
-import SubcategorySelector from "@components/forms/SubcategorySelector";
+import TypeSelectorModal from "@components/forms/TypeSelectorModal";
 import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMaterial } from "@database/queries";
 
 import { globalStyles } from "@theme/styles";
@@ -244,13 +244,12 @@ export default function AddAudioScreen() {
 									/>
 								</View>
 
-								{/* 2. TYPE - NOW SECOND (DROPDOWN) */}
-								<SubcategorySelector
+								{/* 2. TYPE - NOW SECOND (BOTTOM SHEET) */}
+								<TypeSelectorModal
 									categories={subcategories}
 									selectedCategory={selectedSubcategory}
 									onSelectCategory={setSelectedSubcategory}
 									label="Type"
-									required={false}
 								/>
 
 								{/* 3. CREATOR/HOST - NOW THIRD */}

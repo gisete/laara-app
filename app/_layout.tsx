@@ -5,6 +5,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { initDatabase } from "@database/database";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -51,11 +52,13 @@ export default function RootLayout() {
 	}
 
 	return (
-		<Stack screenOptions={{ headerShown: false }}>
-			<Stack.Screen name="index" />
-			<Stack.Screen name="language-selection" />
-			<Stack.Screen name="(tabs)" />
-		</Stack>
+		<GestureHandlerRootView style={{ flex: 1 }}>
+			<Stack screenOptions={{ headerShown: false }}>
+				<Stack.Screen name="index" />
+				<Stack.Screen name="language-selection" />
+				<Stack.Screen name="(tabs)" />
+			</Stack>
+		</GestureHandlerRootView>
 	);
 }
 
