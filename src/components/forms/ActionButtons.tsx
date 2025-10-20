@@ -3,6 +3,7 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import * as Haptics from "expo-haptics";
 import { colors } from "@theme/colors";
+import { spacing } from "@theme/spacing";
 
 interface ActionButtonsProps {
 	onSave: () => void;
@@ -31,13 +32,13 @@ export default function ActionButtons({
 			<TouchableOpacity
 				style={[styles.saveButton, (loading || saveDisabled) && styles.saveButtonDisabled]}
 				onPress={onSave}
-				activeOpacity={0.8}
+				activeOpacity={0.7}
 				disabled={loading || saveDisabled}
 			>
 				<Text style={styles.saveButtonText}>{loading ? "Saving..." : saveText}</Text>
 			</TouchableOpacity>
 
-			<TouchableOpacity style={styles.cancelButton} onPress={handleCancel} activeOpacity={0.8}>
+			<TouchableOpacity style={styles.cancelButton} onPress={handleCancel} activeOpacity={0.7}>
 				<Text style={styles.cancelButtonText}>{cancelText}</Text>
 			</TouchableOpacity>
 		</View>
@@ -49,9 +50,12 @@ const styles = StyleSheet.create({
 		position: "absolute",
 		bottom: 0,
 		left: 0,
-		right: 20,
+		right: 0,
+		paddingHorizontal: spacing.lg,
+		paddingTop: spacing.md,
+		paddingBottom: spacing.xl,
+		backgroundColor: "transparent",
 		gap: 12,
-		width: "100%",
 	},
 	saveButton: {
 		backgroundColor: colors.primaryAccent,

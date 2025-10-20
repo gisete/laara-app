@@ -164,7 +164,7 @@ export default function AddClassScreen() {
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor={colors.gray50} />
+			<StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
 			<KeyboardAvoidingView
 				style={styles.keyboardView}
@@ -172,6 +172,7 @@ export default function AddClassScreen() {
 				keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
 			>
 				<View style={styles.content}>
+					{/* Header - Clean, no background or border */}
 					<View style={styles.header}>
 						<TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
 							<Text style={styles.backButtonText}>←</Text>
@@ -179,6 +180,7 @@ export default function AddClassScreen() {
 						<Text style={styles.title}>{isEditMode ? "Edit class" : "Add class"}</Text>
 					</View>
 
+					{/* ScrollView - Form fields only, NO ActionButtons inside */}
 					<ScrollView
 						style={styles.scrollView}
 						showsVerticalScrollIndicator={false}
@@ -239,17 +241,18 @@ export default function AddClassScreen() {
 										keyboardType="number-pad"
 									/>
 								</View>
-
-								<ActionButtons
-									onSave={handleSave}
-									onCancel={handleCancel}
-									saveText={isEditMode ? "Save Changes" : "Save Class"}
-									cancelText="Cancel"
-									loading={loading}
-								/>
 							</>
 						)}
 					</ScrollView>
+
+					{/* ActionButtons OUTSIDE ScrollView - Fixed at bottom */}
+					<ActionButtons
+						onSave={handleSave}
+						onCancel={handleCancel}
+						saveText={isEditMode ? "Save Changes" : "Save Class"}
+						cancelText="Cancel"
+						loading={loading}
+					/>
 				</View>
 			</KeyboardAvoidingView>
 		</SafeAreaView>
@@ -262,39 +265,40 @@ const styles = StyleSheet.create({
 	},
 	content: {
 		flex: 1,
-		paddingHorizontal: spacing.lg,
+		backgroundColor: colors.gray50, // Light gray background for the whole screen
 	},
 	header: {
 		flexDirection: "row",
 		alignItems: "center",
-		paddingTop: spacing.xs,
-		paddingBottom: spacing.lg,
+		paddingHorizontal: spacing.lg,
+		paddingTop: spacing.sm,
+		paddingBottom: spacing.md,
+		backgroundColor: "transparent", // No background
+		// Removed borderBottomWidth and borderBottomColor
 	},
 	backButton: {
 		width: 40,
 		height: 40,
-		borderRadius: 20,
-		backgroundColor: "transparent",
-		alignItems: "center",
 		justifyContent: "center",
+		alignItems: "center",
+		marginRight: spacing.sm,
 	},
 	backButtonText: {
 		fontSize: 28,
-		color: colors.grayDarkest,
+		color: "#111827",
 	},
 	title: {
-		fontSize: 18,
-		...typography.headingSmall,
-		color: colors.grayDarkest,
+		fontSize: 18, // Slightly bigger body font
+		fontWeight: "500", // Medium bold
+		color: "#111827",
 		flex: 1,
-		textAlign: "center",
-		marginRight: 40,
 	},
 	scrollView: {
 		flex: 1,
 	},
 	scrollContent: {
-		paddingBottom: 200,
+		padding: spacing.lg,
+		paddingBottom: 180, // Space for fixed buttons
 	},
 	loadingContainer: {
 		flex: 1,
@@ -304,26 +308,26 @@ const styles = StyleSheet.create({
 	},
 	loadingText: {
 		marginTop: spacing.md,
-		...globalStyles.bodyMedium,
-		color: colors.grayMedium,
+		fontSize: 16,
+		color: "#6B7280",
 	},
 	formSection: {
-		marginBottom: 16,
+		marginBottom: spacing.lg,
 	},
 	label: {
 		fontSize: 14,
 		fontWeight: "500",
 		color: "#111827",
-		marginBottom: 8,
+		marginBottom: spacing.sm,
 	},
 	input: {
-		backgroundColor: "#F9F9F9",
+		backgroundColor: "#FFFFFF", // White background
 		borderRadius: 5,
-		paddingHorizontal: 16,
+		paddingHorizontal: spacing.md,
 		paddingVertical: 14,
 		fontSize: 16,
 		color: "#111827",
 		borderWidth: 1,
-		borderColor: "#E5E7EB",
+		borderColor: "#E5E7EB", // Light gray border
 	},
 });

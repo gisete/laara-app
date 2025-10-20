@@ -19,6 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // Import reusable components
 import ActionButtons from "@components/forms/ActionButtons";
+import FormHeader from "@components/forms/FormHeader";
 import SearchBar from "@components/forms/SearchBar";
 import SearchEmptyState from "@components/forms/SearchEmptyState";
 import TypeSelectorModal from "@components/forms/TypeSelectorModal";
@@ -195,7 +196,7 @@ export default function AddBookScreen() {
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor={colors.gray50} />
+			<StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
 			<KeyboardAvoidingView
 				style={styles.keyboardView}
@@ -203,7 +204,7 @@ export default function AddBookScreen() {
 				keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
 			>
 				<View style={styles.content}>
-					{/* Header */}
+					{/* Header - Clean, no background or border */}
 					<View style={styles.header}>
 						<TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
 							<Text style={styles.backButtonText}>←</Text>
@@ -211,6 +212,7 @@ export default function AddBookScreen() {
 						<Text style={styles.title}>{isEditMode ? "Edit book" : showCustomForm ? "Add a book" : "Search Book"}</Text>
 					</View>
 
+					{/* ScrollView - Form fields only, NO ActionButtons inside */}
 					<ScrollView
 						style={styles.scrollView}
 						showsVerticalScrollIndicator={false}
@@ -302,17 +304,20 @@ export default function AddBookScreen() {
 								</View>
 
 								<Text style={styles.helperText}>Add page count to track reading progress</Text>
-
-								<ActionButtons
-									onSave={handleSave}
-									onCancel={handleCancel}
-									saveText={isEditMode ? "Save Changes" : "Add to Library"}
-									cancelText="Cancel"
-									loading={loading}
-								/>
 							</>
 						)}
 					</ScrollView>
+
+					{/* ActionButtons OUTSIDE ScrollView - Fixed at bottom */}
+					{showCustomForm && (
+						<ActionButtons
+							onSave={handleSave}
+							onCancel={handleCancel}
+							saveText={isEditMode ? "Save Changes" : "Add to Library"}
+							cancelText="Cancel"
+							loading={loading}
+						/>
+					)}
 				</View>
 			</KeyboardAvoidingView>
 		</SafeAreaView>
@@ -325,16 +330,16 @@ const styles = StyleSheet.create({
 	},
 	content: {
 		flex: 1,
-		backgroundColor: colors.white,
+		backgroundColor: colors.gray50, // Light gray background for the whole screen
 	},
 	header: {
 		flexDirection: "row",
 		alignItems: "center",
 		paddingHorizontal: spacing.lg,
-		paddingVertical: spacing.md,
-		backgroundColor: colors.gray50,
-		borderBottomWidth: 1,
-		borderBottomColor: colors.gray200,
+		paddingTop: spacing.sm,
+		paddingBottom: spacing.md,
+		backgroundColor: "transparent", // No background
+		// Removed borderBottomWidth and borderBottomColor
 	},
 	backButton: {
 		width: 40,
@@ -345,10 +350,12 @@ const styles = StyleSheet.create({
 	},
 	backButtonText: {
 		fontSize: 28,
-		color: colors.gray900,
+		color: "#111827",
 	},
 	title: {
-		...typography.h2,
+		fontSize: 18, // Slightly bigger body font
+		fontWeight: "500", // Medium bold
+		color: "#111827",
 		flex: 1,
 	},
 	scrollView: {
@@ -356,7 +363,7 @@ const styles = StyleSheet.create({
 	},
 	scrollContent: {
 		padding: spacing.lg,
-		paddingBottom: spacing.xl * 2,
+		paddingBottom: 180, // Space for fixed buttons
 	},
 	loadingContainer: {
 		flex: 1,
@@ -366,8 +373,8 @@ const styles = StyleSheet.create({
 	},
 	loadingText: {
 		marginTop: spacing.md,
-		...typography.body,
-		color: colors.gray600,
+		fontSize: 16,
+		color: "#6B7280",
 	},
 	formSection: {
 		marginBottom: spacing.lg,
@@ -375,18 +382,18 @@ const styles = StyleSheet.create({
 	label: {
 		fontSize: 14,
 		fontWeight: "500",
-		color: colors.gray900,
+		color: "#111827",
 		marginBottom: spacing.sm,
 	},
 	input: {
-		backgroundColor: colors.gray50,
+		backgroundColor: "#FFFFFF", // White background
 		borderRadius: 5,
 		paddingHorizontal: spacing.md,
 		paddingVertical: 14,
 		fontSize: 16,
-		color: colors.gray900,
+		color: "#111827",
 		borderWidth: 1,
-		borderColor: colors.gray200,
+		borderColor: "#E5E7EB", // Light gray border
 	},
 	twoColumnContainer: {
 		flexDirection: "row",
@@ -399,7 +406,7 @@ const styles = StyleSheet.create({
 	},
 	helperText: {
 		fontSize: 13,
-		color: colors.gray500,
+		color: "#6B7280",
 		marginBottom: spacing.xl,
 		fontStyle: "italic",
 	},

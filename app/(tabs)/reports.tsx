@@ -1,10 +1,11 @@
-// app/(tabs)/library.tsx
+// app/(tabs)/reports.tsx
 import { StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { globalStyles } from "@theme/styles";
 
 export default function ReportsScreen() {
 	return (
-		<SafeAreaView style={styles.container}>
+		<SafeAreaView style={globalStyles.container}>
 			<Text style={styles.title}>Reports Screen</Text>
 			<Text>Coming soon...</Text>
 		</SafeAreaView>
@@ -12,11 +13,5 @@ export default function ReportsScreen() {
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		justifyContent: "center",
-		alignItems: "center",
-		backgroundColor: "#FFFFFF",
-	},
 	title: { fontSize: 24, marginBottom: 16, fontFamily: "Domine-Bold" },
 });

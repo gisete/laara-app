@@ -1,7 +1,8 @@
 // src/components/forms/TypeSelectorModal.tsx
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import { PortalHost, Portal } from "@gorhom/portal";
 import { colors } from "@theme/colors";
 
 interface TypeSelectorModalProps {
@@ -56,6 +57,7 @@ export default function TypeSelectorModal({
 				key={item}
 				style={[styles.categoryItem, isSelected && styles.categoryItemSelected]}
 				onPress={() => setTempSelection(item)}
+				activeOpacity={0.7}
 			>
 				<Text style={[styles.categoryText, isSelected && styles.categoryTextSelected]}>{item}</Text>
 
@@ -69,56 +71,58 @@ export default function TypeSelectorModal({
 	};
 
 	return (
-		<View style={styles.container}>
-			<Text style={styles.label}>{label}</Text>
+		<>
+			{/* Link in the form (renders inline) */}
+			<View style={styles.container}>
+				<Text style={styles.label}>{label}</Text>
 
-			{/* Selection Link */}
-			<TouchableOpacity onPress={handleOpen} style={styles.linkContainer}>
-				{selectedCategory ? (
-					<View style={styles.selectedContainer}>
-						<Text style={styles.selectedText}>{selectedCategory}</Text>
-						<Text style={styles.editLink}> • Edit type</Text>
+				<TouchableOpacity onPress={handleOpen} style={styles.linkContainer} activeOpacity={0.7}>
+					{selectedCategory ? (
+						<View style={styles.selectedContainer}>
+							<Text style={styles.selectedText}>{selectedCategory}</Text>
+							<Text style={styles.editLink}> • Edit type</Text>
+						</View>
+					) : (
+						<Text style={styles.selectLink}>Select type</Text>
+					)}
+				</TouchableOpacity>
+			</View>
+
+			{/* Bottom Sheet in Portal (renders at root level) */}
+			<Portal>
+				<BottomSheet
+					ref={bottomSheetRef}
+					index={-1}
+					snapPoints={snapPoints}
+					enablePanDownToClose
+					backdropComponent={renderBackdrop}
+				>
+					<View style={styles.sheetContent}>
+						{/* Header */}
+						<View style={styles.sheetHeader}>
+							<Text style={styles.sheetTitle}>Select {label}</Text>
+						</View>
+
+						{/* Category List */}
+						<BottomSheetScrollView contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false}>
+							{categories.map(renderCategoryItem)}
+						</BottomSheetScrollView>
+
+						{/* Apply Button */}
+						<View style={styles.buttonContainer}>
+							<TouchableOpacity
+								style={[styles.applyButton, !tempSelection && styles.applyButtonDisabled]}
+								onPress={handleApply}
+								disabled={!tempSelection}
+								activeOpacity={0.7}
+							>
+								<Text style={styles.applyButtonText}>Apply</Text>
+							</TouchableOpacity>
+						</View>
 					</View>
-				) : (
-					<Text style={styles.selectLink}>Select type</Text>
-				)}
-			</TouchableOpacity>
-
-			{/* Bottom Sheet */}
-			<BottomSheet
-				ref={bottomSheetRef}
-				index={-1}
-				snapPoints={snapPoints}
-				enablePanDownToClose
-				backdropComponent={renderBackdrop}
-			>
-				<View style={styles.sheetContent}>
-					{/* Header */}
-					<View style={styles.sheetHeader}>
-						<Text style={styles.sheetTitle}>Select {label}</Text>
-					</View>
-
-					{/* Category List */}
-					<BottomSheetScrollView
-						contentContainerStyle={styles.listContent}
-						showsVerticalScrollIndicator={false}
-					>
-						{categories.map(renderCategoryItem)}
-					</BottomSheetScrollView>
-
-					{/* Apply Button */}
-					<View style={styles.buttonContainer}>
-						<TouchableOpacity
-							style={[styles.applyButton, !tempSelection && styles.applyButtonDisabled]}
-							onPress={handleApply}
-							disabled={!tempSelection}
-						>
-							<Text style={styles.applyButtonText}>Apply</Text>
-						</TouchableOpacity>
-					</View>
-				</View>
-			</BottomSheet>
-		</View>
+				</BottomSheet>
+			</Portal>
+		</>
 	);
 }
 

@@ -72,7 +72,7 @@ export default function LevelSelectionScreen() {
 	};
 
 	return (
-		<SafeAreaView style={styles.container}>
+		<SafeAreaView style={globalStyles.container}>
 			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
 			<ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -121,10 +121,6 @@ export default function LevelSelectionScreen() {
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: colors.gray50,
-	},
 	scrollView: {
 		flex: 1,
 	},
