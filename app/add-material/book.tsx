@@ -19,10 +19,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // Import reusable components
 import ActionButtons from "@components/forms/ActionButtons";
+import BookForm from "@components/forms/BookForm";
 import FormHeader from "@components/forms/FormHeader";
 import SearchBar from "@components/forms/SearchBar";
 import SearchEmptyState from "@components/forms/SearchEmptyState";
-import TypeSelectorModal from "@components/forms/TypeSelectorModal";
 import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMaterial } from "@database/queries";
 
 // Import global styles
@@ -204,15 +204,13 @@ export default function AddBookScreen() {
 				keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
 			>
 				<View style={styles.content}>
-					{/* Header - Clean, no background or border */}
-					<View style={styles.header}>
-						<TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
-							<Text style={styles.backButtonText}>←</Text>
-						</TouchableOpacity>
-						<Text style={styles.title}>{isEditMode ? "Edit book" : showCustomForm ? "Add a book" : "Search Book"}</Text>
-					</View>
+					{/* Header */}
+					<FormHeader
+						title={isEditMode ? "Edit book" : showCustomForm ? "Add a book" : "Search Book"}
+						onBack={handleBack}
+					/>
 
-					{/* ScrollView - Form fields only, NO ActionButtons inside */}
+					{/* ScrollView - Form fields only */}
 					<ScrollView
 						style={styles.scrollView}
 						showsVerticalScrollIndicator={false}
@@ -239,85 +237,32 @@ export default function AddBookScreen() {
 								/>
 							</>
 						) : (
-							<>
-								{/* NEW FIELD ORDER: Title → Type → Author → Pages/Chapters */}
+							<BookForm
+								title={title}
+								author={author}
+								totalPages={totalPages}
+								totalChapters={totalChapters}
+								selectedSubcategory={selectedSubcategory}
+								subcategories={subcategories}
+								onTitleChange={setTitle}
+								onAuthorChange={setAuthor}
+								onTotalPagesChange={setTotalPages}
+								onTotalChaptersChange={setTotalChapters}
+								onSubcategoryChange={setSelectedSubcategory}
+							/>
+						)}
 
-								{/* 1. TITLE - FIRST */}
-								<View style={styles.formSection}>
-									<Text style={styles.label}>Title</Text>
-									<TextInput
-										style={styles.input}
-										placeholder="Enter book title"
-										placeholderTextColor="#C4C4C4"
-										value={title}
-										onChangeText={setTitle}
-										autoCapitalize="words"
-									/>
-								</View>
-
-								{/* 2. TYPE - SECOND (BOTTOM SHEET) */}
-								<TypeSelectorModal
-									categories={subcategories}
-									selectedCategory={selectedSubcategory}
-									onSelectCategory={setSelectedSubcategory}
-									label="Type"
-								/>
-
-								{/* 3. AUTHOR - THIRD */}
-								<View style={styles.formSection}>
-									<Text style={styles.label}>Author</Text>
-									<TextInput
-										style={styles.input}
-										placeholder="Enter author name"
-										placeholderTextColor="#C4C4C4"
-										value={author}
-										onChangeText={setAuthor}
-										autoCapitalize="words"
-									/>
-								</View>
-
-								{/* 4. PAGES/CHAPTERS - FOURTH */}
-								<View style={styles.twoColumnContainer}>
-									<View style={styles.columnSection}>
-										<Text style={styles.label}>Total pages</Text>
-										<TextInput
-											style={styles.input}
-											placeholder="0"
-											placeholderTextColor="#C4C4C4"
-											value={totalPages}
-											onChangeText={setTotalPages}
-											keyboardType="number-pad"
-										/>
-									</View>
-
-									<View style={styles.columnSection}>
-										<Text style={styles.label}>Number of chapters</Text>
-										<TextInput
-											style={styles.input}
-											placeholder="0"
-											placeholderTextColor="#C4C4C4"
-											value={totalChapters}
-											onChangeText={setTotalChapters}
-											keyboardType="number-pad"
-										/>
-									</View>
-								</View>
-
-								<Text style={styles.helperText}>Add page count to track reading progress</Text>
-							</>
+						{/* ActionButtons at the end of ScrollView content */}
+						{showCustomForm && (
+							<ActionButtons
+								onSave={handleSave}
+								onCancel={handleCancel}
+								saveText={isEditMode ? "Save Changes" : "Add to Library"}
+								cancelText="Cancel"
+								loading={loading}
+							/>
 						)}
 					</ScrollView>
-
-					{/* ActionButtons OUTSIDE ScrollView - Fixed at bottom */}
-					{showCustomForm && (
-						<ActionButtons
-							onSave={handleSave}
-							onCancel={handleCancel}
-							saveText={isEditMode ? "Save Changes" : "Add to Library"}
-							cancelText="Cancel"
-							loading={loading}
-						/>
-					)}
 				</View>
 			</KeyboardAvoidingView>
 		</SafeAreaView>
@@ -332,38 +277,12 @@ const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: colors.gray50, // Light gray background for the whole screen
 	},
-	header: {
-		flexDirection: "row",
-		alignItems: "center",
-		paddingHorizontal: spacing.lg,
-		paddingTop: spacing.sm,
-		paddingBottom: spacing.md,
-		backgroundColor: "transparent", // No background
-		// Removed borderBottomWidth and borderBottomColor
-	},
-	backButton: {
-		width: 40,
-		height: 40,
-		justifyContent: "center",
-		alignItems: "center",
-		marginRight: spacing.sm,
-	},
-	backButtonText: {
-		fontSize: 28,
-		color: "#111827",
-	},
-	title: {
-		fontSize: 18, // Slightly bigger body font
-		fontWeight: "500", // Medium bold
-		color: "#111827",
-		flex: 1,
-	},
 	scrollView: {
 		flex: 1,
 	},
 	scrollContent: {
 		padding: spacing.lg,
-		paddingBottom: 180, // Space for fixed buttons
+		paddingBottom: spacing.xl,
 	},
 	loadingContainer: {
 		flex: 1,
@@ -375,39 +294,5 @@ const styles = StyleSheet.create({
 		marginTop: spacing.md,
 		fontSize: 16,
 		color: "#6B7280",
-	},
-	formSection: {
-		marginBottom: spacing.lg,
-	},
-	label: {
-		fontSize: 14,
-		fontWeight: "500",
-		color: "#111827",
-		marginBottom: spacing.sm,
-	},
-	input: {
-		backgroundColor: "#FFFFFF", // White background
-		borderRadius: 5,
-		paddingHorizontal: spacing.md,
-		paddingVertical: 14,
-		fontSize: 16,
-		color: "#111827",
-		borderWidth: 1,
-		borderColor: "#E5E7EB", // Light gray border
-	},
-	twoColumnContainer: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		marginBottom: spacing.sm,
-		gap: spacing.md,
-	},
-	columnSection: {
-		flex: 1,
-	},
-	helperText: {
-		fontSize: 13,
-		color: "#6B7280",
-		marginBottom: spacing.xl,
-		fontStyle: "italic",
 	},
 });

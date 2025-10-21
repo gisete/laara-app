@@ -47,13 +47,8 @@ export default function ActionButtons({
 
 const styles = StyleSheet.create({
 	container: {
-		position: "absolute",
-		bottom: 0,
-		left: 0,
-		right: 0,
-		paddingHorizontal: spacing.lg,
-		paddingTop: spacing.md,
-		paddingBottom: spacing.xl,
+		paddingTop: spacing.xl,
+		paddingBottom: 0,
 		backgroundColor: "transparent",
 		gap: 12,
 	},

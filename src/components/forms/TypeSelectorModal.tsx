@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
 		marginBottom: 16,
 	},
 	label: {
-		fontSize: 14,
+		fontSize: 16,
 		fontWeight: "500",
 		color: "#111827",
 		marginBottom: 8,

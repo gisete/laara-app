@@ -32,8 +32,8 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		paddingHorizontal: spacing.lg,
 		paddingTop: spacing.sm,
-		paddingBottom: spacing.md,
-		backgroundColor: "transparent", // No background
+		paddingBottom: spacing.sm,
+		paddingLeft: spacing.sm,
 		// No border
 	},
 	backButton: {
