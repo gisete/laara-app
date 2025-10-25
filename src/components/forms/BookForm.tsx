@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import TypeSelectorModal from "@components/forms/TypeSelectorModal";
 import { colors } from "@theme/colors";
-import { spacing } from "@theme/spacing";
+import { borderRadius, spacing } from "@theme/spacing";
 
 interface BookFormProps {
 	title: string;
@@ -42,8 +42,6 @@ export default function BookForm({
 				<Text style={styles.label}>Title</Text>
 				<TextInput
 					style={[styles.input, focusedField === "title" && styles.inputFocused]}
-					placeholder="Enter book title"
-					placeholderTextColor="#C4C4C4"
 					value={title}
 					onChangeText={onTitleChange}
 					onFocus={() => setFocusedField("title")}
@@ -65,8 +63,6 @@ export default function BookForm({
 				<Text style={styles.label}>Author</Text>
 				<TextInput
 					style={[styles.input, focusedField === "author" && styles.inputFocused]}
-					placeholder="Enter author name"
-					placeholderTextColor="#C4C4C4"
 					value={author}
 					onChangeText={onAuthorChange}
 					onFocus={() => setFocusedField("author")}
@@ -81,8 +77,6 @@ export default function BookForm({
 					<Text style={styles.label}>Total pages</Text>
 					<TextInput
 						style={[styles.input, focusedField === "totalPages" && styles.inputFocused]}
-						placeholder="0"
-						placeholderTextColor="#C4C4C4"
 						value={totalPages}
 						onChangeText={onTotalPagesChange}
 						onFocus={() => setFocusedField("totalPages")}
@@ -95,8 +89,6 @@ export default function BookForm({
 					<Text style={styles.label}>Number of chapters</Text>
 					<TextInput
 						style={[styles.input, focusedField === "totalChapters" && styles.inputFocused]}
-						placeholder="0"
-						placeholderTextColor="#C4C4C4"
 						value={totalChapters}
 						onChangeText={onTotalChaptersChange}
 						onFocus={() => setFocusedField("totalChapters")}
@@ -116,29 +108,30 @@ const styles = StyleSheet.create({
 		marginBottom: spacing.lg,
 	},
 	label: {
-		fontSize: 16,
+		fontSize: 15,
 		fontWeight: "500",
-		color: colors.grayDarkest,
+		color: colors.grayMedium,
 		marginBottom: spacing.xs,
 	},
 	input: {
-		backgroundColor: "transparent",
-		paddingHorizontal: 0,
-		paddingVertical: 10,
-		paddingTop: 6,
+		backgroundColor: "#FFFFFF",
+		paddingHorizontal: 12,
+		paddingVertical: 12,
 		fontSize: 16,
-		color: colors.grayDark,
-		borderBottomWidth: 1,
-		borderBottomColor: colors.gray300, // Neutral gray for unfocused state
+		color: colors.grayDarkest,
+		borderWidth: 1,
+		borderColor: colors.gray200,
+		borderRadius: borderRadius.sm,
+		minHeight: 48,
 	},
 	inputFocused: {
-		borderBottomColor: colors.primaryAccent, // Primary accent color when focused
+		borderColor: colors.primaryAccent, // Primary accent color when focused
 	},
 	twoColumnContainer: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		marginBottom: spacing.sm,
-		gap: spacing.md,
+		gap: spacing.lg,
 	},
 	columnSection: {
 		flex: 1,

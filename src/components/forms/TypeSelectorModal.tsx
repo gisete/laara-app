@@ -3,7 +3,9 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { PortalHost, Portal } from "@gorhom/portal";
+import Svg, { Path } from "react-native-svg";
 import { colors } from "@theme/colors";
+import { borderRadius, spacing } from "@theme/spacing";
 
 interface TypeSelectorModalProps {
 	categories: string[];
@@ -70,21 +72,28 @@ export default function TypeSelectorModal({
 		);
 	};
 
+	// Chevron icon component
+	const ChevronIcon = () => (
+		<Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
+			<Path d="M6 4L10 8L6 12" stroke="#9CA3AF" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+		</Svg>
+	);
+
 	return (
 		<>
-			{/* Link in the form (renders inline) */}
+			{/* Input field style (renders inline) */}
 			<View style={styles.container}>
 				<Text style={styles.label}>{label}</Text>
 
-				<TouchableOpacity onPress={handleOpen} style={styles.linkContainer} activeOpacity={0.7}>
-					{selectedCategory ? (
-						<View style={styles.selectedContainer}>
-							<Text style={styles.selectedText}>{selectedCategory}</Text>
-							<Text style={styles.editLink}> • Edit type</Text>
-						</View>
-					) : (
-						<Text style={styles.selectLink}>Select type</Text>
-					)}
+				<TouchableOpacity onPress={handleOpen} style={styles.inputContainer} activeOpacity={0.7}>
+					<Text style={[styles.inputText, !selectedCategory && styles.placeholder]}>
+						{selectedCategory || "Select type"}
+					</Text>
+
+					{/* Chevron Icon */}
+					<View style={styles.chevronIcon}>
+						<ChevronIcon />
+					</View>
 				</TouchableOpacity>
 			</View>
 
@@ -128,35 +137,41 @@ export default function TypeSelectorModal({
 
 const styles = StyleSheet.create({
 	container: {
-		marginBottom: 16,
+		marginBottom: spacing.lg,
 	},
 	label: {
-		fontSize: 16,
+		fontSize: 15,
 		fontWeight: "500",
-		color: "#111827",
-		marginBottom: 8,
+		color: colors.grayMedium,
+		marginBottom: spacing.xs,
 	},
-	linkContainer: {
-		paddingVertical: 12,
-	},
-	selectLink: {
-		fontSize: 16,
-		color: colors.primaryAccent,
-		fontWeight: "500",
-	},
-	selectedContainer: {
+
+	// NEW: Input field styling (matches TextInput fields)
+	inputContainer: {
 		flexDirection: "row",
 		alignItems: "center",
+		justifyContent: "space-between",
+		paddingVertical: 12,
+		paddingHorizontal: 12,
+		backgroundColor: "#FFFFFF",
+		borderWidth: 1,
+		borderColor: colors.gray200,
+		borderRadius: borderRadius.sm,
+		minHeight: 48,
 	},
-	selectedText: {
+	inputText: {
 		fontSize: 16,
 		color: "#111827",
-		fontWeight: "500",
+		fontWeight: "400",
+		flex: 1,
 	},
-	editLink: {
-		fontSize: 16,
-		color: colors.primaryAccent,
-		fontWeight: "500",
+	placeholder: {
+		color: "#C4C4C4", // Match TextInput placeholder color
+	},
+	chevronIcon: {
+		marginLeft: 8,
+		justifyContent: "center",
+		alignItems: "center",
 	},
 
 	// Bottom Sheet Styles

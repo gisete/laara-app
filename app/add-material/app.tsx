@@ -18,6 +18,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import ActionButtons from "@components/forms/ActionButtons";
+import FormHeader from "@components/forms/FormHeader";
 import SearchBar from "@components/forms/SearchBar";
 import SearchEmptyState from "@components/forms/SearchEmptyState";
 import TypeSelectorModal from "@components/forms/TypeSelectorModal";
@@ -25,7 +26,7 @@ import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMateria
 
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
-import { spacing } from "@theme/spacing";
+import { borderRadius, spacing } from "@theme/spacing";
 import { typography } from "@theme/typography";
 
 export default function AddAppScreen() {
@@ -38,6 +39,7 @@ export default function AddAppScreen() {
 	const [loadingSubcategories, setLoadingSubcategories] = useState(true);
 	const [loadingMaterial, setLoadingMaterial] = useState(isEditMode);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [focusedField, setFocusedField] = useState<string | null>(null);
 
 	const [subcategories, setSubcategories] = useState<string[]>([]);
 
@@ -184,25 +186,24 @@ export default function AddAppScreen() {
 		<SafeAreaView style={globalStyles.container}>
 			<StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-			<KeyboardAvoidingView
-				style={styles.keyboardView}
-				behavior={Platform.OS === "ios" ? "padding" : "height"}
-				keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-			>
-				<View style={styles.content}>
-					{/* Header - Clean, no background or border */}
-					<View style={styles.header}>
-						<TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
-							<Text style={styles.backButtonText}>←</Text>
-						</TouchableOpacity>
-						<Text style={styles.title}>{isEditMode ? "Edit app" : "Add app"}</Text>
-					</View>
+			<View style={styles.content}>
+				{/* Header */}
+				<FormHeader
+					title={isEditMode ? "Edit app" : "Add app"}
+					onBack={handleBack}
+				/>
 
-					{/* ScrollView - Form fields only, NO ActionButtons inside */}
+				<KeyboardAvoidingView
+					style={styles.keyboardView}
+					behavior={Platform.OS === "ios" ? "padding" : "height"}
+					keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+				>
+					{/* ScrollView - Form fields only */}
 					<ScrollView
 						style={styles.scrollView}
 						showsVerticalScrollIndicator={false}
 						contentContainerStyle={styles.scrollContent}
+						keyboardShouldPersistTaps="handled"
 					>
 						{loadingSubcategories ? (
 							<View style={styles.loadingContainer}>
@@ -213,20 +214,20 @@ export default function AddAppScreen() {
 							<>
 								{/* NEW FIELD ORDER: Name → Type → Lessons */}
 
-								{/* 1. NAME - NOW FIRST */}
+								{/* 1. NAME - FIRST */}
 								<View style={styles.formSection}>
 									<Text style={styles.label}>Name</Text>
 									<TextInput
-										style={styles.input}
-										placeholder="Enter app name"
-										placeholderTextColor="#C4C4C4"
+										style={[styles.input, focusedField === "appName" && styles.inputFocused]}
 										value={appName}
 										onChangeText={setAppName}
+										onFocus={() => setFocusedField("appName")}
+										onBlur={() => setFocusedField(null)}
 										autoCapitalize="words"
 									/>
 								</View>
 
-								{/* 2. TYPE - NOW SECOND (BOTTOM SHEET) */}
+								{/* 2. TYPE - SECOND (BOTTOM SHEET) */}
 								<TypeSelectorModal
 									categories={subcategories}
 									selectedCategory={selectedSubcategory}
@@ -234,32 +235,34 @@ export default function AddAppScreen() {
 									label="Type"
 								/>
 
-								{/* 3. TOTAL LESSONS - NOW THIRD */}
+								{/* 3. TOTAL LESSONS - THIRD */}
 								<View style={styles.formSection}>
 									<Text style={styles.label}>Total lessons</Text>
 									<TextInput
-										style={styles.input}
-										placeholder="0"
-										placeholderTextColor="#C4C4C4"
+										style={[styles.input, focusedField === "totalLessons" && styles.inputFocused]}
 										value={totalLessons}
 										onChangeText={setTotalLessons}
+										onFocus={() => setFocusedField("totalLessons")}
+										onBlur={() => setFocusedField(null)}
 										keyboardType="number-pad"
 									/>
 								</View>
 							</>
 						)}
 					</ScrollView>
+				</KeyboardAvoidingView>
 
-					{/* ActionButtons OUTSIDE ScrollView - Fixed at bottom */}
+				{/* ActionButtons fixed at bottom - outside KeyboardAvoidingView */}
+				<View style={styles.buttonContainer}>
 					<ActionButtons
 						onSave={handleSave}
 						onCancel={handleCancel}
-						saveText={isEditMode ? "Save Changes" : "Save App"}
+						saveText={isEditMode ? "Save Changes" : "Add to Library"}
 						cancelText="Cancel"
 						loading={loading}
 					/>
 				</View>
-			</KeyboardAvoidingView>
+			</View>
 		</SafeAreaView>
 	);
 }
@@ -270,46 +273,24 @@ const styles = StyleSheet.create({
 	},
 	content: {
 		flex: 1,
-		backgroundColor: colors.gray50, // Light gray background for the whole screen
-	},
-	header: {
-		flexDirection: "row",
-		alignItems: "center",
-		paddingHorizontal: spacing.lg,
-		paddingTop: spacing.sm,
-		paddingBottom: spacing.md,
-		backgroundColor: "transparent", // No background
-		// Removed borderBottomWidth and borderBottomColor
-	},
-	backButton: {
-		width: 40,
-		height: 40,
-		justifyContent: "center",
-		alignItems: "center",
-		marginRight: spacing.sm,
-	},
-	backButtonText: {
-		fontSize: 28,
-		color: "#111827",
-	},
-	title: {
-		fontSize: 18, // Slightly bigger body font
-		fontWeight: "500", // Medium bold
-		color: "#111827",
-		flex: 1,
+		backgroundColor: colors.gray50,
 	},
 	scrollView: {
 		flex: 1,
 	},
 	scrollContent: {
 		padding: spacing.lg,
-		paddingBottom: 180, // Space for fixed buttons
+	},
+	buttonContainer: {
+		paddingHorizontal: spacing.lg,
+		paddingBottom: spacing.lg,
+		backgroundColor: colors.gray50,
 	},
 	loadingContainer: {
 		flex: 1,
 		justifyContent: "center",
 		alignItems: "center",
-		paddingVertical: 100,
+		paddingTop: spacing.xl * 2,
 	},
 	loadingText: {
 		marginTop: spacing.md,
@@ -320,19 +301,23 @@ const styles = StyleSheet.create({
 		marginBottom: spacing.lg,
 	},
 	label: {
-		fontSize: 14,
+		fontSize: 15,
 		fontWeight: "500",
-		color: "#111827",
-		marginBottom: spacing.sm,
+		color: colors.grayMedium,
+		marginBottom: spacing.xs,
 	},
 	input: {
-		backgroundColor: "#FFFFFF", // White background
-		borderRadius: 5,
-		paddingHorizontal: spacing.md,
-		paddingVertical: 14,
+		backgroundColor: "#FFFFFF",
+		paddingHorizontal: 12,
+		paddingVertical: 12,
 		fontSize: 16,
-		color: "#111827",
+		color: colors.grayDarkest,
 		borderWidth: 1,
-		borderColor: "#E5E7EB", // Light gray border
+		borderColor: colors.gray200,
+		borderRadius: borderRadius.sm,
+		minHeight: 48,
+	},
+	inputFocused: {
+		borderColor: colors.primaryAccent,
 	},
 });

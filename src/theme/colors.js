@@ -5,17 +5,17 @@ export const colors = {
 
 	// Whites & Backgrounds
 	white: "#FFFFFF",
-	gray50: "#F7F6F5", // Stone 50
-	grayLightest: "#FAFAF9", // Stone 50
+	gray50: "#FAFAFA", // Neutral 50
+	grayLightest: "#FAFAFA", // Neutral 50
 
-	// Grays (Stone scale)
+	// Grays (Neutral scale)
 	grayLight: "#F5F5F4", // Stone 100
-	gray200: "#E7E5E4", // Stone 200
-	gray300: "#D6D3D1", // Stone 300
-	grayLightMedium: "#A8A19C", // Stone 400
-	grayMedium: "#78716C", // Stone 500
-	grayDark: "#514C49", // Stone 700
-	grayDarkest: "#211E1C", // Stone 900
+	gray200: "#E5E5E5", // Neutral 200
+	gray300: "#D4D4D4", // Neutral 300
+	grayLightMedium: "#A3A3A3", // Neutral 400
+	grayMedium: "#737373", // Neutral 500
+	grayDark: "#404040", // Neutral 700
+	grayDarkest: "#171717", // Neutral 900
 
 	categoryBook: "#E0F2FE",
 	categoryBookIcon: "#0C4A6E",

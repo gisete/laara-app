@@ -198,23 +198,24 @@ export default function AddBookScreen() {
 		<SafeAreaView style={globalStyles.container}>
 			<StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-			<KeyboardAvoidingView
-				style={styles.keyboardView}
-				behavior={Platform.OS === "ios" ? "padding" : "height"}
-				keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-			>
-				<View style={styles.content}>
-					{/* Header */}
-					<FormHeader
-						title={isEditMode ? "Edit book" : showCustomForm ? "Add a book" : "Search Book"}
-						onBack={handleBack}
-					/>
+			<View style={styles.content}>
+				{/* Header */}
+				<FormHeader
+					title={isEditMode ? "Edit book" : showCustomForm ? "Add a book" : "Search Book"}
+					onBack={handleBack}
+				/>
 
+				<KeyboardAvoidingView
+					style={styles.keyboardView}
+					behavior={Platform.OS === "ios" ? "padding" : "height"}
+					keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+				>
 					{/* ScrollView - Form fields only */}
 					<ScrollView
 						style={styles.scrollView}
 						showsVerticalScrollIndicator={false}
 						contentContainerStyle={styles.scrollContent}
+						keyboardShouldPersistTaps="handled"
 					>
 						{loadingSubcategories ? (
 							<View style={styles.loadingContainer}>
@@ -251,20 +252,22 @@ export default function AddBookScreen() {
 								onSubcategoryChange={setSelectedSubcategory}
 							/>
 						)}
-
-						{/* ActionButtons at the end of ScrollView content */}
-						{showCustomForm && (
-							<ActionButtons
-								onSave={handleSave}
-								onCancel={handleCancel}
-								saveText={isEditMode ? "Save Changes" : "Add to Library"}
-								cancelText="Cancel"
-								loading={loading}
-							/>
-						)}
 					</ScrollView>
-				</View>
-			</KeyboardAvoidingView>
+				</KeyboardAvoidingView>
+
+				{/* ActionButtons fixed at bottom - outside KeyboardAvoidingView */}
+				{showCustomForm && (
+					<View style={styles.buttonContainer}>
+						<ActionButtons
+							onSave={handleSave}
+							onCancel={handleCancel}
+							saveText={isEditMode ? "Save Changes" : "Add to Library"}
+							cancelText="Cancel"
+							loading={loading}
+						/>
+					</View>
+				)}
+			</View>
 		</SafeAreaView>
 	);
 }
@@ -282,7 +285,11 @@ const styles = StyleSheet.create({
 	},
 	scrollContent: {
 		padding: spacing.lg,
-		paddingBottom: spacing.xl,
+	},
+	buttonContainer: {
+		paddingHorizontal: spacing.lg,
+		paddingBottom: spacing.lg,
+		backgroundColor: colors.gray50,
 	},
 	loadingContainer: {
 		flex: 1,
