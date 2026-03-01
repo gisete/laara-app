@@ -42,6 +42,7 @@ export default function AddVideoScreen() {
 	// Form State - NEW ORDER: Title, Type, Creator, Videos
 	const [title, setTitle] = useState("");
 	const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+	const [customSubcategory, setCustomSubcategory] = useState("");
 	const [creator, setCreator] = useState("");
 	const [totalVideos, setTotalVideos] = useState("");
 
@@ -76,9 +77,19 @@ export default function AddVideoScreen() {
 
 			if (material) {
 				setTitle(material.name);
-				setSelectedSubcategory(material.subtype || null);
 				setCreator(material.author || "");
 				setTotalVideos(material.total_units?.toString() || "");
+
+				// Check if subtype matches a predefined subcategory
+				const isPredefined = subcategories.includes(material.subtype || "");
+				if (isPredefined) {
+					setSelectedSubcategory(material.subtype || null);
+					setCustomSubcategory("");
+				} else {
+					// If not predefined, select "Other" and populate custom field
+					setSelectedSubcategory("Other");
+					setCustomSubcategory(material.subtype || "");
+				}
 			} else {
 				Alert.alert("Error", "Material not found", [{ text: "OK", onPress: () => router.back() }]);
 			}
@@ -106,6 +117,11 @@ export default function AddVideoScreen() {
 			return false;
 		}
 
+		if (selectedSubcategory === "Other" && !customSubcategory.trim()) {
+			Alert.alert("Custom Subcategory Required", "Please enter a custom subcategory or select a different type.");
+			return false;
+		}
+
 		return true;
 	};
 
@@ -116,10 +132,15 @@ export default function AddVideoScreen() {
 			Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 			setLoading(true);
 
+			// Use custom subcategory if "Other" is selected, otherwise use selected subcategory
+			const subcategoryToSave = selectedSubcategory === "Other"
+				? customSubcategory.trim()
+				: selectedSubcategory;
+
 			const videoData = {
 				name: title.trim(),
 				type: "video",
-				subtype: selectedSubcategory,
+				subtype: subcategoryToSave,
 				author: creator.trim() || null,
 				total_units: totalVideos ? parseInt(totalVideos, 10) : null,
 				language: "english",
@@ -166,7 +187,7 @@ export default function AddVideoScreen() {
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
 			<View style={styles.content}>
 				{/* Header */}
@@ -216,6 +237,23 @@ export default function AddVideoScreen() {
 									onSelectCategory={setSelectedSubcategory}
 									label="Type"
 								/>
+
+								{/* 2.5. CUSTOM SUBCATEGORY - SHOWN IF "Other" SELECTED */}
+								{selectedSubcategory === 'Other' && (
+									<View style={styles.formSection}>
+										<Text style={styles.label}>Custom subcategory</Text>
+										<TextInput
+											style={[styles.input, focusedField === "customSubcategory" && styles.inputFocused]}
+											value={customSubcategory}
+											onChangeText={setCustomSubcategory}
+											onFocus={() => setFocusedField("customSubcategory")}
+											onBlur={() => setFocusedField(null)}
+											placeholder="Enter custom subcategory"
+											placeholderTextColor="#9CA3AF"
+											autoCapitalize="words"
+										/>
+									</View>
+								)}
 
 								{/* 3. CREATOR/CHANNEL - THIRD */}
 								<View style={styles.formSection}>

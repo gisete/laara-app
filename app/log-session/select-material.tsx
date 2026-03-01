@@ -139,15 +139,13 @@ export default function SelectMaterialScreen() {
 	const handleSelectMaterial = (material: Material) => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 		router.push({
-			pathname: "/log-session/details",
+			pathname: "/log-session/active-session",
 			params: {
 				materialId: material.id.toString(),
 				materialName: material.name,
 				materialType: material.type,
 				materialSubtype: material.subtype || "",
-				currentProgress: (material.current_unit || 0).toString(),
-				totalProgress: (material.total_units || 0).toString(),
-				date: sessionDate, // Forward the date
+				date: sessionDate,
 			},
 		});
 	};

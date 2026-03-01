@@ -8,6 +8,9 @@ import MoreOptionsIcon from "@components/icons/MoreOptionsIcon";
 import ProgressBar from "./ProgressBar";
 import SubcategoryTag from "./SubcategoryTag";
 import { router } from "expo-router";
+import { colors } from "@theme/colors";
+import { spacing, borderRadius } from "@theme/spacing";
+import { typography } from "@theme/typography";
 
 interface Material {
 	id: number;
@@ -86,7 +89,7 @@ export default function LibraryItem({
 					<SubcategoryTag label={material.subtype} />
 
 					{/* Metadata component */}
-					<ItemMetadata type={material.type} subtype={material.subtype} totalUnits={material.total_units} />
+					<ItemMetadata type={material.type} totalUnits={material.total_units} />
 
 					{/* Progress bar - only show if material has units */}
 					{totalUnits > 0 && (
@@ -106,10 +109,10 @@ export default function LibraryItem({
 
 const styles = StyleSheet.create({
 	card: {
-		backgroundColor: "#FFFFFF",
-		borderRadius: 8,
-		padding: 12,
-		marginBottom: 10,
+		backgroundColor: colors.white,
+		borderRadius: borderRadius.sm,
+		padding: spacing.sm,
+		marginBottom: spacing.sm,
 		flexDirection: "row",
 		shadowColor: "#000",
 		shadowOffset: {
@@ -132,14 +135,9 @@ const styles = StyleSheet.create({
 	},
 	name: {
 		flex: 1,
-		fontSize: 18,
+		...typography.bodyLarge,
 		fontWeight: "600",
-		color: "#111827",
-		marginRight: 12,
-	},
-	metadataText: {
-		fontSize: 14,
-		color: "#9CA3AF",
-		marginBottom: 4,
+		color: colors.grayDarkest,
+		marginRight: spacing.sm,
 	},
 });

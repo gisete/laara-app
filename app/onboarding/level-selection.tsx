@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, StatusBar 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
-import { updateUserLevel } from "@database/queries";
+import { updateUserLevel, setOnboardingCompleted } from "@database/queries";
 import { colors } from "@theme/colors";
 import { spacing, borderRadius } from "@theme/spacing";
 import { typography } from "@theme/typography";
@@ -42,6 +42,7 @@ export default function LevelSelectionScreen() {
 		try {
 			setLoading(true);
 			await updateUserLevel(null);
+			await setOnboardingCompleted();
 			router.replace("/(tabs)");
 		} catch (error) {
 			console.error("Error skipping level:", error);
@@ -62,6 +63,7 @@ export default function LevelSelectionScreen() {
 		try {
 			setLoading(true);
 			await updateUserLevel(selectedLevel);
+			await setOnboardingCompleted();
 			router.replace("/(tabs)");
 		} catch (error) {
 			console.error("Error saving level:", error);

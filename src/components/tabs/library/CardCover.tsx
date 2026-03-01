@@ -10,6 +10,7 @@ import { colors } from "@theme/colors";
 
 interface CardCoverProps {
 	type: string;
+	size?: number;
 }
 
 // Helper to get category colors from theme
@@ -24,14 +25,16 @@ const getCategoryStyle = (type: string) => {
 	return styles[type] || styles.book;
 };
 
-export default function CardCover({ type }: CardCoverProps) {
+export default function CardCover({ type, size }: CardCoverProps) {
 	const categoryStyle = getCategoryStyle(type);
+	const containerSize = size ?? 70;
+	const iconSize = Math.round(containerSize * (65 / 70));
 
 	// Render the appropriate icon based on material type
 	const renderIcon = () => {
 		const iconProps = {
-			width: 65,
-			height: 65,
+			width: iconSize,
+			height: iconSize,
 			fill: categoryStyle.icon,
 			backgroundColor: categoryStyle.bg,
 		};
@@ -52,7 +55,12 @@ export default function CardCover({ type }: CardCoverProps) {
 		}
 	};
 
-	return <View style={[styles.container, { backgroundColor: categoryStyle.bg }]}>{renderIcon()}</View>;
+	const sizeOverride =
+		size !== undefined
+			? { width: containerSize, height: containerSize, borderRadius: Math.round(containerSize / 6) }
+			: undefined;
+
+	return <View style={[styles.container, sizeOverride, { backgroundColor: categoryStyle.bg }]}>{renderIcon()}</View>;
 }
 
 const styles = StyleSheet.create({

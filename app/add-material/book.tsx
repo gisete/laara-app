@@ -11,8 +11,6 @@ import {
 	StatusBar,
 	StyleSheet,
 	Text,
-	TextInput,
-	TouchableOpacity,
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -21,15 +19,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import ActionButtons from "@components/forms/ActionButtons";
 import BookForm from "@components/forms/BookForm";
 import FormHeader from "@components/forms/FormHeader";
-import SearchBar from "@components/forms/SearchBar";
-import SearchEmptyState from "@components/forms/SearchEmptyState";
 import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMaterial } from "@database/queries";
 
 // Import global styles
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
 import { spacing } from "@theme/spacing";
-import { typography } from "@theme/typography";
 
 export default function AddBookScreen() {
 	const params = useLocalSearchParams();
@@ -37,11 +32,9 @@ export default function AddBookScreen() {
 	const isEditMode = materialId !== null;
 
 	// UI State
-	const [showCustomForm, setShowCustomForm] = useState(isEditMode);
 	const [loading, setLoading] = useState(false);
 	const [loadingSubcategories, setLoadingSubcategories] = useState(true);
 	const [loadingMaterial, setLoadingMaterial] = useState(isEditMode);
-	const [searchQuery, setSearchQuery] = useState("");
 
 	// Subcategories from database
 	const [subcategories, setSubcategories] = useState<string[]>([]);
@@ -49,9 +42,9 @@ export default function AddBookScreen() {
 	// Form State - NEW ORDER: Title, Type, Author, Pages/Chapters
 	const [title, setTitle] = useState("");
 	const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+	const [customSubcategory, setCustomSubcategory] = useState("");
 	const [author, setAuthor] = useState("");
 	const [totalPages, setTotalPages] = useState("");
-	const [totalChapters, setTotalChapters] = useState("");
 
 	// Load subcategories on mount
 	useEffect(() => {
@@ -87,9 +80,20 @@ export default function AddBookScreen() {
 
 			if (material) {
 				setTitle(material.name);
-				setSelectedSubcategory(material.subtype || null);
 				setAuthor(material.author || "");
 				setTotalPages(material.total_units?.toString() || "");
+
+				// Check if subtype matches a predefined subcategory
+				const isPredefined = subcategories.includes(material.subtype || "");
+				if (isPredefined) {
+					setSelectedSubcategory(material.subtype || null);
+					setCustomSubcategory("");
+				} else {
+					// If not predefined, select "Other" and populate custom field
+					setSelectedSubcategory("Other");
+					setCustomSubcategory(material.subtype || "");
+				}
+
 				console.log("Material data loaded for editing:", material.name);
 			} else {
 				Alert.alert("Error", "Material not found", [{ text: "OK", onPress: () => router.back() }]);
@@ -107,15 +111,6 @@ export default function AddBookScreen() {
 		router.back();
 	};
 
-	const handleAddCustom = () => {
-		setShowCustomForm(true);
-		setSearchQuery("");
-	};
-
-	const handleSearch = () => {
-		console.log("Searching for:", searchQuery);
-	};
-
 	const validateForm = (): boolean => {
 		if (!title.trim()) {
 			Alert.alert("Title Required", "Please enter a book title.");
@@ -124,6 +119,11 @@ export default function AddBookScreen() {
 
 		if (!selectedSubcategory) {
 			Alert.alert("Book Type Required", "Please select a book type.");
+			return false;
+		}
+
+		if (selectedSubcategory === "Other" && !customSubcategory.trim()) {
+			Alert.alert("Custom Subcategory Required", "Please enter a custom subcategory or select a different type.");
 			return false;
 		}
 
@@ -137,10 +137,15 @@ export default function AddBookScreen() {
 			Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 			setLoading(true);
 
+			// Use custom subcategory if "Other" is selected, otherwise use selected subcategory
+			const subcategoryToSave = selectedSubcategory === "Other"
+				? customSubcategory.trim()
+				: selectedSubcategory;
+
 			const bookData = {
 				name: title.trim(),
 				type: "book",
-				subtype: selectedSubcategory,
+				subtype: subcategoryToSave,
 				author: author.trim() || null,
 				total_units: totalPages ? parseInt(totalPages, 10) : null,
 				language: "english",
@@ -171,16 +176,7 @@ export default function AddBookScreen() {
 	};
 
 	const handleCancel = () => {
-		if (isEditMode) {
-			router.back();
-		} else {
-			setShowCustomForm(false);
-			setSelectedSubcategory(null);
-			setTitle("");
-			setAuthor("");
-			setTotalPages("");
-			setTotalChapters("");
-		}
+		router.back();
 	};
 
 	if (loadingMaterial) {
@@ -196,14 +192,11 @@ export default function AddBookScreen() {
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
 			<View style={styles.content}>
 				{/* Header */}
-				<FormHeader
-					title={isEditMode ? "Edit book" : showCustomForm ? "Add a book" : "Search Book"}
-					onBack={handleBack}
-				/>
+				<FormHeader title={isEditMode ? "Edit book" : "Add a book"} onBack={handleBack} />
 
 				<KeyboardAvoidingView
 					style={styles.keyboardView}
@@ -222,51 +215,34 @@ export default function AddBookScreen() {
 								<ActivityIndicator size="large" color={colors.primaryAccent} />
 								<Text style={styles.loadingText}>Loading book types...</Text>
 							</View>
-						) : !showCustomForm ? (
-							<>
-								<SearchBar
-									value={searchQuery}
-									onChangeText={setSearchQuery}
-									onSubmit={handleSearch}
-									placeholder="Search by title or ISBN"
-								/>
-								<SearchEmptyState
-									onManualAdd={handleAddCustom}
-									helperText="If you're offline or can't find the book you're looking for you can enter it manually"
-									buttonText="Enter manually"
-									illustration={true}
-								/>
-							</>
 						) : (
 							<BookForm
 								title={title}
 								author={author}
 								totalPages={totalPages}
-								totalChapters={totalChapters}
 								selectedSubcategory={selectedSubcategory}
 								subcategories={subcategories}
+								customSubcategory={customSubcategory}
 								onTitleChange={setTitle}
 								onAuthorChange={setAuthor}
 								onTotalPagesChange={setTotalPages}
-								onTotalChaptersChange={setTotalChapters}
 								onSubcategoryChange={setSelectedSubcategory}
+								onCustomSubcategoryChange={setCustomSubcategory}
 							/>
 						)}
 					</ScrollView>
 				</KeyboardAvoidingView>
 
 				{/* ActionButtons fixed at bottom - outside KeyboardAvoidingView */}
-				{showCustomForm && (
-					<View style={styles.buttonContainer}>
-						<ActionButtons
-							onSave={handleSave}
-							onCancel={handleCancel}
-							saveText={isEditMode ? "Save Changes" : "Add to Library"}
-							cancelText="Cancel"
-							loading={loading}
-						/>
-					</View>
-				)}
+				<View style={styles.buttonContainer}>
+					<ActionButtons
+						onSave={handleSave}
+						onCancel={handleCancel}
+						saveText={isEditMode ? "Save Changes" : "Add to Library"}
+						cancelText="Cancel"
+						loading={loading}
+					/>
+				</View>
 			</View>
 		</SafeAreaView>
 	);
@@ -300,6 +276,6 @@ const styles = StyleSheet.create({
 	loadingText: {
 		marginTop: spacing.md,
 		fontSize: 16,
-		color: "#6B7280",
+		color: colors.grayMedium,
 	},
 });

@@ -6,6 +6,8 @@ import ClockIcon from "@components/icons/small/ClockIcon";
 import MovieIcon from "@components/icons/small/MovieIcon";
 import PageIcon from "@components/icons/small/PageIcon";
 import TargetIcon from "@components/icons/small/TargetIcon";
+import { colors } from "@theme/colors";
+import { spacing } from "@theme/spacing";
 
 interface ItemMetadataProps {
 	type: string;
@@ -14,7 +16,7 @@ interface ItemMetadataProps {
 
 // Helper function to get the appropriate icon component
 const getMetadataIcon = (type: string) => {
-	const iconColor = "#9CA3AF";
+	const iconColor = colors.grayMedium;
 	const iconSize = 14;
 
 	switch (type) {
@@ -77,7 +79,7 @@ export default function ItemMetadata({ type, totalUnits }: ItemMetadataProps) {
 
 const styles = StyleSheet.create({
 	container: {
-		marginBottom: 12,
+		marginBottom: spacing.md,
 	},
 	metadataRow: {
 		flexDirection: "row",
@@ -86,7 +88,7 @@ const styles = StyleSheet.create({
 	},
 	metadataText: {
 		fontSize: 13,
-		color: "#9CA3AF",
+		color: colors.grayMedium,
 		marginLeft: 6,
 	},
 });

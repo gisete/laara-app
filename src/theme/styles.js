@@ -41,6 +41,22 @@ export const globalStyles = StyleSheet.create({
 		...typography.button,
 	},
 
+	buttonOutline: {
+		backgroundColor: colors.white,
+		paddingVertical: 14,
+		paddingHorizontal: 28,
+		borderRadius: borderRadius.sm,
+		borderWidth: 1,
+		borderColor: colors.gray300,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+
+	buttonOutlineText: {
+		color: colors.grayDarkest,
+		...typography.button,
+	},
+
 	buttonSecondaryFilled: {
 		backgroundColor: colors.gray200,
 		paddingVertical: 14,

@@ -1,10 +1,11 @@
 // app/_layout.tsx - Root layout for Expo Router
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { initDatabase } from "@database/database";
+import { getOnboardingCompleted } from "@database/queries";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PortalProvider } from "@gorhom/portal";
 
@@ -12,6 +13,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
 	const [isReady, setIsReady] = useState(false);
+	const [skipOnboarding, setSkipOnboarding] = useState(false);
 
 	const [fontsLoaded] = useFonts({
 		"Domine-Regular": require("../assets/fonts/Domine-Regular.ttf"),
@@ -20,11 +22,13 @@ export default function RootLayout() {
 		"Domine-Bold": require("../assets/fonts/Domine-Bold.ttf"),
 	});
 
-	// Database initialization - BEFORE any conditional returns
+	// Database initialization — check onboarding status before rendering
 	useEffect(() => {
 		async function prepare() {
 			try {
 				await initDatabase();
+				const completed = await getOnboardingCompleted();
+				setSkipOnboarding(completed);
 				console.log("Database initialized successfully");
 			} catch (error) {
 				console.error("Failed to initialize database:", error);
@@ -35,6 +39,13 @@ export default function RootLayout() {
 
 		prepare();
 	}, []);
+
+	// Once the Stack is mounted and onboarding is already done, skip straight to tabs
+	useEffect(() => {
+		if (isReady && fontsLoaded && skipOnboarding) {
+			router.replace("/(tabs)");
+		}
+	}, [isReady, fontsLoaded, skipOnboarding]);
 
 	// Font loading effect - BEFORE any conditional returns
 	useEffect(() => {

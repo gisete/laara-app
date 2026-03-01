@@ -5,6 +5,7 @@ import { colors } from "@theme/colors";
 import { spacing, borderRadius } from "@theme/spacing";
 import { typography } from "@theme/typography";
 import * as Haptics from "expo-haptics";
+import { getRelativeTime } from "@utils/dateHelper";
 import Svg, { Path, Circle, Rect } from "react-native-svg";
 
 interface Material {
@@ -23,7 +24,7 @@ interface RecentMaterialsProps {
 }
 
 // Icon Components
-const BookIcon = ({ size = 24, color = "#374151" }) => (
+const BookIcon = ({ size = 24, color = colors.grayDark }) => (
 	<Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
 		<Path
 			d="M4 19.5C4 18.837 4.26339 18.2011 4.73223 17.7322C5.20107 17.2634 5.83696 17 6.5 17H20"
@@ -42,7 +43,7 @@ const BookIcon = ({ size = 24, color = "#374151" }) => (
 	</Svg>
 );
 
-const AudiobookIcon = ({ size = 24, color = "#374151" }) => (
+const AudioIcon = ({ size = 24, color = colors.grayDark }) => (
 	<Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
 		<Circle cx="12" cy="12" r="10" stroke={color} strokeWidth="2" />
 		<Path
@@ -54,43 +55,7 @@ const AudiobookIcon = ({ size = 24, color = "#374151" }) => (
 	</Svg>
 );
 
-const TextbookIcon = ({ size = 24, color = "#374151" }) => (
-	<Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-		<Path
-			d="M4 19.5C4 18.837 4.26339 18.2011 4.73223 17.7322C5.20107 17.2634 5.83696 17 6.5 17H20"
-			stroke={color}
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		/>
-		<Path
-			d="M6.5 2H20V22H6.5C5.83696 22 5.20107 21.7366 4.73223 21.2678C4.26339 20.7989 4 20.163 4 19.5V4.5C4 3.83696 4.26339 3.20107 4.73223 2.73223C5.20107 2.26339 5.83696 2 6.5 2Z"
-			stroke={color}
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		/>
-		<Path d="M8 7H16M8 11H16M8 15H13" stroke={color} strokeWidth="2" strokeLinecap="round" />
-	</Svg>
-);
-
-const VideoIcon = ({ size = 24, color = "#374151" }) => (
-	<Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-		<Rect x="2" y="5" width="20" height="14" rx="2" stroke={color} strokeWidth="2" />
-		<Path d="M10 9L15 12L10 15V9Z" fill={color} />
-	</Svg>
-);
-
-const AppIcon = ({ size = 24, color = "#374151" }) => (
-	<Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-		<Rect x="3" y="3" width="8" height="8" rx="2" stroke={color} strokeWidth="2" />
-		<Rect x="13" y="3" width="8" height="8" rx="2" stroke={color} strokeWidth="2" />
-		<Rect x="3" y="13" width="8" height="8" rx="2" stroke={color} strokeWidth="2" />
-		<Rect x="13" y="13" width="8" height="8" rx="2" stroke={color} strokeWidth="2" />
-	</Svg>
-);
-
-const PodcastIcon = ({ size = 24, color = "#374151" }) => (
+const PodcastIcon = ({ size = 24, color = colors.grayDark }) => (
 	<Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
 		<Circle cx="12" cy="8" r="2" stroke={color} strokeWidth="2" />
 		<Path
@@ -114,46 +79,51 @@ const PodcastIcon = ({ size = 24, color = "#374151" }) => (
 	</Svg>
 );
 
+const VideoIcon = ({ size = 24, color = colors.grayDark }) => (
+	<Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+		<Rect x="2" y="5" width="20" height="14" rx="2" stroke={color} strokeWidth="2" />
+		<Path d="M10 9L15 12L10 15V9Z" fill={color} />
+	</Svg>
+);
+
+const ClassIcon = ({ size = 24, color = colors.grayDark }) => (
+	<Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+		<Rect x="3" y="4" width="18" height="18" rx="2" stroke={color} strokeWidth="2" />
+		<Path d="M16 2V6M8 2V6M3 10H21" stroke={color} strokeWidth="2" strokeLinecap="round" />
+	</Svg>
+);
+
+const AppIcon = ({ size = 24, color = colors.grayDark }) => (
+	<Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+		<Rect x="3" y="3" width="8" height="8" rx="2" stroke={color} strokeWidth="2" />
+		<Rect x="13" y="3" width="8" height="8" rx="2" stroke={color} strokeWidth="2" />
+		<Rect x="3" y="13" width="8" height="8" rx="2" stroke={color} strokeWidth="2" />
+		<Rect x="13" y="13" width="8" height="8" rx="2" stroke={color} strokeWidth="2" />
+	</Svg>
+);
+
+const ICON_BG: Record<string, string> = {
+	book: colors.categoryBook,
+	audio: colors.categoryAudio,
+	video: colors.categoryVideo,
+	class: colors.categoryClass,
+	app: colors.categoryApp,
+};
+
 // Get the appropriate icon based on material type and subtype
 const MaterialIcon = ({ type, subtype }: { type: string; subtype?: string }) => {
 	const iconSize = 32;
 	const iconColor = colors.grayDark;
 
-	if (type === "book") {
-		return <BookIcon size={iconSize} color={iconColor} />;
-	} else if (type === "audio") {
-		if (subtype === "podcast") {
-			return <PodcastIcon size={iconSize} color={iconColor} />;
-		}
-		return <AudiobookIcon size={iconSize} color={iconColor} />;
-	} else if (type === "class") {
-		if (subtype === "textbook") {
-			return <TextbookIcon size={iconSize} color={iconColor} />;
-		}
-		return <VideoIcon size={iconSize} color={iconColor} />;
-	} else if (type === "app") {
-		return <AppIcon size={iconSize} color={iconColor} />;
+	if (type === "book") return <BookIcon size={iconSize} color={iconColor} />;
+	if (type === "audio") {
+		if (subtype === "podcast") return <PodcastIcon size={iconSize} color={iconColor} />;
+		return <AudioIcon size={iconSize} color={iconColor} />;
 	}
+	if (type === "video") return <VideoIcon size={iconSize} color={iconColor} />;
+	if (type === "class") return <ClassIcon size={iconSize} color={iconColor} />;
+	if (type === "app") return <AppIcon size={iconSize} color={iconColor} />;
 	return <BookIcon size={iconSize} color={iconColor} />;
-};
-
-/**
- * Format relative time (e.g., "1 hour ago", "2 days ago")
- */
-const getRelativeTime = (timestamp: string): string => {
-	const now = new Date();
-	const past = new Date(timestamp);
-	const diffMs = now.getTime() - past.getTime();
-
-	const minutes = Math.floor(diffMs / 60000);
-	const hours = Math.floor(diffMs / 3600000);
-	const days = Math.floor(diffMs / 86400000);
-
-	if (minutes < 1) return "Just now";
-	if (minutes < 60) return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
-	if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
-	if (days === 1) return "Yesterday";
-	return `${days} days ago`;
 };
 
 export default function RecentMaterials({ materials, onContinue }: RecentMaterialsProps) {
@@ -190,7 +160,7 @@ export default function RecentMaterials({ materials, onContinue }: RecentMateria
 			<Text style={styles.header}>Recent Materials</Text>
 			{materials.map((material) => (
 				<View key={material.id} style={styles.materialCard}>
-					<View style={styles.iconContainer}>
+					<View style={[styles.iconContainer, { backgroundColor: ICON_BG[material.type] || colors.categoryBook }]}>
 						<MaterialIcon type={material.type} subtype={material.subtype} />
 					</View>
 
@@ -198,7 +168,7 @@ export default function RecentMaterials({ materials, onContinue }: RecentMateria
 						<Text style={styles.materialName} numberOfLines={1}>
 							{material.name}
 						</Text>
-						<Text numberOfLines={1}>
+						<Text style={styles.sessionInfo} numberOfLines={1}>
 							{getRelativeTime(material.last_session)} • {formatSessionInfo(material)}
 						</Text>
 					</View>
@@ -238,7 +208,6 @@ const styles = StyleSheet.create({
 	iconContainer: {
 		width: 48,
 		height: 48,
-		backgroundColor: colors.categoryBook, // #E0F2FE - Light blue background
 		borderRadius: borderRadius.sm,
 		alignItems: "center",
 		justifyContent: "center",
@@ -253,6 +222,10 @@ const styles = StyleSheet.create({
 		color: colors.grayDarkest,
 		fontWeight: "500",
 		marginBottom: 4,
+	},
+	sessionInfo: {
+		fontSize: 13,
+		color: colors.grayMedium,
 	},
 	continueButton: {
 		paddingHorizontal: spacing.sm,

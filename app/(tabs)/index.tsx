@@ -1,33 +1,33 @@
-// app/(tabs)/index.tsx - Updated Study Screen with Calendar Click Feature
-import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator } from "react-native";
+// app/(tabs)/index.tsx
+import React, { useCallback, useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 import * as Haptics from "expo-haptics";
 
-// Import database queries
-import { getAllMaterials, getSessionByDate, getRecentSessions, getStudyDaysInMonth } from "@database/queries";
+import {
+	getUserSettings,
+	getLanguageByCode,
+	getStudyDaysInRange,
+	getRecentSessions,
+	getRecentlyStudiedMaterials,
+	getStreakCount,
+} from "@database/queries";
 
-// Import components
-import TopBar from "@components/ui/TopBar";
-import EmptyState from "@components/EmptyState";
-import CalendarWeek from "@components/tabs/study/CalendarWeek";
+import { getDayLetter, formatDateToYYYYMMDD, getRelativeTime } from "@utils/dateHelper";
 import CardCover from "@components/tabs/library/CardCover";
 
-// Import theme
-import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
 import { spacing, borderRadius } from "@theme/spacing";
 import { typography } from "@theme/typography";
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+
 interface Activity {
 	id: number;
-	material_id: number;
 	material_name: string;
 	material_type: string;
-	material_subtype?: string;
 	duration_minutes: number;
-	units_studied?: number;
 }
 
 interface Session {
@@ -37,57 +37,84 @@ interface Session {
 	activities: Activity[];
 }
 
+interface SessionRow {
+	key: string;
+	materialName: string;
+	materialType: string;
+	sessionDate: string;
+	durationMinutes: number;
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const getLastSevenDays = (): Date[] => {
+	const today = new Date();
+	return Array.from({ length: 7 }, (_, i) => {
+		const d = new Date(today);
+		d.setDate(today.getDate() - (6 - i));
+		return d;
+	});
+};
+
+const formatDuration = (minutes: number): string => {
+	if (minutes < 60) return `${minutes} min`;
+	const h = Math.floor(minutes / 60);
+	const m = minutes % 60;
+	return m === 0 ? `${h}h` : `${h}h ${m}m`;
+};
+
+const formatSessionDate = (dateStr: string): string => {
+	if (dateStr === formatDateToYYYYMMDD(new Date())) return "Today";
+	return getRelativeTime(dateStr);
+};
+
+// ─── Screen ──────────────────────────────────────────────────────────────────
+
 export default function StudyScreen() {
-	const [materials, setMaterials] = useState([]);
-	const [todaySession, setTodaySession] = useState<Session | null>(null);
-	const [recentSessions, setRecentSessions] = useState<Session[]>([]);
+	const [greeting, setGreeting] = useState("Hello!");
+	const [flag, setFlag] = useState("🌍");
+	const [streakCount, setStreakCount] = useState(0);
 	const [studyDays, setStudyDays] = useState<string[]>([]);
+	const [lastMaterialName, setLastMaterialName] = useState<string | null>(null);
+	const [sessionRows, setSessionRows] = useState<SessionRow[]>([]);
 	const [loading, setLoading] = useState(true);
 
-	// NEW: Selected date state (defaults to today)
-	const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split("T")[0]);
-
-	// Reload data when screen comes into focus or when selectedDate changes
-	useFocusEffect(
-		React.useCallback(() => {
-			loadStudyData();
-		}, [selectedDate])
-	);
-
-	const loadStudyData = async () => {
+	const loadData = async () => {
 		try {
 			setLoading(true);
+			const today = new Date();
+			const windowDates = getLastSevenDays();
+			const windowStart = formatDateToYYYYMMDD(windowDates[0]);
+			const windowEnd = formatDateToYYYYMMDD(today);
 
-			// Check if user has materials
-			const materialsData = await getAllMaterials();
-			setMaterials(materialsData);
+			const [settings, days, recent, materials, streak] = await Promise.all([
+				getUserSettings(),
+				getStudyDaysInRange(windowStart, windowEnd),
+				getRecentSessions(5),
+				getRecentlyStudiedMaterials(1),
+				getStreakCount(),
+			]);
 
-			// Load session for the selected date (not always today)
-			const sessionData = await getSessionByDate(selectedDate);
-			setTodaySession(sessionData);
-
-			// Load study days for calendar
-			const selectedDateObj = new Date(selectedDate);
-			const year = selectedDateObj.getFullYear();
-			const month = selectedDateObj.getMonth() + 1;
-			const daysData = await getStudyDaysInMonth(year, month);
-			setStudyDays(daysData);
-
-			// Load recent sessions (only if no activity on selected date)
-			let recentData = [];
-			if (!sessionData) {
-				recentData = await getRecentSessions(3);
-				setRecentSessions(recentData);
-			} else {
-				setRecentSessions([]);
+			if (settings?.primary_language) {
+				const lang = await getLanguageByCode(settings.primary_language);
+				if (lang?.greeting) setGreeting(lang.greeting);
+				if (lang?.flag) setFlag(lang.flag);
 			}
 
-			console.log("Study data loaded:", {
-				materials: materialsData.length,
-				selectedDate,
-				activities: sessionData?.activities?.length || 0,
-				recentSessions: recentData.length,
-			});
+			setStudyDays(days);
+			setStreakCount(streak);
+			setLastMaterialName((materials as { name: string }[])?.[0]?.name ?? null);
+
+			const rows: SessionRow[] = (recent as Session[]).flatMap((session) =>
+				session.activities.map((activity) => ({
+					key: `${session.id}-${activity.id}`,
+					materialName: activity.material_name,
+					materialType: activity.material_type,
+					sessionDate: session.session_date,
+					durationMinutes: activity.duration_minutes,
+				})),
+			);
+			setSessionRows(rows);
 		} catch (error) {
 			console.error("Error loading study data:", error);
 		} finally {
@@ -95,112 +122,34 @@ export default function StudyScreen() {
 		}
 	};
 
-	// NEW: Handle day press in calendar
-	const handleDayPress = (dateString: string) => {
-		console.log("Day pressed:", dateString);
-		setSelectedDate(dateString);
-		// loadStudyData will be triggered automatically by useEffect
-	};
+	useFocusEffect(
+		useCallback(() => {
+			loadData();
+		}, []),
+	);
 
-	// NEW: Get full day name (e.g., "MONDAY", "TUESDAY")
-	const getDayName = (dateString: string): string => {
-		const date = new Date(dateString);
-		const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
-		return days[date.getDay()];
-	};
-
-	// NEW: Check if selected date is today
-	const isSelectedDateToday = (): boolean => {
-		const today = new Date().toISOString().split("T")[0];
-		return selectedDate === today;
-	};
-
-	// NEW: Format selected date for display (e.g., "October 14")
-	const formatSelectedDate = (): string => {
-		const date = new Date(selectedDate);
-		return date.toLocaleDateString("en-US", { month: "long", day: "numeric" });
-	};
-
-	// NEW: Get section title based on selected date
-	const getSectionTitle = (): string => {
-		if (isSelectedDateToday()) {
-			return "Today's Session";
-		} else {
-			const dayName = getDayName(selectedDate);
-			// Capitalize first letter, lowercase rest: "Monday's Session"
-			const formattedDay = dayName.charAt(0) + dayName.slice(1).toLowerCase();
-			return `${formattedDay}'s Session`;
-		}
-	};
-
-	const handleLogSession = () => {
+	const handleBegin = () => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 		router.push({
 			pathname: "/log-session/select-material",
-			params: {
-				date: selectedDate, // Pass selected date
-			},
+			params: { date: formatDateToYYYYMMDD(new Date()) },
 		});
 	};
 
-	const getRelativeDate = (dateString: string): string => {
-		const date = new Date(dateString);
-		const today = new Date();
-		const yesterday = new Date(today);
-		yesterday.setDate(yesterday.getDate() - 1);
+	const weekDates = getLastSevenDays();
+	const todayStr = formatDateToYYYYMMDD(new Date());
 
-		const dateOnly = date.toISOString().split("T")[0];
-		const todayOnly = today.toISOString().split("T")[0];
-		const yesterdayOnly = yesterday.toISOString().split("T")[0];
-
-		if (dateOnly === todayOnly) return "Today";
-		if (dateOnly === yesterdayOnly) return "Yesterday";
-
-		// Days ago
-		const diffTime = today.getTime() - date.getTime();
-		const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-		if (diffDays <= 7) return `${diffDays} days ago`;
-
-		// Format as date
-		return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-	};
-
-	const formatDuration = (minutes: number): string => {
-		if (minutes < 60) {
-			return `${minutes} min`;
-		}
-		const hours = Math.floor(minutes / 60);
-		const mins = minutes % 60;
-		if (mins === 0) {
-			return `${hours}h`;
-		}
-		return `${hours}h ${mins}m`;
-	};
-
-	const getUnitsText = (activity: Activity): string | null => {
-		if (!activity.units_studied) return null;
-
-		const type = activity.material_type;
-		const units = activity.units_studied;
-
-		if (type === "book") {
-			return `${units} ${units === 1 ? "page" : "pages"}`;
-		} else if (type === "audio") {
-			return `${units} ${units === 1 ? "episode" : "episodes"}`;
-		} else if (type === "video") {
-			return `${units} ${units === 1 ? "video" : "videos"}`;
-		} else if (type === "class") {
-			return `${units} ${units === 1 ? "session" : "sessions"}`;
-		} else if (type === "app") {
-			return `${units} ${units === 1 ? "lesson" : "lessons"}`;
-		}
-		return null;
+	const getDayState = (date: Date): "today" | "studied" | "notStudied" => {
+		const dateStr = formatDateToYYYYMMDD(date);
+		if (dateStr === todayStr) return "today";
+		if (studyDays.includes(dateStr)) return "studied";
+		return "notStudied";
 	};
 
 	if (loading) {
 		return (
-			<SafeAreaView style={globalStyles.container}>
-				<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+			<SafeAreaView style={styles.safeArea}>
+				<StatusBar barStyle="dark-content" backgroundColor={colors.gray50} />
 				<View style={styles.loadingContainer}>
 					<ActivityIndicator size="large" color={colors.primaryAccent} />
 				</View>
@@ -208,88 +157,91 @@ export default function StudyScreen() {
 		);
 	}
 
+	const displayedRows = sessionRows.slice(0, 3);
+
 	return (
-		<SafeAreaView style={globalStyles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+		<SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+			<StatusBar barStyle="dark-content" backgroundColor={colors.gray50} />
 
-			<View style={styles.content}>
-				<TopBar />
+			<View style={styles.topBlock}>
+				<View style={styles.header}>
+					<Text style={styles.greeting}>{greeting}</Text>
+					<View style={styles.statusPill}>
+						<Text style={styles.flagEmoji}>{flag}</Text>
+						<Text style={styles.streakText}>
+							🔥 {streakCount} {streakCount === 1 ? "DAY" : "DAYS"}
+						</Text>
+					</View>
+				</View>
 
-				{/* Show empty state if no materials */}
-				{materials.length === 0 ? (
-					<EmptyState onAddNew={() => router.push("/add-material")} />
-				) : (
-					<ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-						{/* Calendar Week - NOW WITH CLICK HANDLERS */}
-						<CalendarWeek studyDays={studyDays} selectedDate={selectedDate} onDayPress={handleDayPress} />
-
-						{/* Dynamic Title - "TODAY" or day name */}
-						<Text style={styles.todayLabel}>{isSelectedDateToday() ? "TODAY" : getDayName(selectedDate)}</Text>
-
-						{/* Date Display */}
-						<Text style={styles.dateLabel}>{formatSelectedDate()}</Text>
-
-						{/* Log Session / Add Activity Button */}
-						<TouchableOpacity style={styles.logSessionButton} onPress={handleLogSession} activeOpacity={0.9}>
-							<Text style={styles.logSessionText}>
-								{todaySession && todaySession.activities.length > 0 ? "Add Activity" : "Log Study Session"}
-							</Text>
-						</TouchableOpacity>
-
-						{/* Today's Session (if activities exist) */}
-						{todaySession && todaySession.activities.length > 0 && (
-							<View style={styles.todaySessionContainer}>
-								<View style={styles.sessionHeader}>
-									{/* Dynamic section title */}
-									<Text style={styles.sectionTitle}>{getSectionTitle()}</Text>
-									<Text style={styles.sessionSummary}>
-										{formatDuration(todaySession.total_duration)} •{" "}
-										{todaySession.activities.length === 1
-											? "1 activity"
-											: `${todaySession.activities.length} activities`}
+				<View style={styles.calendarStrip}>
+					{weekDates.map((date, i) => {
+						const state = getDayState(date);
+						return (
+							<View key={i} style={styles.dayColumn}>
+								<Text style={styles.dayLabel}>{getDayLetter(date)}</Text>
+								<View style={[styles.dateCircle, state === "today" && styles.dateCircleToday]}>
+									<Text
+										style={[
+											styles.dateNum,
+											state === "today" && styles.dateNumToday,
+											state === "studied" && styles.dateNumStudied,
+											state === "notStudied" && styles.dateNumNotStudied,
+										]}
+									>
+										{date.getDate()}
 									</Text>
 								</View>
-
-								{/* Activities List */}
-								<View style={styles.activitiesList}>
-									{todaySession.activities.map((activity) => (
-										<View key={activity.id} style={styles.activityCard}>
-											<CardCover type={activity.material_type} />
-											<View style={styles.activityInfo}>
-												<Text style={styles.activityName}>{activity.material_name}</Text>
-												<Text style={styles.activityDetails}>
-													{formatDuration(activity.duration_minutes)}
-													{getUnitsText(activity) && ` • ${getUnitsText(activity)}`}
-												</Text>
-											</View>
-										</View>
-									))}
-								</View>
+								<View style={styles.dotContainer}>{state === "studied" && <View style={styles.studiedDot} />}</View>
 							</View>
-						)}
+						);
+					})}
+				</View>
 
-						{/* Recent Sessions (only show if no activities on selected date) */}
-						{(!todaySession || todaySession.activities.length === 0) && recentSessions.length > 0 && (
-							<View style={styles.recentSessionsContainer}>
-								<Text style={styles.sectionTitle}>Recent Sessions</Text>
-								{recentSessions.map((session) => (
-									<View key={session.id} style={styles.recentSessionCard}>
-										<View style={styles.recentSessionHeader}>
-											<Text style={styles.recentSessionDate}>{getRelativeDate(session.session_date)}</Text>
-											<Text style={styles.recentSessionDuration}>{formatDuration(session.total_duration)}</Text>
-										</View>
-										<View style={styles.recentSessionActivities}>
-											{session.activities.map((activity, index) => (
-												<Text key={index} style={styles.recentSessionActivity}>
-													• {activity.material_name} ({formatDuration(activity.duration_minutes)})
-												</Text>
-											))}
-										</View>
-									</View>
-								))}
+				{/* HERO SECTION: Now centers the button in the middle of available space */}
+				<View style={styles.heroSection}>
+					<View style={styles.ctaGroup}>
+						<Text style={styles.readyLabel}>READY TO CONTINUE?</Text>
+						{lastMaterialName ? (
+							<Text style={styles.materialTitle} numberOfLines={1}>
+								{lastMaterialName}
+							</Text>
+						) : null}
+
+						<TouchableOpacity style={styles.beginButton} onPress={handleBegin} activeOpacity={0.85}>
+							<Text style={styles.beginIcon}>▶</Text>
+							<Text style={styles.beginLabel}>BEGIN</Text>
+						</TouchableOpacity>
+					</View>
+				</View>
+			</View>
+
+			<View style={styles.sessionsCard}>
+				<View style={styles.sessionsCardHeader}>
+					<Text style={styles.sessionsCardTitle}>Previous sessions</Text>
+					<TouchableOpacity activeOpacity={0.7}>
+						<Text style={styles.seeAllText}>See all</Text>
+					</TouchableOpacity>
+				</View>
+
+				{displayedRows.length === 0 ? (
+					<Text style={styles.emptyText}>No previous sessions yet</Text>
+				) : (
+					displayedRows.map((row, index) => (
+						<View
+							key={row.key}
+							style={[styles.sessionRow, index === displayedRows.length - 1 && styles.sessionRowLast]}
+						>
+							<CardCover type={row.materialType} size={40} />
+							<View style={styles.sessionInfo}>
+								<Text style={styles.sessionName} numberOfLines={1}>
+									{row.materialName}
+								</Text>
+								<Text style={styles.sessionMeta}>{formatSessionDate(row.sessionDate)}</Text>
 							</View>
-						)}
-					</ScrollView>
+							<Text style={styles.sessionDuration}>{formatDuration(row.durationMinutes)}</Text>
+						</View>
+					))
 				)}
 			</View>
 		</SafeAreaView>
@@ -297,118 +249,160 @@ export default function StudyScreen() {
 }
 
 const styles = StyleSheet.create({
-	content: {
+	safeArea: {
 		flex: 1,
-		paddingHorizontal: spacing.xl,
+		backgroundColor: colors.gray50,
+	},
+	topBlock: {
+		flex: 1, // Takes up all remaining space above the card
 	},
 	loadingContainer: {
 		flex: 1,
 		justifyContent: "center",
 		alignItems: "center",
 	},
-	scrollContent: {
-		flex: 1,
-	},
-	todayLabel: {
-		...typography.headingSmall,
-		color: colors.grayDarkest,
-		marginTop: spacing.lg,
-		marginBottom: 4,
-	},
-	dateLabel: {
-		fontSize: 16,
-		color: colors.grayMedium,
-		marginBottom: spacing.md,
-	},
-	logSessionButton: {
-		backgroundColor: colors.primaryAccent,
-		paddingVertical: 16,
-		borderRadius: borderRadius.sm,
-		alignItems: "center",
-		justifyContent: "center",
-		marginBottom: spacing.xl,
-		shadowColor: colors.primaryAccent,
-		shadowOffset: { width: 0, height: 4 },
-		shadowOpacity: 0.3,
-		shadowRadius: 8,
-		elevation: 8,
-	},
-	logSessionText: {
-		color: colors.white,
-		fontSize: 16,
-		fontWeight: "600",
-	},
-	todaySessionContainer: {
-		marginBottom: spacing.xl,
-	},
-	sessionHeader: {
-		marginBottom: spacing.md,
-	},
-	sectionTitle: {
-		...typography.headingSmall,
-		color: colors.grayDarkest,
-		marginBottom: 4,
-	},
-	sessionSummary: {
-		...typography.bodyMedium,
-		color: colors.grayMedium,
-	},
-	activitiesList: {
-		gap: spacing.sm,
-	},
-	activityCard: {
-		flexDirection: "row",
-		alignItems: "center",
-		padding: spacing.md,
-		backgroundColor: colors.white,
-		borderRadius: borderRadius.sm,
-		borderWidth: 1,
-		borderColor: colors.gray200,
-	},
-	activityInfo: {
-		marginLeft: spacing.md,
-		flex: 1,
-	},
-	activityName: {
-		...typography.bodyLarge,
-		fontWeight: "500",
-		color: colors.grayDarkest,
-		marginBottom: 4,
-	},
-	activityDetails: {
-		...typography.bodySmall,
-		color: colors.grayMedium,
-	},
-	recentSessionsContainer: {
-		marginTop: spacing.lg,
-		marginBottom: spacing.xl,
-	},
-	recentSessionCard: {
-		padding: spacing.md,
-		backgroundColor: colors.grayLightest,
-		borderRadius: borderRadius.sm,
-		marginTop: spacing.sm,
-	},
-	recentSessionHeader: {
+	header: {
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
-		marginBottom: spacing.sm,
+		paddingHorizontal: spacing.lg,
+		paddingTop: spacing.md,
+		paddingBottom: spacing.xs,
 	},
-	recentSessionDate: {
-		...typography.bodyLarge,
-		fontWeight: "600",
+	greeting: {
+		fontFamily: "Domine-Bold",
+		fontSize: 32,
 		color: colors.grayDarkest,
 	},
-	recentSessionDuration: {
-		...typography.bodyMedium,
-		color: colors.grayMedium,
+	statusPill: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: colors.primaryAccent,
+		paddingVertical: 6,
+		paddingHorizontal: spacing.sm,
+		borderRadius: borderRadius.pill,
+		gap: 6,
 	},
-	recentSessionActivities: {
-		gap: 4,
+	flagEmoji: { fontSize: 16 },
+	streakText: {
+		fontSize: 11,
+		fontWeight: "800",
+		color: colors.white,
+		letterSpacing: 0.5,
 	},
-	recentSessionActivity: {
-		...typography.bodySmall,
+	calendarStrip: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		paddingHorizontal: spacing.lg,
+		paddingTop: spacing.md,
+		paddingBottom: spacing.xs,
+	},
+	dayColumn: { alignItems: "center", width: 38 },
+	dayLabel: {
+		fontSize: 10,
+		fontWeight: "700",
 		color: colors.grayMedium,
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+		marginBottom: 6,
+	},
+	dateCircle: {
+		width: 32,
+		height: 32,
+		borderRadius: 16,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	dateCircleToday: { backgroundColor: colors.grayDarkest },
+	dateNum: { fontSize: 13, fontWeight: "600" },
+	dateNumToday: { color: colors.white },
+	dateNumStudied: { color: colors.grayDarkest },
+	dateNumNotStudied: { color: colors.grayMedium },
+	dotContainer: { height: 8, alignItems: "center", justifyContent: "center", marginTop: 3 },
+	studiedDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primaryAccent },
+
+	heroSection: {
+		flex: 1, // Expands to fill the space between calendar and card
+		alignItems: "center",
+		justifyContent: "center", // Centers the ctaGroup vertically
+	},
+	ctaGroup: { alignItems: "center" },
+	readyLabel: {
+		fontSize: 10,
+		fontWeight: "700",
+		letterSpacing: 1.5,
+		color: colors.grayMedium,
+		textTransform: "uppercase",
+		marginBottom: 4,
+	},
+	materialTitle: {
+		fontFamily: "Domine-Medium",
+		fontStyle: "italic",
+		fontSize: 15,
+		color: colors.grayLightMedium,
+		marginBottom: spacing.md,
+		maxWidth: 260,
+		textAlign: "center",
+	},
+	beginButton: {
+		width: 144,
+		height: 144,
+		borderRadius: 72,
+		backgroundColor: colors.primaryAccent,
+		alignItems: "center",
+		justifyContent: "center",
+		shadowColor: colors.grayDarkest,
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.15,
+		shadowRadius: 8,
+		elevation: 4,
+	},
+	beginIcon: { fontSize: 32, color: colors.white, marginLeft: 4, marginBottom: 2 },
+	beginLabel: {
+		fontSize: 11,
+		fontWeight: "800",
+		color: colors.white,
+		letterSpacing: 2,
+		textTransform: "uppercase",
+	},
+	sessionsCard: {
+		backgroundColor: colors.white,
+		borderTopLeftRadius: 28,
+		borderTopRightRadius: 28,
+		paddingHorizontal: spacing.lg,
+		paddingTop: spacing.xl,
+		paddingBottom: spacing.lg, // Adjust if you want more space at the bottom
+	},
+	sessionsCardHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		marginBottom: spacing.md,
+	},
+	sessionsCardTitle: { ...typography.headingSmall, color: colors.grayDarkest },
+	seeAllText: { fontSize: 14, fontWeight: "600", color: colors.primaryAccent },
+	emptyText: {
+		fontSize: 15,
+		color: colors.grayMedium,
+		fontStyle: "italic",
+		textAlign: "center",
+		paddingVertical: spacing.lg,
+	},
+	sessionRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		paddingVertical: 14,
+		borderBottomWidth: 1,
+		borderBottomColor: colors.gray200,
+	},
+	sessionRowLast: { borderBottomWidth: 0 },
+	sessionInfo: { flex: 1 },
+	sessionName: { fontSize: 15, fontWeight: "700", color: colors.grayDarkest, marginBottom: 2 },
+	sessionMeta: { fontSize: 12, color: colors.grayMedium },
+	sessionDuration: {
+		fontFamily: "Domine-Medium",
+		fontStyle: "italic",
+		fontSize: 14,
+		color: colors.grayDark,
 	},
 });

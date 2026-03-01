@@ -174,6 +174,24 @@ export const getStudyDaysInMonth = (year, month) => {
 	});
 };
 
+export const getStudyDaysInRange = (startDate, endDate) => {
+	return new Promise((resolve, reject) => {
+		try {
+			const result = db.getAllSync(
+				`SELECT DISTINCT session_date
+				FROM daily_sessions
+				WHERE session_date BETWEEN ? AND ?
+				ORDER BY session_date`,
+				[startDate, endDate]
+			);
+			resolve(result.map((row) => row.session_date));
+		} catch (error) {
+			console.error("Error fetching study days in range:", error);
+			reject(error);
+		}
+	});
+};
+
 // ============ LANGUAGES QUERIES ============
 
 export const getAllActiveLanguages = () => {
@@ -589,21 +607,23 @@ export const getRecentSessions = (limit = 3) => {
 
 /**
  * Add an activity to a session
- * @param {object} activityData - { session_id, material_id, duration_minutes, units_studied }
+ * @param {object} activityData - { session_id, material_id, duration_minutes, units_studied, pages_read, notes }
  * @returns {Promise<number>} Activity ID
  */
 export const addSessionActivity = (activityData) => {
 	return new Promise((resolve, reject) => {
 		try {
 			const result = db.runSync(
-				`INSERT INTO session_activities 
-				(session_id, material_id, duration_minutes, units_studied) 
-				VALUES (?, ?, ?, ?)`,
+				`INSERT INTO session_activities
+				(session_id, material_id, duration_minutes, units_studied, pages_read, notes)
+				VALUES (?, ?, ?, ?, ?, ?)`,
 				[
 					activityData.session_id,
 					activityData.material_id,
 					activityData.duration_minutes,
 					activityData.units_studied || null,
+					activityData.pages_read || null,
+					activityData.notes || null,
 				]
 			);
 			console.log("Activity added with ID:", result.lastInsertRowId);
@@ -766,6 +786,81 @@ export const getUserLevel = () => {
 		} catch (error) {
 			console.error("Error getting user level:", error);
 			reject(error);
+		}
+	});
+};
+
+/**
+ * Check whether the user has completed onboarding.
+ * @returns {Promise<boolean>}
+ */
+export const getOnboardingCompleted = () => {
+	return new Promise((resolve, reject) => {
+		try {
+			const result = db.getFirstSync("SELECT onboarding_completed FROM user_settings WHERE id = 1");
+			resolve(result?.onboarding_completed === 1);
+		} catch (error) {
+			console.error("Error getting onboarding status:", error);
+			resolve(false); // Safe default: show onboarding
+		}
+	});
+};
+
+/**
+ * Mark onboarding as completed.
+ * @returns {Promise<void>}
+ */
+export const setOnboardingCompleted = () => {
+	return new Promise((resolve, reject) => {
+		try {
+			db.runSync("UPDATE user_settings SET onboarding_completed = 1 WHERE id = 1");
+			resolve();
+		} catch (error) {
+			console.error("Error setting onboarding completed:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
+ * Calculate current study streak (consecutive days with a daily_sessions entry).
+ * Counts backward from today; if today has no session yet, starts from yesterday.
+ * @returns {Promise<number>}
+ */
+export const getStreakCount = () => {
+	return new Promise((resolve) => {
+		try {
+			const rows = db.getAllSync(`SELECT session_date FROM daily_sessions ORDER BY session_date DESC`);
+
+			if (!rows || rows.length === 0) {
+				resolve(0);
+				return;
+			}
+
+			const dateSet = new Set(rows.map((r) => r.session_date));
+			const todayStr = new Date().toISOString().split("T")[0];
+
+			// Start from today if studied; otherwise start from yesterday to preserve streak
+			const cursor = new Date();
+			if (!dateSet.has(todayStr)) {
+				cursor.setDate(cursor.getDate() - 1);
+			}
+
+			let streak = 0;
+			while (true) {
+				const dateStr = cursor.toISOString().split("T")[0];
+				if (dateSet.has(dateStr)) {
+					streak++;
+					cursor.setDate(cursor.getDate() - 1);
+				} else {
+					break;
+				}
+			}
+
+			resolve(streak);
+		} catch (error) {
+			console.error("Error getting streak count:", error);
+			resolve(0);
 		}
 	});
 };

@@ -1,7 +1,7 @@
 // database/database.js - Updated initialization with language migration
 
 import * as SQLite from "expo-sqlite";
-import { migrateLanguages } from "@database/migrations";
+import { migrateLanguages, migrateBookSubcategories, migrateAllSubcategories } from "@database/migrations";
 
 const db = SQLite.openDatabaseSync("laara.db");
 
@@ -151,6 +151,34 @@ export const initDatabase = () => {
 				console.error("Error adding proficiency_level column:", error);
 			}
 
+			// Migrate user_settings: add onboarding_completed column
+			try {
+				const settingsColumns = db.getAllSync("PRAGMA table_info(user_settings)");
+				const hasOnboardingCompleted = settingsColumns.some((col) => col.name === "onboarding_completed");
+
+				if (!hasOnboardingCompleted) {
+					db.execSync("ALTER TABLE user_settings ADD COLUMN onboarding_completed INTEGER DEFAULT 0");
+				}
+			} catch (error) {
+				console.error("Error adding onboarding_completed column:", error);
+			}
+
+			// Migrate session_activities: add pages_read and notes columns
+			try {
+				const activityColumns = db.getAllSync("PRAGMA table_info(session_activities)");
+				const hasPagesRead = activityColumns.some((col) => col.name === "pages_read");
+				const hasNotes = activityColumns.some((col) => col.name === "notes");
+
+				if (!hasPagesRead) {
+					db.execSync("ALTER TABLE session_activities ADD COLUMN pages_read INTEGER");
+				}
+				if (!hasNotes) {
+					db.execSync("ALTER TABLE session_activities ADD COLUMN notes TEXT");
+				}
+			} catch (error) {
+				console.error("Error adding session_activities columns:", error);
+			}
+
 			// Insert default settings if not exists
 			const settingsExist = db.getFirstSync("SELECT id FROM user_settings WHERE id = 1");
 			if (!settingsExist) {
@@ -224,35 +252,55 @@ export const initDatabase = () => {
 				console.log("Populating subcategories...");
 
 				const subcategories = [
-					// Books
+					// Books (8 + Other)
 					{ category_code: "book", name: "Textbook", display_order: 1 },
-					{ category_code: "book", name: "Fiction", display_order: 2 },
-					{ category_code: "book", name: "Reference", display_order: 3 },
-					{ category_code: "book", name: "Custom", display_order: 4 },
+					{ category_code: "book", name: "Grammar", display_order: 2 },
+					{ category_code: "book", name: "Vocabulary", display_order: 3 },
+					{ category_code: "book", name: "Reader", display_order: 4 },
+					{ category_code: "book", name: "Dictionary", display_order: 5 },
+					{ category_code: "book", name: "Comics", display_order: 6 },
+					{ category_code: "book", name: "Fiction", display_order: 7 },
+					{ category_code: "book", name: "Non-fiction", display_order: 8 },
+					{ category_code: "book", name: "Other", display_order: 99 },
 
-					// Audio
+					// Audio (6 + Other)
 					{ category_code: "audio", name: "Podcast", display_order: 1 },
 					{ category_code: "audio", name: "Audiobook", display_order: 2 },
-					{ category_code: "audio", name: "Audio Lesson", display_order: 3 },
-					{ category_code: "audio", name: "Music/Songs", display_order: 4 },
-					{ category_code: "audio", name: "Custom", display_order: 5 },
+					{ category_code: "audio", name: "Course", display_order: 3 },
+					{ category_code: "audio", name: "Music", display_order: 4 },
+					{ category_code: "audio", name: "Radio", display_order: 5 },
+					{ category_code: "audio", name: "Conversations", display_order: 6 },
+					{ category_code: "audio", name: "Other", display_order: 99 },
 
-					// Video
-					{ category_code: "video", name: "YouTube Series", display_order: 1 },
-					{ category_code: "video", name: "Movie/Film", display_order: 2 },
-					{ category_code: "video", name: "TV Show", display_order: 3 },
-					{ category_code: "video", name: "Custom", display_order: 4 },
+					// Video (8 + Other)
+					{ category_code: "video", name: "YouTube", display_order: 1 },
+					{ category_code: "video", name: "TV Show", display_order: 2 },
+					{ category_code: "video", name: "Movie", display_order: 3 },
+					{ category_code: "video", name: "Documentary", display_order: 4 },
+					{ category_code: "video", name: "Course", display_order: 5 },
+					{ category_code: "video", name: "News", display_order: 6 },
+					{ category_code: "video", name: "Shorts", display_order: 7 },
+					{ category_code: "video", name: "Live Stream", display_order: 8 },
+					{ category_code: "video", name: "Other", display_order: 99 },
 
-					// Class
-					{ category_code: "class", name: "In-person Class", display_order: 1 },
-					{ category_code: "class", name: "Online Class", display_order: 2 },
-					{ category_code: "class", name: "Workshop", display_order: 3 },
-					{ category_code: "class", name: "Custom", display_order: 4 },
+					// Class (5 + Other)
+					{ category_code: "class", name: "Online", display_order: 1 },
+					{ category_code: "class", name: "In-person", display_order: 2 },
+					{ category_code: "class", name: "Conversation", display_order: 3 },
+					{ category_code: "class", name: "University", display_order: 4 },
+					{ category_code: "class", name: "Immersion", display_order: 5 },
+					{ category_code: "class", name: "Other", display_order: 99 },
 
-					// App
-					{ category_code: "app", name: "Language Learning App", display_order: 1 },
+					// App (8 + Other)
+					{ category_code: "app", name: "Comprehensive", display_order: 1 },
 					{ category_code: "app", name: "Flashcards", display_order: 2 },
-					{ category_code: "app", name: "Custom", display_order: 3 },
+					{ category_code: "app", name: "Reading", display_order: 3 },
+					{ category_code: "app", name: "Listening", display_order: 4 },
+					{ category_code: "app", name: "Speaking", display_order: 5 },
+					{ category_code: "app", name: "Grammar", display_order: 6 },
+					{ category_code: "app", name: "Dictionary", display_order: 7 },
+					{ category_code: "app", name: "Exchange", display_order: 8 },
+					{ category_code: "app", name: "Other", display_order: 99 },
 				];
 
 				subcategories.forEach((sub) => {
@@ -268,6 +316,13 @@ export const initDatabase = () => {
 				});
 
 				console.log("Subcategories populated");
+			} else {
+				// Check if subcategories need migration to new system with "Other" option
+				console.log("Checking if subcategories need migration...");
+				const migrationSuccess = migrateAllSubcategories();
+				if (migrationSuccess) {
+					console.log("Subcategory migration completed successfully");
+				}
 			}
 
 			resolve();

@@ -1,4 +1,4 @@
-// app/add-material/audio.tsx - UPDATED with new field order
+// app/add-material/audio.tsx
 import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -12,33 +12,27 @@ import {
 	StyleSheet,
 	Text,
 	TextInput,
-	TouchableOpacity,
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import ActionButtons from "@components/forms/ActionButtons";
 import FormHeader from "@components/forms/FormHeader";
-import SearchBar from "@components/forms/SearchBar";
-import SearchEmptyState from "@components/forms/SearchEmptyState";
 import TypeSelectorModal from "@components/forms/TypeSelectorModal";
 import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMaterial } from "@database/queries";
 
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
 import { borderRadius, spacing } from "@theme/spacing";
-import { typography } from "@theme/typography";
 
 export default function AddAudioScreen() {
 	const params = useLocalSearchParams();
 	const materialId = params.id ? parseInt(params.id as string) : null;
 	const isEditMode = materialId !== null;
 
-	const [showCustomForm, setShowCustomForm] = useState(isEditMode);
 	const [loading, setLoading] = useState(false);
 	const [loadingSubcategories, setLoadingSubcategories] = useState(true);
 	const [loadingMaterial, setLoadingMaterial] = useState(isEditMode);
-	const [searchQuery, setSearchQuery] = useState("");
 	const [focusedField, setFocusedField] = useState<string | null>(null);
 
 	const [subcategories, setSubcategories] = useState<string[]>([]);
@@ -46,6 +40,7 @@ export default function AddAudioScreen() {
 	// Form State - NEW ORDER: Title, Type, Creator, Episodes
 	const [title, setTitle] = useState("");
 	const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+	const [customSubcategory, setCustomSubcategory] = useState("");
 	const [creator, setCreator] = useState("");
 	const [totalEpisodes, setTotalEpisodes] = useState("");
 
@@ -80,9 +75,19 @@ export default function AddAudioScreen() {
 
 			if (material) {
 				setTitle(material.name);
-				setSelectedSubcategory(material.subtype || null);
 				setCreator(material.author || "");
 				setTotalEpisodes(material.total_units?.toString() || "");
+
+				// Check if subtype matches a predefined subcategory
+				const isPredefined = subcategories.includes(material.subtype || "");
+				if (isPredefined) {
+					setSelectedSubcategory(material.subtype || null);
+					setCustomSubcategory("");
+				} else {
+					// If not predefined, select "Other" and populate custom field
+					setSelectedSubcategory("Other");
+					setCustomSubcategory(material.subtype || "");
+				}
 			} else {
 				Alert.alert("Error", "Material not found", [{ text: "OK", onPress: () => router.back() }]);
 			}
@@ -99,15 +104,6 @@ export default function AddAudioScreen() {
 		router.back();
 	};
 
-	const handleAddCustom = () => {
-		setShowCustomForm(true);
-		setSearchQuery("");
-	};
-
-	const handleSearch = () => {
-		console.log("Searching for:", searchQuery);
-	};
-
 	const validateForm = (): boolean => {
 		if (!title.trim()) {
 			Alert.alert("Title Required", "Please enter an audio title.");
@@ -116,6 +112,11 @@ export default function AddAudioScreen() {
 
 		if (!selectedSubcategory) {
 			Alert.alert("Audio Type Required", "Please select an audio type.");
+			return false;
+		}
+
+		if (selectedSubcategory === "Other" && !customSubcategory.trim()) {
+			Alert.alert("Custom Subcategory Required", "Please enter a custom subcategory or select a different type.");
 			return false;
 		}
 
@@ -129,10 +130,15 @@ export default function AddAudioScreen() {
 			Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 			setLoading(true);
 
+			// Use custom subcategory if "Other" is selected, otherwise use selected subcategory
+			const subcategoryToSave = selectedSubcategory === "Other"
+				? customSubcategory.trim()
+				: selectedSubcategory;
+
 			const audioData = {
 				name: title.trim(),
 				type: "audio",
-				subtype: selectedSubcategory,
+				subtype: subcategoryToSave,
 				author: creator.trim() || null,
 				total_units: totalEpisodes ? parseInt(totalEpisodes, 10) : null,
 				language: "english",
@@ -163,15 +169,7 @@ export default function AddAudioScreen() {
 	};
 
 	const handleCancel = () => {
-		if (isEditMode) {
-			router.back();
-		} else {
-			setShowCustomForm(false);
-			setSelectedSubcategory(null);
-			setTitle("");
-			setCreator("");
-			setTotalEpisodes("");
-		}
+		router.back();
 	};
 
 	if (loadingMaterial) {
@@ -187,14 +185,11 @@ export default function AddAudioScreen() {
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
 			<View style={styles.content}>
 				{/* Header */}
-				<FormHeader
-					title={isEditMode ? "Edit audio" : showCustomForm ? "Add audio" : "Search Audio"}
-					onBack={handleBack}
-				/>
+				<FormHeader title={isEditMode ? "Edit audio" : "Add audio"} onBack={handleBack} />
 
 				<KeyboardAvoidingView
 					style={styles.keyboardView}
@@ -213,21 +208,6 @@ export default function AddAudioScreen() {
 								<ActivityIndicator size="large" color={colors.primaryAccent} />
 								<Text style={styles.loadingText}>Loading audio types...</Text>
 							</View>
-						) : !showCustomForm ? (
-							<>
-								<SearchBar
-									value={searchQuery}
-									onChangeText={setSearchQuery}
-									onSubmit={handleSearch}
-									placeholder="Search by title"
-								/>
-								<SearchEmptyState
-									onManualAdd={handleAddCustom}
-									helperText="If you're offline or can't find the audio content you're looking for you can enter it manually"
-									buttonText="Enter manually"
-									illustration={true}
-								/>
-							</>
 						) : (
 							<>
 								{/* NEW FIELD ORDER: Title → Type → Creator → Episodes */}
@@ -252,6 +232,23 @@ export default function AddAudioScreen() {
 									onSelectCategory={setSelectedSubcategory}
 									label="Type"
 								/>
+
+								{/* 2.5. CUSTOM SUBCATEGORY - SHOWN IF "Other" SELECTED */}
+								{selectedSubcategory === 'Other' && (
+									<View style={styles.formSection}>
+										<Text style={styles.label}>Custom subcategory</Text>
+										<TextInput
+											style={[styles.input, focusedField === "customSubcategory" && styles.inputFocused]}
+											value={customSubcategory}
+											onChangeText={setCustomSubcategory}
+											onFocus={() => setFocusedField("customSubcategory")}
+											onBlur={() => setFocusedField(null)}
+											placeholder="Enter custom subcategory"
+											placeholderTextColor="#9CA3AF"
+											autoCapitalize="words"
+										/>
+									</View>
+								)}
 
 								{/* 3. CREATOR/HOST - THIRD */}
 								<View style={styles.formSection}>
@@ -284,17 +281,15 @@ export default function AddAudioScreen() {
 				</KeyboardAvoidingView>
 
 				{/* ActionButtons fixed at bottom - outside KeyboardAvoidingView */}
-				{showCustomForm && (
-					<View style={styles.buttonContainer}>
-						<ActionButtons
-							onSave={handleSave}
-							onCancel={handleCancel}
-							saveText={isEditMode ? "Save Changes" : "Add to Library"}
-							cancelText="Cancel"
-							loading={loading}
-						/>
-					</View>
-				)}
+				<View style={styles.buttonContainer}>
+					<ActionButtons
+						onSave={handleSave}
+						onCancel={handleCancel}
+						saveText={isEditMode ? "Save Changes" : "Add to Library"}
+						cancelText="Cancel"
+						loading={loading}
+					/>
+				</View>
 			</View>
 		</SafeAreaView>
 	);
