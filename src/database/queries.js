@@ -972,6 +972,79 @@ export const clearAllUserData = () => {
 	});
 };
 
+// ============ REPORTS QUERIES ============
+
+/**
+ * Get aggregated report data for a date range.
+ * @param {string} startDate - YYYY-MM-DD (inclusive)
+ * @param {string} endDate   - YYYY-MM-DD (inclusive)
+ * @returns {Promise<{totalMinutes, sessionCount, daysStudied, byType, mostStudiedMaterial, unitsByType}>}
+ */
+export const getReportData = (startDate, endDate) => {
+	return new Promise((resolve, reject) => {
+		try {
+			const totals = db.getFirstSync(
+				`SELECT
+					COALESCE(SUM(sa.duration_minutes), 0) as totalMinutes,
+					COUNT(DISTINCT ds.id) as sessionCount,
+					COUNT(DISTINCT ds.session_date) as daysStudied
+				FROM daily_sessions ds
+				LEFT JOIN session_activities sa ON sa.session_id = ds.id
+				WHERE ds.session_date BETWEEN ? AND ?`,
+				[startDate, endDate]
+			);
+
+			const byType = db.getAllSync(
+				`SELECT m.type, COALESCE(SUM(sa.duration_minutes), 0) as totalMinutes
+				FROM session_activities sa
+				JOIN daily_sessions ds ON sa.session_id = ds.id
+				JOIN materials m ON sa.material_id = m.id
+				WHERE ds.session_date BETWEEN ? AND ?
+				GROUP BY m.type
+				ORDER BY totalMinutes DESC`,
+				[startDate, endDate]
+			);
+
+			const mostStudiedMaterial = db.getFirstSync(
+				`SELECT m.name, m.type, m.subtype,
+					COALESCE(SUM(sa.duration_minutes), 0) as totalMinutes
+				FROM session_activities sa
+				JOIN daily_sessions ds ON sa.session_id = ds.id
+				JOIN materials m ON sa.material_id = m.id
+				WHERE ds.session_date BETWEEN ? AND ?
+				GROUP BY m.id, m.name, m.type, m.subtype
+				ORDER BY totalMinutes DESC
+				LIMIT 1`,
+				[startDate, endDate]
+			);
+
+			const unitsByType = db.getAllSync(
+				`SELECT m.type, COALESCE(SUM(sa.units_studied), 0) as totalUnits
+				FROM session_activities sa
+				JOIN daily_sessions ds ON sa.session_id = ds.id
+				JOIN materials m ON sa.material_id = m.id
+				WHERE ds.session_date BETWEEN ? AND ?
+					AND sa.units_studied IS NOT NULL
+				GROUP BY m.type
+				HAVING totalUnits > 0`,
+				[startDate, endDate]
+			);
+
+			resolve({
+				totalMinutes: totals?.totalMinutes ?? 0,
+				sessionCount: totals?.sessionCount ?? 0,
+				daysStudied: totals?.daysStudied ?? 0,
+				byType: byType || [],
+				mostStudiedMaterial: mostStudiedMaterial || null,
+				unitsByType: unitsByType || [],
+			});
+		} catch (error) {
+			console.error("Error fetching report data:", error);
+			reject(error);
+		}
+	});
+};
+
 // ============ LEVELS QUERIES ============
 
 /**

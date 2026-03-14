@@ -18,6 +18,7 @@ import { router } from "expo-router";
 import Svg, { Path } from "react-native-svg";
 
 import { clearAllUserData, getLanguageByCode, getLevels } from "@database/queries";
+import ScreenHeader from "@components/ui/ScreenHeader";
 import { useUserProfile } from "@hooks/useUserProfile";
 
 import { colors } from "@theme/colors";
@@ -197,7 +198,7 @@ export default function SettingsScreen() {
 				showsVerticalScrollIndicator={false}
 				keyboardShouldPersistTaps="handled"
 			>
-				<Text style={styles.screenTitle}>Settings</Text>
+				<ScreenHeader title="Settings" />
 
 				{/* ─── MY LANGUAGE ────────────────────────────────────────── */}
 				<Text style={globalStyles.inputLabel}>My language</Text>
@@ -383,14 +384,7 @@ const styles = StyleSheet.create({
 	},
 	scroll: { flex: 1 },
 	scrollContent: {
-		paddingHorizontal: spacing.lg,
-		paddingTop: spacing.md,
-	},
-	screenTitle: {
-		fontFamily: "Domine-Bold",
-		fontSize: 32,
-		color: colors.grayDarkest,
-		marginBottom: spacing.lg,
+		paddingHorizontal: spacing.md,
 	},
 
 	// Section card

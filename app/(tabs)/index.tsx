@@ -165,9 +165,16 @@ export default function StudyScreen() {
 
 			<View style={styles.topBlock}>
 				<View style={styles.header}>
-					<Text style={styles.greeting}>{greeting}</Text>
+					<View style={styles.greetingRow}>
+						<Text style={styles.greeting}>{greeting}</Text>
+						<TouchableOpacity
+							onPress={() => console.log("language selector pressed")}
+							activeOpacity={0.7}
+						>
+							<Text style={styles.flagEmoji}>{flag}</Text>
+						</TouchableOpacity>
+					</View>
 					<View style={styles.statusPill}>
-						<Text style={styles.flagEmoji}>{flag}</Text>
 						<Text style={styles.streakText}>
 							🔥 {streakCount} {streakCount === 1 ? "DAY" : "DAYS"}
 						</Text>
@@ -201,7 +208,9 @@ export default function StudyScreen() {
 				{/* HERO SECTION: Now centers the button in the middle of available space */}
 				<View style={styles.heroSection}>
 					<View style={styles.ctaGroup}>
-						<Text style={styles.readyLabel}>READY TO CONTINUE?</Text>
+						<Text style={styles.readyLabel}>
+						{sessionRows.length === 0 && lastMaterialName === null ? "READY TO START?" : "READY TO CONTINUE?"}
+					</Text>
 						{lastMaterialName ? (
 							<Text style={styles.materialTitle} numberOfLines={1}>
 								{lastMaterialName}
@@ -219,13 +228,15 @@ export default function StudyScreen() {
 			<View style={styles.sessionsCard}>
 				<View style={styles.sessionsCardHeader}>
 					<Text style={styles.sessionsCardTitle}>Previous sessions</Text>
-					<TouchableOpacity activeOpacity={0.7}>
-						<Text style={styles.seeAllText}>See all</Text>
-					</TouchableOpacity>
+					{sessionRows.length > 0 && (
+						<TouchableOpacity activeOpacity={0.7}>
+							<Text style={styles.seeAllText}>See all</Text>
+						</TouchableOpacity>
+					)}
 				</View>
 
 				{displayedRows.length === 0 ? (
-					<Text style={styles.emptyText}>No previous sessions yet</Text>
+					<Text style={styles.emptyText}>Your previous sessions will appear here</Text>
 				) : (
 					displayedRows.map((row, index) => (
 						<View
@@ -269,9 +280,14 @@ const styles = StyleSheet.create({
 		paddingTop: spacing.md,
 		paddingBottom: spacing.xs,
 	},
+	greetingRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: spacing.xs,
+	},
 	greeting: {
 		fontFamily: "Domine-Bold",
-		fontSize: 32,
+		fontSize: 30,
 		color: colors.grayDarkest,
 	},
 	statusPill: {
@@ -281,9 +297,8 @@ const styles = StyleSheet.create({
 		paddingVertical: 6,
 		paddingHorizontal: spacing.sm,
 		borderRadius: borderRadius.pill,
-		gap: 6,
 	},
-	flagEmoji: { fontSize: 16 },
+	flagEmoji: { fontSize: 24 },
 	streakText: {
 		fontSize: 11,
 		fontWeight: "800",
@@ -351,6 +366,7 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.primaryAccent,
 		alignItems: "center",
 		justifyContent: "center",
+		marginTop: spacing.lg,
 		shadowColor: colors.grayDarkest,
 		shadowOffset: { width: 0, height: 4 },
 		shadowOpacity: 0.15,

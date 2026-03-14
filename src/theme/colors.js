@@ -35,3 +35,14 @@ export const colors = {
 	// Destructive
 	error: "#DC2626",
 };
+
+// Structured per-type color groups — mirrors the flat keys above for a typed API
+colors.categoryColors = {
+	book:  { bg: colors.categoryBook,  icon: colors.categoryBookIcon,  progress: "#4338CA" },
+	audio: { bg: colors.categoryAudio, icon: colors.categoryAudioIcon, progress: "#B45309" },
+	video: { bg: colors.categoryVideo, icon: colors.categoryVideoIcon, progress: "#BE123C" },
+	class: { bg: colors.categoryClass, icon: colors.categoryClassIcon, progress: "#047857" },
+	app:   { bg: colors.categoryApp,   icon: colors.categoryAppIcon,   progress: "#7E22CE" },
+};
+
+export const getCategoryColors = (type) => colors.categoryColors[type] ?? colors.categoryColors.book;

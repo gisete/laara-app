@@ -3,12 +3,10 @@ import React from "react";
 import { Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import CardCover from "./CardCover";
 import LibraryItemActions from "./LibraryItemActions";
-import ItemMetadata from "./ItemMetadata";
 import MoreOptionsIcon from "@components/icons/MoreOptionsIcon";
 import ProgressBar from "./ProgressBar";
-import SubcategoryTag from "./SubcategoryTag";
 import { router } from "expo-router";
-import { colors } from "@theme/colors";
+import { colors, getCategoryColors } from "@theme/colors";
 import { spacing, borderRadius } from "@theme/spacing";
 import { typography } from "@theme/typography";
 
@@ -54,6 +52,8 @@ export default function LibraryItem({
 	const progressPercentage = material.progress_percentage || 0;
 	const currentUnit = material.current_unit || 0;
 	const totalUnits = material.total_units || 0;
+	const categoryColors = getCategoryColors(material.type);
+	const tagLabel = material.subtype || material.type;
 
 	const handleEdit = () => {
 		onCloseMenu();
@@ -67,65 +67,80 @@ export default function LibraryItem({
 
 	return (
 		<View>
-			<Pressable style={styles.card} onPress={onCloseMenu}>
-				<CardCover type={material.type} />
+			<View style={styles.cardShadow}>
+			<View style={styles.cardInner}>
+				<Pressable style={styles.topRow} onPress={onCloseMenu}>
+					<CardCover type={material.type} />
 
-				<View style={styles.info}>
-					<View style={styles.titleRow}>
-						<Text style={styles.name} numberOfLines={1}>
-							{material.name}
-						</Text>
-						<TouchableOpacity
-							onPress={(e) => {
-								e.stopPropagation();
-								onToggleMenu();
-							}}
-							hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-						>
-							<MoreOptionsIcon />
-						</TouchableOpacity>
+					<View style={styles.info}>
+						<View style={styles.titleRow}>
+							<Text style={styles.name} numberOfLines={1}>
+								{material.name}
+							</Text>
+							<TouchableOpacity
+								onPress={(e) => {
+									e.stopPropagation();
+									onToggleMenu();
+								}}
+								hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+							>
+								<MoreOptionsIcon />
+							</TouchableOpacity>
+						</View>
+
+						{/* Tag + metadata on one line */}
+						<View style={styles.metaRow}>
+							<View style={[styles.typeTag, { backgroundColor: categoryColors.bg }]}>
+								<Text style={[styles.typeTagText, { color: categoryColors.icon }]}>{tagLabel}</Text>
+							</View>
+							{totalUnits > 0 && (
+								<>
+									<Text style={styles.metaSeparator}>·</Text>
+									<Text style={styles.metaText}>
+										{totalUnits} {getUnitLabel(material.type, totalUnits)}
+									</Text>
+								</>
+							)}
+						</View>
 					</View>
+				</Pressable>
 
-					<SubcategoryTag label={material.subtype} />
-
-					{/* Metadata component */}
-					<ItemMetadata type={material.type} totalUnits={material.total_units} />
-
-					{/* Progress bar - only show if material has units */}
-					{totalUnits > 0 && (
-						<ProgressBar
-							current={currentUnit}
-							total={totalUnits}
-							unitLabel={getUnitLabel(material.type, totalUnits - currentUnit)}
-							percentage={progressPercentage}
-						/>
-					)}
-				</View>
-			</Pressable>
+				<ProgressBar
+					current={currentUnit}
+					total={totalUnits}
+					unitLabel={getUnitLabel(material.type, totalUnits - currentUnit)}
+					percentage={progressPercentage}
+					color={categoryColors.progress}
+				/>
+			</View>
+			</View>
 			{isMenuOpen && <LibraryItemActions onEdit={handleEdit} onDelete={handleDelete} />}
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
-	card: {
+	cardShadow: {
 		backgroundColor: colors.white,
 		borderRadius: borderRadius.sm,
-		padding: spacing.sm,
 		marginBottom: spacing.sm,
-		flexDirection: "row",
 		shadowColor: "#000",
-		shadowOffset: {
-			width: 0,
-			height: 2,
-		},
+		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.05,
 		shadowRadius: 8,
 		elevation: 2,
 	},
+	cardInner: {
+		borderRadius: borderRadius.sm,
+		overflow: "hidden",
+	},
+	// Pressable carries all padding — CardCover + info side by side
+	topRow: {
+		flexDirection: "row",
+		padding: spacing.sm,
+	},
 	info: {
 		flex: 1,
-		justifyContent: "space-between",
 	},
 	titleRow: {
 		flexDirection: "row",
@@ -139,5 +154,30 @@ const styles = StyleSheet.create({
 		fontWeight: "600",
 		color: colors.grayDarkest,
 		marginRight: spacing.sm,
+	},
+	// Tag pill + separator + metadata text all on one line
+	metaRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 6,
+	},
+	typeTag: {
+		paddingHorizontal: 6,
+		paddingVertical: 3,
+		borderRadius: 4,
+	},
+	typeTagText: {
+		fontSize: 10,
+		fontWeight: "700",
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+	},
+	metaSeparator: {
+		fontSize: 11,
+		color: colors.grayLightMedium,
+	},
+	metaText: {
+		fontSize: 12,
+		color: colors.grayMedium,
 	},
 });

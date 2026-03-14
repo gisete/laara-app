@@ -10,12 +10,12 @@ import { deleteMaterial, getAllMaterials } from "@database/queries";
 import EmptyState from "@components/EmptyState";
 import FilterBar from "@components/tabs/library/FilterBar";
 import LibraryItem from "@components/tabs/library/LibraryItem";
+import ScreenHeader from "@components/ui/ScreenHeader";
 
 // Import global styles
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
 import { spacing } from "@theme/spacing";
-import { typography } from "@theme/typography";
 
 interface Material {
 	id: number;
@@ -101,22 +101,18 @@ export default function LibraryScreen() {
 	// Filter materials based on selected filter
 	const filteredMaterials = selectedFilter === "all" ? materials : materials.filter((m) => m.type === selectedFilter);
 
+	const AddButton = (
+		<TouchableOpacity style={styles.addButton} onPress={handleAddMaterial} activeOpacity={0.8}>
+			<Text style={styles.addButtonText}>+</Text>
+		</TouchableOpacity>
+	);
+
 	return (
 		<SafeAreaView style={globalStyles.container}>
 			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
 			<View style={styles.content}>
-				{/* Header */}
-				<View style={styles.header}>
-					<Text style={styles.title}>Library</Text>
-
-					{/* Show add button when materials exist */}
-					{materials.length > 0 && (
-						<TouchableOpacity style={styles.addButton} onPress={handleAddMaterial} activeOpacity={0.8}>
-							<Text style={styles.addButtonText}>+</Text>
-						</TouchableOpacity>
-					)}
-				</View>
+				<ScreenHeader title="Library" rightElement={materials.length > 0 ? AddButton : undefined} />
 
 				{/* Conditional content based on materials */}
 				{!loading && materials.length === 0 ? (
@@ -161,23 +157,10 @@ const styles = StyleSheet.create({
 	content: {
 		flex: 1,
 		paddingHorizontal: spacing.md,
+		paddingTop: 0,
 	},
 	scrollContent: {
 		flex: 1,
-	},
-
-	// Header
-	header: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-		paddingTop: spacing.lg,
-		paddingBottom: spacing.lg,
-		minHeight: 68,
-	},
-	title: {
-		...typography.headingMedium,
-		color: colors.grayDarkest,
 	},
 	addButton: {
 		width: 48,
