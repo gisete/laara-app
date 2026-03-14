@@ -8,7 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 // Import your global styles and the new SVG component
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
-import { spacing } from "@theme/spacing";
+import { spacing, borderRadius } from "@theme/spacing";
 import { typography } from "@theme/typography";
 import IntroIllustration from "@components/svgGraphics/IntroScreen";
 
@@ -74,15 +74,12 @@ const styles = StyleSheet.create({
 	},
 	getStartedButton: {
 		...globalStyles.buttonPrimary,
-		paddingVertical: 18,
-		paddingHorizontal: 48,
-		borderRadius: 5,
+		borderRadius: borderRadius.button,
 		width: "100%",
 		maxWidth: 330,
 		elevation: 8,
 	},
 	buttonText: {
 		...globalStyles.buttonPrimaryText,
-		fontSize: 18,
 	},
 });

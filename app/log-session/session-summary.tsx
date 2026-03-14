@@ -37,6 +37,7 @@ interface Material {
 	subtype?: string;
 	current_unit?: number;
 	total_units?: number;
+	language_code?: string;
 }
 
 const getUnitLabel = (type: string, subtype?: string): string => {
@@ -178,8 +179,8 @@ export default function SessionSummaryScreen() {
 				{/* Header */}
 				<View style={styles.header}>
 					<Text style={styles.headerTitle}>Session Summary</Text>
-					<TouchableOpacity onPress={handleDiscard} activeOpacity={0.7}>
-						<Text style={styles.discardText}>Discard</Text>
+					<TouchableOpacity style={styles.discardButton} onPress={handleDiscard} activeOpacity={0.7}>
+						<Text style={styles.discardButtonText}>×</Text>
 					</TouchableOpacity>
 				</View>
 
@@ -207,46 +208,46 @@ export default function SessionSummaryScreen() {
 							</View>
 						</View>
 
-						{/* Duration — pre-filled from timer */}
-						<View style={styles.formSection}>
-							<Text style={styles.label}>Duration (minutes)</Text>
-							<TextInput
-								style={[styles.input, focusedField === "duration" && styles.inputFocused]}
-								value={duration}
-								onChangeText={setDuration}
-								onFocus={() => setFocusedField("duration")}
-								onBlur={() => setFocusedField(null)}
-								keyboardType="number-pad"
-								placeholder="Minutes studied"
-								placeholderTextColor={colors.grayMedium}
-							/>
-						</View>
-
-						{/* Units — type-aware label and placeholder */}
-						<View style={styles.formSection}>
-							<Text style={styles.label}>
-								{getUnitLabel(materialType, materialSubtype)}
-							</Text>
-							<TextInput
-								style={[styles.input, focusedField === "units" && styles.inputFocused]}
-								value={units}
-								onChangeText={setUnits}
-								onFocus={() => setFocusedField("units")}
-								onBlur={() => setFocusedField(null)}
-								keyboardType="number-pad"
-								placeholder={getUnitPlaceholder(materialType)}
-								placeholderTextColor={colors.grayMedium}
-							/>
+						{/* Duration + Units — side by side */}
+						<View style={styles.fieldRow}>
+							<View style={styles.durationField}>
+								<Text style={globalStyles.inputLabel}>Duration (minutes)</Text>
+								<TextInput
+									style={[globalStyles.input, focusedField === "duration" && globalStyles.inputFocused]}
+									value={duration}
+									onChangeText={setDuration}
+									onFocus={() => setFocusedField("duration")}
+									onBlur={() => setFocusedField(null)}
+									keyboardType="number-pad"
+									placeholder="Minutes"
+									placeholderTextColor={colors.grayMedium}
+								/>
+							</View>
+							<View style={styles.unitField}>
+								<Text style={globalStyles.inputLabel}>
+									{getUnitLabel(materialType, materialSubtype)}
+								</Text>
+								<TextInput
+									style={[globalStyles.input, focusedField === "units" && globalStyles.inputFocused]}
+									value={units}
+									onChangeText={setUnits}
+									onFocus={() => setFocusedField("units")}
+									onBlur={() => setFocusedField(null)}
+									keyboardType="number-pad"
+									placeholder={getUnitPlaceholder(materialType)}
+									placeholderTextColor={colors.grayMedium}
+								/>
+							</View>
 						</View>
 
 						{/* Notes — all types */}
-						<View style={styles.formSection}>
-							<Text style={styles.label}>Notes (optional)</Text>
+						<View style={globalStyles.inputContainer}>
+							<Text style={globalStyles.inputLabel}>Notes (optional)</Text>
 							<TextInput
 								style={[
-									styles.input,
+									globalStyles.input,
 									styles.notesInput,
-									focusedField === "notes" && styles.inputFocused,
+									focusedField === "notes" && globalStyles.inputFocused,
 								]}
 								value={notes}
 								onChangeText={setNotes}
@@ -303,9 +304,20 @@ const styles = StyleSheet.create({
 		...typography.headingSmall,
 		color: colors.grayDarkest,
 	},
-	discardText: {
-		...typography.button,
-		color: colors.grayMedium,
+	discardButton: {
+		width: 36,
+		height: 36,
+		borderRadius: 18,
+		borderWidth: 1,
+		borderColor: colors.gray300,
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: colors.white,
+	},
+	discardButtonText: {
+		fontSize: 20,
+		color: colors.grayDarkest,
+		lineHeight: 22,
 	},
 	keyboardView: {
 		flex: 1,
@@ -342,28 +354,16 @@ const styles = StyleSheet.create({
 		color: colors.grayMedium,
 		textTransform: "capitalize",
 	},
-	formSection: {
+	fieldRow: {
+		flexDirection: "row",
+		gap: 12,
 		marginBottom: spacing.lg,
 	},
-	label: {
-		fontSize: 15,
-		fontWeight: "500",
-		color: colors.grayMedium,
-		marginBottom: spacing.xs,
+	durationField: {
+		flex: 2,
 	},
-	input: {
-		backgroundColor: colors.white,
-		paddingHorizontal: 12,
-		paddingVertical: 12,
-		fontSize: 16,
-		color: colors.grayDarkest,
-		borderWidth: 1,
-		borderColor: colors.gray200,
-		borderRadius: borderRadius.sm,
-		minHeight: 48,
-	},
-	inputFocused: {
-		borderColor: colors.primaryAccent,
+	unitField: {
+		flex: 1,
 	},
 	notesInput: {
 		minHeight: 96,
@@ -377,9 +377,11 @@ const styles = StyleSheet.create({
 	},
 	saveButton: {
 		backgroundColor: colors.primaryAccent,
-		paddingVertical: 16,
-		borderRadius: borderRadius.sm,
+		height: 56,
+		borderRadius: borderRadius.button,
 		alignItems: "center",
+		justifyContent: "center",
+		width: "100%",
 	},
 	saveButtonDisabled: {
 		backgroundColor: colors.gray300,

@@ -323,9 +323,7 @@ const styles = StyleSheet.create({
 	// Next Button
 	nextButton: {
 		...globalStyles.buttonPrimary,
-		paddingVertical: 18,
-		paddingHorizontal: spacing.md,
-		borderRadius: 5,
+		borderRadius: borderRadius.button,
 		width: "100%",
 		elevation: 8,
 		marginTop: spacing.lg,
@@ -336,6 +334,5 @@ const styles = StyleSheet.create({
 	},
 	nextButtonText: {
 		...globalStyles.buttonPrimaryText,
-		fontSize: 18,
 	},
 });

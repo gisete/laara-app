@@ -6,6 +6,7 @@
     "paths": {
       "@components/*": ["src/components/*"],
       "@database/*": ["src/database/*"],
+      "@hooks/*": ["src/hooks/*"],
       "@utils/*": ["src/utils/*"],
       "@types/*": ["src/types/*"],
       "@constants/*": ["src/constants/*"],

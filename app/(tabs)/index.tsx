@@ -79,7 +79,7 @@ export default function StudyScreen() {
 	const [sessionRows, setSessionRows] = useState<SessionRow[]>([]);
 	const [loading, setLoading] = useState(true);
 
-	const loadData = async () => {
+	const loadData = useCallback(async () => {
 		try {
 			setLoading(true);
 			const today = new Date();
@@ -120,12 +120,12 @@ export default function StudyScreen() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, []);
 
 	useFocusEffect(
 		useCallback(() => {
 			loadData();
-		}, []),
+		}, [loadData]),
 	);
 
 	const handleBegin = () => {
@@ -370,8 +370,8 @@ const styles = StyleSheet.create({
 		borderTopLeftRadius: 28,
 		borderTopRightRadius: 28,
 		paddingHorizontal: spacing.lg,
-		paddingTop: spacing.xl,
-		paddingBottom: spacing.lg, // Adjust if you want more space at the bottom
+		paddingTop: spacing.lg,
+		paddingBottom: spacing.md, // Adjust if you want more space at the bottom
 	},
 	sessionsCardHeader: {
 		flexDirection: "row",
@@ -391,13 +391,13 @@ const styles = StyleSheet.create({
 	sessionRow: {
 		flexDirection: "row",
 		alignItems: "center",
-		paddingVertical: 14,
+		paddingVertical: 10,
 		borderBottomWidth: 1,
 		borderBottomColor: colors.gray200,
 	},
 	sessionRowLast: { borderBottomWidth: 0 },
 	sessionInfo: { flex: 1 },
-	sessionName: { fontSize: 15, fontWeight: "700", color: colors.grayDarkest, marginBottom: 2 },
+	sessionName: { fontSize: 15, fontWeight: "600", color: colors.grayDarkest, marginBottom: 2 },
 	sessionMeta: { fontSize: 12, color: colors.grayMedium },
 	sessionDuration: {
 		fontFamily: "Domine-Medium",

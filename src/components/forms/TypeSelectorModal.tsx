@@ -140,10 +140,13 @@ const styles = StyleSheet.create({
 		marginBottom: spacing.lg,
 	},
 	label: {
-		fontSize: 15,
-		fontWeight: "500",
+		fontSize: 10,
+		fontWeight: "800",
+		textTransform: "uppercase",
+		letterSpacing: 1,
 		color: colors.grayMedium,
-		marginBottom: spacing.xs,
+		marginBottom: 6,
+		marginLeft: 4,
 	},
 
 	// NEW: Input field styling (matches TextInput fields)
@@ -238,9 +241,10 @@ const styles = StyleSheet.create({
 	},
 	applyButton: {
 		backgroundColor: colors.primaryAccent,
-		paddingVertical: 16,
-		borderRadius: 8,
+		height: 56,
+		borderRadius: borderRadius.button,
 		alignItems: "center",
+		justifyContent: "center",
 	},
 	applyButtonDisabled: {
 		backgroundColor: "#E5E7EB",

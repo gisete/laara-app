@@ -3,7 +3,7 @@ import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View, Alert, ActivityIndicator } from "react-native";
 import { colors } from "@theme/colors";
-import { spacing } from "@theme/spacing";
+import { spacing, borderRadius } from "@theme/spacing";
 import { seedLibraryData } from "@utils/seedLibraryData";
 
 interface EmptyStateProps {
@@ -133,11 +133,11 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.gray300,
 		borderWidth: 1,
 		borderColor: colors.gray300,
-		paddingVertical: 20,
-		paddingHorizontal: 60,
-		borderRadius: 5,
+		height: 56,
+		borderRadius: borderRadius.button,
 		minWidth: 140,
 		alignItems: "center",
+		justifyContent: "center",
 		elevation: 8,
 	},
 	addButtonText: {
@@ -167,11 +167,11 @@ const styles = StyleSheet.create({
 	},
 	seedButton: {
 		backgroundColor: colors.primaryAccent,
-		paddingVertical: 16,
-		paddingHorizontal: 40,
-		borderRadius: 5,
+		height: 56,
+		borderRadius: borderRadius.button,
 		minWidth: 240,
 		alignItems: "center",
+		justifyContent: "center",
 		elevation: 4,
 	},
 	seedButtonText: {

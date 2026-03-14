@@ -23,7 +23,7 @@ import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMateria
 
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
-import { borderRadius, spacing } from "@theme/spacing";
+import { spacing } from "@theme/spacing";
 
 export default function AddAudioScreen() {
 	const params = useLocalSearchParams();
@@ -213,10 +213,10 @@ export default function AddAudioScreen() {
 								{/* NEW FIELD ORDER: Title → Type → Creator → Episodes */}
 
 								{/* 1. TITLE - FIRST */}
-								<View style={styles.formSection}>
-									<Text style={styles.label}>Title</Text>
+								<View style={globalStyles.inputContainer}>
+									<Text style={globalStyles.inputLabel}>Title</Text>
 									<TextInput
-										style={[styles.input, focusedField === "title" && styles.inputFocused]}
+										style={[globalStyles.input, focusedField === "title" && globalStyles.inputFocused]}
 										value={title}
 										onChangeText={setTitle}
 										onFocus={() => setFocusedField("title")}
@@ -235,26 +235,26 @@ export default function AddAudioScreen() {
 
 								{/* 2.5. CUSTOM SUBCATEGORY - SHOWN IF "Other" SELECTED */}
 								{selectedSubcategory === 'Other' && (
-									<View style={styles.formSection}>
-										<Text style={styles.label}>Custom subcategory</Text>
+									<View style={globalStyles.inputContainer}>
+										<Text style={globalStyles.inputLabel}>Custom subcategory</Text>
 										<TextInput
-											style={[styles.input, focusedField === "customSubcategory" && styles.inputFocused]}
+											style={[globalStyles.input, focusedField === "customSubcategory" && globalStyles.inputFocused]}
 											value={customSubcategory}
 											onChangeText={setCustomSubcategory}
 											onFocus={() => setFocusedField("customSubcategory")}
 											onBlur={() => setFocusedField(null)}
 											placeholder="Enter custom subcategory"
-											placeholderTextColor="#9CA3AF"
+											placeholderTextColor={colors.grayMedium}
 											autoCapitalize="words"
 										/>
 									</View>
 								)}
 
 								{/* 3. CREATOR/HOST - THIRD */}
-								<View style={styles.formSection}>
-									<Text style={styles.label}>Creator/Host</Text>
+								<View style={globalStyles.inputContainer}>
+									<Text style={globalStyles.inputLabel}>Creator/Host</Text>
 									<TextInput
-										style={[styles.input, focusedField === "creator" && styles.inputFocused]}
+										style={[globalStyles.input, focusedField === "creator" && globalStyles.inputFocused]}
 										value={creator}
 										onChangeText={setCreator}
 										onFocus={() => setFocusedField("creator")}
@@ -264,10 +264,10 @@ export default function AddAudioScreen() {
 								</View>
 
 								{/* 4. TOTAL EPISODES - FOURTH */}
-								<View style={styles.formSection}>
-									<Text style={styles.label}>Total episodes</Text>
+								<View style={globalStyles.inputContainer}>
+									<Text style={globalStyles.inputLabel}>Total episodes</Text>
 									<TextInput
-										style={[styles.input, focusedField === "totalEpisodes" && styles.inputFocused]}
+										style={[globalStyles.input, focusedField === "totalEpisodes" && globalStyles.inputFocused]}
 										value={totalEpisodes}
 										onChangeText={setTotalEpisodes}
 										onFocus={() => setFocusedField("totalEpisodes")}
@@ -323,29 +323,6 @@ const styles = StyleSheet.create({
 	loadingText: {
 		marginTop: spacing.md,
 		fontSize: 16,
-		color: "#6B7280",
-	},
-	formSection: {
-		marginBottom: spacing.lg,
-	},
-	label: {
-		fontSize: 15,
-		fontWeight: "500",
 		color: colors.grayMedium,
-		marginBottom: spacing.xs,
-	},
-	input: {
-		backgroundColor: "#FFFFFF",
-		paddingHorizontal: 12,
-		paddingVertical: 12,
-		fontSize: 16,
-		color: colors.grayDarkest,
-		borderWidth: 1,
-		borderColor: colors.gray200,
-		borderRadius: borderRadius.sm,
-		minHeight: 48,
-	},
-	inputFocused: {
-		borderColor: colors.primaryAccent,
 	},
 });

@@ -3,6 +3,14 @@ import { colors } from "./colors";
 import { spacing, borderRadius } from "./spacing";
 import { typography } from "./typography";
 
+const buttonBase = {
+	height: 56,
+	borderRadius: borderRadius.button,
+	alignItems: "center",
+	justifyContent: "center",
+	width: "100%",
+};
+
 export const globalStyles = StyleSheet.create({
 	// Container styles
 	container: {
@@ -28,77 +36,62 @@ export const globalStyles = StyleSheet.create({
 
 	// Button styles
 	buttonPrimary: {
+		...buttonBase,
 		backgroundColor: colors.primaryAccent,
-		paddingVertical: 14,
-		paddingHorizontal: 28,
-		borderRadius: borderRadius.sm,
-		alignItems: "center",
-		justifyContent: "center",
 	},
 
 	buttonPrimaryText: {
 		color: colors.white,
-		...typography.button,
+		fontSize: 16,
+		fontWeight: "800",
 	},
 
 	buttonOutline: {
+		...buttonBase,
 		backgroundColor: colors.white,
-		paddingVertical: 14,
-		paddingHorizontal: 28,
-		borderRadius: borderRadius.sm,
 		borderWidth: 1,
 		borderColor: colors.gray300,
-		alignItems: "center",
-		justifyContent: "center",
 	},
 
 	buttonOutlineText: {
 		color: colors.grayDarkest,
-		...typography.button,
+		fontSize: 16,
+		fontWeight: "800",
 	},
 
 	buttonSecondaryFilled: {
+		...buttonBase,
 		backgroundColor: colors.gray200,
-		paddingVertical: 14,
-		paddingHorizontal: 28,
-		borderRadius: borderRadius.sm,
-		alignItems: "center",
-		justifyContent: "center",
 	},
 
 	buttonSecondaryFilledText: {
 		color: colors.grayDarkest,
-		...typography.button,
+		fontSize: 16,
+		fontWeight: "800",
 	},
 
 	buttonSecondaryOutline: {
+		...buttonBase,
 		backgroundColor: "transparent",
-		paddingVertical: 14,
-		paddingHorizontal: 28,
-		borderRadius: borderRadius.sm,
 		borderWidth: 1.5,
 		borderColor: colors.grayDark,
-		alignItems: "center",
-		justifyContent: "center",
 	},
 
 	buttonSecondaryOutlineText: {
 		color: colors.grayDark,
-		...typography.button,
+		fontSize: 16,
+		fontWeight: "800",
 	},
 
 	buttonDisabled: {
+		...buttonBase,
 		backgroundColor: colors.grayLight,
-		paddingVertical: 14,
-		paddingHorizontal: 28,
-		borderRadius: borderRadius.sm,
-		alignItems: "center",
-		justifyContent: "center",
 	},
 
 	buttonDisabledText: {
 		color: colors.gray300,
-		...typography.button,
+		fontSize: 16,
+		fontWeight: "800",
 	},
 
 	// Input styles
@@ -107,25 +100,28 @@ export const globalStyles = StyleSheet.create({
 	},
 
 	inputLabel: {
-		color: colors.grayDarkest,
-		marginBottom: spacing.xs,
-		...typography.label,
+		fontSize: 10,
+		fontWeight: "800",
+		textTransform: "uppercase",
+		letterSpacing: 1,
+		color: colors.grayMedium,
+		marginBottom: 6,
+		marginLeft: 4,
 	},
 
 	input: {
-		backgroundColor: colors.gray50,
+		backgroundColor: colors.white,
 		borderWidth: 1.5,
 		borderColor: colors.gray200,
-		borderRadius: borderRadius.sm,
-		paddingVertical: 14,
+		borderRadius: borderRadius.input,
 		paddingHorizontal: 16,
-		...typography.bodyLarge,
+		paddingVertical: 14,
+		fontSize: 15,
 		color: colors.grayDarkest,
 	},
 
 	inputFocused: {
-		backgroundColor: colors.grayLightest,
-		borderColor: colors.grayDarkest,
+		borderColor: colors.primaryAccent,
 	},
 
 	// Selection card styles

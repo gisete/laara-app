@@ -6,6 +6,7 @@ const config = getDefaultConfig(__dirname);
 config.resolver.extraNodeModules = {
   '@components': path.resolve(__dirname, 'src/components'),
   '@database': path.resolve(__dirname, 'src/database'),
+  '@hooks': path.resolve(__dirname, 'src/hooks'),
   '@utils': path.resolve(__dirname, 'src/utils'),
   '@types': path.resolve(__dirname, 'src/types'),
   '@constants': path.resolve(__dirname, 'src/constants'),

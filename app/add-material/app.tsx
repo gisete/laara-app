@@ -12,7 +12,6 @@ import {
 	StyleSheet,
 	Text,
 	TextInput,
-	TouchableOpacity,
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -26,8 +25,7 @@ import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMateria
 
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
-import { borderRadius, spacing } from "@theme/spacing";
-import { typography } from "@theme/typography";
+import { spacing } from "@theme/spacing";
 
 export default function AddAppScreen() {
 	const params = useLocalSearchParams();
@@ -236,10 +234,10 @@ export default function AddAppScreen() {
 								{/* NEW FIELD ORDER: Name → Type → Lessons */}
 
 								{/* 1. NAME - FIRST */}
-								<View style={styles.formSection}>
-									<Text style={styles.label}>Name</Text>
+								<View style={globalStyles.inputContainer}>
+									<Text style={globalStyles.inputLabel}>Name</Text>
 									<TextInput
-										style={[styles.input, focusedField === "appName" && styles.inputFocused]}
+										style={[globalStyles.input, focusedField === "appName" && globalStyles.inputFocused]}
 										value={appName}
 										onChangeText={setAppName}
 										onFocus={() => setFocusedField("appName")}
@@ -258,26 +256,26 @@ export default function AddAppScreen() {
 
 								{/* 2.5. CUSTOM SUBCATEGORY - SHOWN IF "Other" SELECTED */}
 								{selectedSubcategory === 'Other' && (
-									<View style={styles.formSection}>
-										<Text style={styles.label}>Custom subcategory</Text>
+									<View style={globalStyles.inputContainer}>
+										<Text style={globalStyles.inputLabel}>Custom subcategory</Text>
 										<TextInput
-											style={[styles.input, focusedField === "customSubcategory" && styles.inputFocused]}
+											style={[globalStyles.input, focusedField === "customSubcategory" && globalStyles.inputFocused]}
 											value={customSubcategory}
 											onChangeText={setCustomSubcategory}
 											onFocus={() => setFocusedField("customSubcategory")}
 											onBlur={() => setFocusedField(null)}
 											placeholder="Enter custom subcategory"
-											placeholderTextColor="#9CA3AF"
+											placeholderTextColor={colors.grayMedium}
 											autoCapitalize="words"
 										/>
 									</View>
 								)}
 
 								{/* 3. TOTAL LESSONS - THIRD */}
-								<View style={styles.formSection}>
-									<Text style={styles.label}>Total lessons</Text>
+								<View style={globalStyles.inputContainer}>
+									<Text style={globalStyles.inputLabel}>Total lessons</Text>
 									<TextInput
-										style={[styles.input, focusedField === "totalLessons" && styles.inputFocused]}
+										style={[globalStyles.input, focusedField === "totalLessons" && globalStyles.inputFocused]}
 										value={totalLessons}
 										onChangeText={setTotalLessons}
 										onFocus={() => setFocusedField("totalLessons")}
@@ -333,29 +331,6 @@ const styles = StyleSheet.create({
 	loadingText: {
 		marginTop: spacing.md,
 		fontSize: 16,
-		color: "#6B7280",
-	},
-	formSection: {
-		marginBottom: spacing.lg,
-	},
-	label: {
-		fontSize: 15,
-		fontWeight: "500",
 		color: colors.grayMedium,
-		marginBottom: spacing.xs,
-	},
-	input: {
-		backgroundColor: "#FFFFFF",
-		paddingHorizontal: 12,
-		paddingVertical: 12,
-		fontSize: 16,
-		color: colors.grayDarkest,
-		borderWidth: 1,
-		borderColor: colors.gray200,
-		borderRadius: borderRadius.sm,
-		minHeight: 48,
-	},
-	inputFocused: {
-		borderColor: colors.primaryAccent,
 	},
 });

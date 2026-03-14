@@ -210,10 +210,11 @@ const styles = StyleSheet.create({
 		color: colors.grayMedium,
 	},
 	continueButton: {
-		padding: spacing.md,
-		borderRadius: borderRadius.sm,
+		height: 56,
+		borderRadius: borderRadius.button,
 		backgroundColor: colors.primaryAccent,
 		alignItems: "center",
+		justifyContent: "center",
 	},
 	continueButtonDisabled: {
 		opacity: 0.5,

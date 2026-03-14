@@ -2,8 +2,10 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import TypeSelectorModal from "@components/forms/TypeSelectorModal";
+import CardCover from "@components/tabs/library/CardCover";
+import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
-import { borderRadius, spacing } from "@theme/spacing";
+import { spacing } from "@theme/spacing";
 
 interface BookFormProps {
 	title: string;
@@ -37,11 +39,17 @@ export default function BookForm({
 
 	return (
 		<>
+			{/* HERO ICON */}
+			<View style={styles.heroSection}>
+				<CardCover type="book" size={64} />
+				<Text style={styles.heroLabel}>NEW MATERIAL</Text>
+			</View>
+
 			{/* 1. TITLE */}
-			<View style={styles.formSection}>
-				<Text style={styles.label}>Title</Text>
+			<View style={globalStyles.inputContainer}>
+				<Text style={globalStyles.inputLabel}>Title</Text>
 				<TextInput
-					style={[styles.input, focusedField === "title" && styles.inputFocused]}
+					style={[globalStyles.input, focusedField === "title" && globalStyles.inputFocused]}
 					value={title}
 					onChangeText={onTitleChange}
 					onFocus={() => setFocusedField("title")}
@@ -60,10 +68,10 @@ export default function BookForm({
 
 			{/* 2.5. CUSTOM SUBCATEGORY - SHOWN IF "Other" SELECTED */}
 			{selectedSubcategory === "Other" && (
-				<View style={styles.formSection}>
-					<Text style={styles.label}>Custom subcategory</Text>
+				<View style={globalStyles.inputContainer}>
+					<Text style={globalStyles.inputLabel}>Custom subcategory</Text>
 					<TextInput
-						style={[styles.input, focusedField === "customSubcategory" && styles.inputFocused]}
+						style={[globalStyles.input, focusedField === "customSubcategory" && globalStyles.inputFocused]}
 						value={customSubcategory}
 						onChangeText={onCustomSubcategoryChange}
 						onFocus={() => setFocusedField("customSubcategory")}
@@ -75,30 +83,31 @@ export default function BookForm({
 				</View>
 			)}
 
-			{/* 3. AUTHOR */}
-			<View style={styles.formSection}>
-				<Text style={styles.label}>Author</Text>
-				<TextInput
-					style={[styles.input, focusedField === "author" && styles.inputFocused]}
-					value={author}
-					onChangeText={onAuthorChange}
-					onFocus={() => setFocusedField("author")}
-					onBlur={() => setFocusedField(null)}
-					autoCapitalize="words"
-				/>
-			</View>
+			{/* 3. AUTHOR + 4. PAGES — side by side */}
+			<View style={styles.rowSection}>
+				<View style={styles.authorField}>
+					<Text style={globalStyles.inputLabel}>Author</Text>
+					<TextInput
+						style={[globalStyles.input, focusedField === "author" && globalStyles.inputFocused]}
+						value={author}
+						onChangeText={onAuthorChange}
+						onFocus={() => setFocusedField("author")}
+						onBlur={() => setFocusedField(null)}
+						autoCapitalize="words"
+					/>
+				</View>
 
-			{/* 4. PAGES */}
-			<View style={styles.formSection}>
-				<Text style={styles.label}>Total pages</Text>
-				<TextInput
-					style={[styles.input, focusedField === "totalPages" && styles.inputFocused]}
-					value={totalPages}
-					onChangeText={onTotalPagesChange}
-					onFocus={() => setFocusedField("totalPages")}
-					onBlur={() => setFocusedField(null)}
-					keyboardType="number-pad"
-				/>
+				<View style={styles.pagesField}>
+					<Text style={globalStyles.inputLabel}>Total pages</Text>
+					<TextInput
+						style={[globalStyles.input, focusedField === "totalPages" && globalStyles.inputFocused]}
+						value={totalPages}
+						onChangeText={onTotalPagesChange}
+						onFocus={() => setFocusedField("totalPages")}
+						onBlur={() => setFocusedField(null)}
+						keyboardType="number-pad"
+					/>
+				</View>
 			</View>
 
 			<Text style={styles.helperText}>Add page count to track reading progress</Text>
@@ -106,34 +115,40 @@ export default function BookForm({
 	);
 }
 
+const HERO_LETTER_SPACING = 1.5;
+const HERO_MARGIN_BOTTOM = 28;
+const ROW_GAP = 12;
+
 const styles = StyleSheet.create({
-	formSection: {
+	heroSection: {
+		alignItems: "center",
+		marginBottom: HERO_MARGIN_BOTTOM,
+	},
+	heroLabel: {
+		fontSize: 10,
+		fontWeight: "800",
+		textTransform: "uppercase",
+		letterSpacing: HERO_LETTER_SPACING,
+		color: colors.grayMedium,
+		marginTop: spacing.sm,
+	},
+	rowSection: {
+		flexDirection: "row",
+		gap: ROW_GAP,
 		marginBottom: spacing.lg,
 	},
-	label: {
-		fontSize: 15,
-		fontWeight: "500",
-		color: colors.grayMedium,
-		marginBottom: spacing.xs,
+	authorField: {
+		flex: 2,
 	},
-	input: {
-		backgroundColor: colors.white,
-		paddingHorizontal: spacing.md,
-		paddingVertical: spacing.md,
-		fontSize: 16,
-		color: colors.grayDarkest,
-		borderWidth: 1,
-		borderColor: colors.gray200,
-		borderRadius: borderRadius.sm,
-		minHeight: 48,
-	},
-	inputFocused: {
-		borderColor: colors.primaryAccent,
+	pagesField: {
+		flex: 1,
 	},
 	helperText: {
-		fontSize: 13,
-		color: colors.grayMedium,
-		marginBottom: spacing.xl,
+		fontSize: 12,
 		fontStyle: "italic",
+		color: colors.grayMedium,
+		marginTop: 4,
+		paddingLeft: 4,
+		marginBottom: spacing.xl,
 	},
 });

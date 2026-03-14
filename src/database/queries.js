@@ -60,13 +60,14 @@ export const addMaterial = (material) => {
 	return new Promise((resolve, reject) => {
 		try {
 			const result = db.runSync(
-				`INSERT INTO materials (name, type, subtype, language, author, total_units) 
-         VALUES (?, ?, ?, ?, ?, ?)`,
+				`INSERT INTO materials (name, type, subtype, language, language_code, author, total_units)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
 				[
 					material.name,
 					material.type,
 					material.subtype,
 					material.language || "english",
+					material.language_code || null,
 					material.author || "",
 					material.total_units || 0,
 				]
@@ -574,7 +575,7 @@ export const getRecentSessions = (limit = 3) => {
 
 			const sessions = db.getAllSync(
 				`SELECT * FROM daily_sessions 
-				WHERE session_date < ? 
+				WHERE session_date <= ? 
 				ORDER BY session_date DESC 
 				LIMIT ?`,
 				[today, limit]
@@ -591,7 +592,7 @@ export const getRecentSessions = (limit = 3) => {
 					FROM session_activities sa
 					JOIN materials m ON sa.material_id = m.id
 					WHERE sa.session_id = ?
-					ORDER BY sa.created_at ASC`,
+					ORDER BY sa.created_at DESC`,
 					[session.id]
 				);
 				return { ...session, activities: activities || [] };
@@ -822,6 +823,79 @@ export const setOnboardingCompleted = () => {
 	});
 };
 
+// ============ USER PROFILE QUERIES ============
+
+/**
+ * Get the user profile (single row, id = 1).
+ * @returns {Promise<object|null>}
+ */
+export const getUserProfile = () => {
+	return new Promise((resolve, reject) => {
+		try {
+			const result = db.getFirstSync("SELECT * FROM user_profile WHERE id = 1");
+			resolve(result || null);
+		} catch (error) {
+			console.error("Error fetching user profile:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
+ * Update the user's self-reported language learning start date.
+ * @param {string} date - Date string in YYYY-MM-DD format
+ * @returns {Promise<void>}
+ */
+export const updateLearningSince = (date) => {
+	return new Promise((resolve, reject) => {
+		try {
+			db.runSync("UPDATE user_profile SET learning_since = ? WHERE id = 1", [date]);
+			resolve();
+		} catch (error) {
+			console.error("Error updating learning_since:", error);
+			reject(error);
+		}
+	});
+};
+
+// ============ LEVEL HISTORY QUERIES ============
+
+/**
+ * Get the user's current level (latest row in level_history).
+ * @returns {Promise<string>} level string, defaults to 'beginner'
+ */
+export const getCurrentLevel = () => {
+	return new Promise((resolve, reject) => {
+		try {
+			const result = db.getFirstSync(
+				"SELECT level FROM level_history ORDER BY changed_at DESC, id DESC LIMIT 1"
+			);
+			resolve(result?.level || "beginner");
+		} catch (error) {
+			console.error("Error getting current level:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
+ * Append a new level entry to level_history (never updates existing rows).
+ * @param {string} level - 'beginner' | 'intermediate' | 'advanced'
+ * @param {string} reason - 'leveled_up' | 'correction'
+ * @returns {Promise<void>}
+ */
+export const addLevelChange = (level, reason) => {
+	return new Promise((resolve, reject) => {
+		try {
+			db.runSync("INSERT INTO level_history (level, reason) VALUES (?, ?)", [level, reason]);
+			resolve();
+		} catch (error) {
+			console.error("Error adding level change:", error);
+			reject(error);
+		}
+	});
+};
+
 /**
  * Calculate current study streak (consecutive days with a daily_sessions entry).
  * Counts backward from today; if today has no session yet, starts from yesterday.
@@ -861,6 +935,56 @@ export const getStreakCount = () => {
 		} catch (error) {
 			console.error("Error getting streak count:", error);
 			resolve(0);
+		}
+	});
+};
+
+// ============ DATA MANAGEMENT QUERIES ============
+
+/**
+ * Clear all user-generated data for the "Change language" flow.
+ * Deletes all sessions, activities, materials, level history, and the user profile row.
+ * Also resets onboarding_completed in user_settings so the next cold launch
+ * runs through onboarding rather than skipping straight to tabs.
+ * All deletions run in a single transaction — all succeed or none do.
+ * @returns {Promise<void>}
+ */
+export const clearAllUserData = () => {
+	return new Promise((resolve, reject) => {
+		try {
+			db.withTransactionSync(() => {
+				db.runSync("DELETE FROM session_activities");
+				db.runSync("DELETE FROM daily_sessions");
+				db.runSync("DELETE FROM study_sessions");
+				db.runSync("DELETE FROM materials");
+				db.runSync("DELETE FROM level_history");
+				db.runSync("DELETE FROM user_profile WHERE id = 1");
+				db.runSync(
+					"UPDATE user_settings SET onboarding_completed = 0, primary_language = NULL WHERE id = 1"
+				);
+			});
+			console.log("All user data cleared");
+			resolve();
+		} catch (error) {
+			console.error("Error clearing user data:", error);
+			reject(error);
+		}
+	});
+};
+
+// ============ LEVELS QUERIES ============
+
+/**
+ * Get all CEFR levels ordered by sort_order ASC
+ */
+export const getLevels = () => {
+	return new Promise((resolve, reject) => {
+		try {
+			const rows = db.getAllSync("SELECT code, label, sort_order FROM levels ORDER BY sort_order ASC");
+			resolve(rows);
+		} catch (error) {
+			console.error("Error getting levels:", error);
+			reject(error);
 		}
 	});
 };

@@ -179,6 +179,19 @@ export const initDatabase = () => {
 				console.error("Error adding session_activities columns:", error);
 			}
 
+
+			// Migrate materials: add language_code column
+			try {
+				const materialColumns = db.getAllSync("PRAGMA table_info(materials)");
+				const hasLanguageCode = materialColumns.some((col) => col.name === "language_code");
+
+				if (!hasLanguageCode) {
+					db.execSync("ALTER TABLE materials ADD COLUMN language_code TEXT");
+					db.execSync(`UPDATE materials SET language_code = (SELECT primary_language FROM user_settings LIMIT 1) WHERE language_code IS NULL`);
+				}
+			} catch (error) {
+				console.error("Error adding language_code column:", error);
+			}
 			// Insert default settings if not exists
 			const settingsExist = db.getFirstSync("SELECT id FROM user_settings WHERE id = 1");
 			if (!settingsExist) {
@@ -323,6 +336,78 @@ export const initDatabase = () => {
 				if (migrationSuccess) {
 					console.log("Subcategory migration completed successfully");
 				}
+			}
+
+			// Create user_profile table (single row, id = 1)
+			db.execSync(`
+        CREATE TABLE IF NOT EXISTS user_profile (
+          id INTEGER PRIMARY KEY,
+          language_code TEXT NOT NULL,
+          learning_since DATE NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
+			// Seed user_profile if not exists
+			const profileExists = db.getFirstSync("SELECT id FROM user_profile WHERE id = 1");
+			if (!profileExists) {
+				const matLang = db.getFirstSync(
+					"SELECT language_code FROM materials WHERE language_code IS NOT NULL LIMIT 1"
+				);
+				const settingsLang = db.getFirstSync("SELECT primary_language FROM user_settings WHERE id = 1");
+				const languageCode = matLang?.language_code || settingsLang?.primary_language || "en";
+
+				const earliest = db.getFirstSync("SELECT DATE(MIN(created_at)) as dt FROM materials");
+				const learningSince = earliest?.dt || new Date().toISOString().split("T")[0];
+
+				db.runSync("INSERT INTO user_profile (id, language_code, learning_since) VALUES (1, ?, ?)", [
+					languageCode,
+					learningSince,
+				]);
+				console.log("Seeded user_profile with language_code:", languageCode);
+			}
+
+			// Create level_history table (append-only log)
+			db.execSync(`
+        CREATE TABLE IF NOT EXISTS level_history (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          level TEXT NOT NULL,
+          reason TEXT NOT NULL,
+          changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
+			// Seed level_history with a safe default 'beginner' row if empty
+			const levelCount = db.getFirstSync("SELECT COUNT(*) as count FROM level_history");
+			if (!levelCount || levelCount.count === 0) {
+				db.runSync("INSERT INTO level_history (level, reason) VALUES ('beginner', 'correction')");
+				console.log("Seeded level_history with default beginner entry");
+			}
+
+			// Create CEFR levels reference table
+			db.execSync(`
+        CREATE TABLE IF NOT EXISTS levels (
+          code TEXT PRIMARY KEY,
+          label TEXT NOT NULL,
+          sort_order INTEGER NOT NULL
+        );
+      `);
+
+			// Seed levels if empty
+			const levelsCount = db.getFirstSync("SELECT COUNT(*) as count FROM levels");
+			if (!levelsCount || levelsCount.count === 0) {
+				const levelData = [
+					{ code: "A1", label: "A1 - Beginner",          sort_order: 1 },
+					{ code: "A2", label: "A2 - Elementary",         sort_order: 2 },
+					{ code: "B1", label: "B1 - Intermediate",       sort_order: 3 },
+					{ code: "B2", label: "B2 - Upper-Intermediate", sort_order: 4 },
+					{ code: "C1", label: "C1 - Advanced",           sort_order: 5 },
+					{ code: "C2", label: "C2 - Mastery",            sort_order: 6 },
+				];
+				levelData.forEach(({ code, label, sort_order }) => {
+					db.runSync("INSERT INTO levels (code, label, sort_order) VALUES (?, ?, ?)", [code, label, sort_order]);
+				});
+				console.log("Seeded levels table with CEFR levels");
 			}
 
 			resolve();

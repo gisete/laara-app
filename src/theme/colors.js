@@ -5,7 +5,7 @@ export const colors = {
 
 	// Whites & Backgrounds
 	white: "#FFFFFF",
-	gray50: "#FAFAFA", // Neutral 50
+	gray50: "#F8F7F5", // Neutral 50
 	grayLightest: "#FAFAFA", // Neutral 50
 
 	// Grays (Neutral scale)
@@ -31,4 +31,7 @@ export const colors = {
 
 	categoryApp: "#FEF3C7",
 	categoryAppIcon: "#92400E",
+
+	// Destructive
+	error: "#DC2626",
 };

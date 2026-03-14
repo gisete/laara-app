@@ -106,6 +106,8 @@ laara-app/
 
 ## Screen Structure Pattern
 
+> ⚠️ **SafeAreaView inside tab navigator:** Always pass `edges={['top', 'left', 'right']}` to `SafeAreaView` on screens rendered inside the bottom tab navigator. The tab navigator already handles bottom safe area — omitting this causes a double-padding gap above the tab bar.
+
 Every screen follows this exact structure — do not deviate:
 
 ```tsx
@@ -192,6 +194,8 @@ Full-screen empty state with illustration and CTA. Has a `__DEV__`-only seed dat
 ---
 
 ## Data Layer
+
+> ⚠️ **Date range queries:** Always use `<=` not `<` when filtering by today's date. Using `session_date < today` excludes today's sessions entirely. The correct pattern is `session_date <= today` or `session_date BETWEEN start AND end` (inclusive).
 
 **All database operations go in `src/database/queries.js`.**
 Components import and call query functions — never write SQL in components.
@@ -387,11 +391,21 @@ useFocusEffect(
 - Log session flow (`select-material` → `active-session` timer → `session-summary` → saves)
 - Study tab dashboard (redesigned — greeting header, calendar strip, BEGIN button, recent sessions)
 - Onboarding skip — returning users go straight to `/(tabs)` on launch
+- Design token system — `borderRadius.button` (16) + `buttonBase` applied to all buttons across all screens; `borderRadius.input` (10) + `globalStyles.inputLabel/input/inputFocused/inputContainer` applied to all form fields across all screens
+- BookForm redesign — hero icon section, uppercase label tokens, Author + Total Pages in side-by-side row
+- ActionButtons redesign — height 56, coral drop shadow on save button, consistent font weight
+- TypeSelectorModal label updated to match global input label token
+- All add-material form screens (book, audio, video, class, app) now use global input tokens — no local label/input/inputFocused styles
+- session-summary.tsx redesigned — circular × discard button, global input tokens, Duration + unit fields in side-by-side row
 
 ### Needs Building 🔨
 
 - **Reports tab** — stub exists, needs content
-- **Settings tab** — stub exists, needs content
+- **Settings/Profile tab** — planning in progress
+
+### Next Up 🎯
+
+- Profile/Settings tab — design and build
 
 ---
 
@@ -415,7 +429,7 @@ All theme files are `.js`, not `.ts`.
 | `src/utils/seedLibraryData.js`        | ✅     | `seedLibraryData()` → `{ success, added, failed, total }`                                                                                                                                                                                                    |
 | `app/log-session/select-material.tsx` | ✅     | Built, working. Recently Studied section for 5+ materials                                                                                                                                                                                                    |
 | `app/log-session/active-session.tsx`  | ✅     | Count-up timer. Ref-based state (avoids stale closures). AppState backgrounding. Pause/resume. Navigates to `session-summary` on End via `router.replace`.                                                                                                   |
-| `app/log-session/session-summary.tsx` | ✅     | Post-session logging form. Receives `elapsedSeconds`, pre-fills duration. Type-aware unit field label. Notes field. Full save logic (getOrCreateTodaySession → addSessionActivity → updateSessionTotalDuration → updateMaterialProgress).                     |
+| `app/log-session/session-summary.tsx` | ✅     | Post-session logging form. Receives `elapsedSeconds`, pre-fills duration. Type-aware unit field label. Notes field. Full save logic (getOrCreateTodaySession → addSessionActivity → updateSessionTotalDuration → updateMaterialProgress).                    |
 | `app/(tabs)/index.tsx`                | ✅     | Redesigned study tab — greeting header, weekly calendar strip (Sun–Sat), 144px coral BEGIN button with glow, recent sessions card                                                                                                                            |
 | `app/(tabs)/library.tsx`              | ✅     | Filter bar, list, edit, delete                                                                                                                                                                                                                               |
 | `app/(tabs)/reports.tsx`              | ✅     | Stub only                                                                                                                                                                                                                                                    |
@@ -666,6 +680,72 @@ ALTER TABLE user_settings ADD COLUMN onboarding_completed INTEGER DEFAULT 0;
 
 ---
 
+## Settings tab (app/(tabs)/settings.tsx)
+
+### Structure
+
+- SafeAreaView edges={['top', 'left', 'right']}
+- ScrollView keyboardShouldPersistTaps="handled"
+- Section headers use globalStyles.inputLabel (no new style)
+- Rows: StyleSheet.hairlineWidth separators, minHeight: 52, last row in section has no border
+
+### My Language section
+
+- Language row: flag + display name, not tappable, derived from language_code
+- Level row: opens Modal (see below) — NOT a BottomSheet (gesture conflicts)
+- Joined row: read-only, shows profile.created_at as "MMM YYYY", no chevron
+
+### App section
+
+- Notifications: toggle OFF by default, UI only
+  TODO: implement with expo-notifications — install package, request permissions on
+  toggle-on, show time picker, schedule repeating daily local notification.
+  Requires physical device to test on iOS.
+- Export data / Restore from backup: coming soon Alerts
+- About: hardcoded "1.0.0", no chevron
+
+### Destructive zone (no section header)
+
+- "Change language": colors.error text, confirms then calls clearAllUserData() +
+  router.replace("/language-selection"). Resets onboarding_completed = 0.
+- "Clear all data": colors.error text, confirmation Alert (functionality coming)
+
+### Level Modal
+
+- Plain react-native Modal, animationType="slide", transparent backdrop
+- Step 1: reason — "🎉 I leveled up!" or "✏️ I picked the wrong level"
+- Step 2: level picker, filtered dynamically by sort_order
+  - "leveled up": only levels with sort_order > current
+  - "correction": all 6 levels
+  - C2 + "leveled up": graceful empty state
+- On confirm: addLevelChange(code, reason). On "leveled up": toast "🎉 [Label] unlocked!"
+- Do NOT use @gorhom/bottom-sheet here — gesture system conflicts with tab screen rows
+
+### Levels reference table
+
+- `levels` table: code (PK), label, sort_order — source of truth for CEFR data
+- getLevels() in queries.js returns all rows ORDER BY sort_order ASC
+- Hardcoded in onboarding still — TODO: update to read from DB
+- level_history seeds with 'beginner' on old installs — invalid code, may need migration
+
+### Toast pattern
+
+- Pure Animated.Value: 300ms in → 2s hold → 300ms out
+- pointerEvents="none", bottom: 90
+- Reuse for all future toasts — no library needed
+
+### Colors
+
+- colors.error: '#DC2626' — use for all destructive actions
+
+## @gorhom/bottom-sheet — Portal usage rule
+
+- No Portal when BottomSheet is direct child of tab screen SafeAreaView
+- Portal only when sheet needs to escape clipping from ScrollView or nested component
+- If tab screen row taps stop working near a BottomSheet → switch to plain Modal
+
+---
+
 ### Unit label helper
 
 Use `getUnitLabel(type, subtype)` from `src/utils/materialUtils.ts` where possible. If it doesn't cover subtype-aware labels, add overrides inline for now:
@@ -698,6 +778,26 @@ const getSessionUnitLabel = (type: string, subtype?: string): string => {
 ```
 
 ---
+
+## User Profile & Level History (added [date])
+
+### Schema
+
+- `user_profile` — single row (id = 1). Fields: language_code, learning_since, created_at.
+- `level_history` — append-only log. Fields: level ('beginner'|'intermediate'|'advanced'), reason ('leveled_up'|'correction'), changed_at. NEVER update rows.
+- Current level = latest row by changed_at DESC, id DESC. Always derived, never stored as a single value.
+
+### Hook
+
+- `useUserProfile` from `@hooks/useUserProfile`
+- Exposes: profile, currentLevel, updateLearningSince(date), addLevelChange(level, reason)
+- Optimistic local state — no re-fetch needed after writes
+
+### Reports use
+
+- "Learning since" date → time-based streaks and duration copy
+- level_history log → progression timeline ("reached Intermediate on X date")
+- Never delete level_history rows — they are the historical record
 
 ### UI notes
 
@@ -736,6 +836,16 @@ Codebase audit completed before building session summary screen. Changes made:
 - `total_units` for books = total pages. Chapters tracked as `units_studied` per session only.
 - 349 pre-existing TypeScript errors from JS theme files — not fixed here. Future task: convert `src/theme/*.js` → `.ts`
 - `validateActivityForm` and `updateMaterialProgress` bugs were already fixed before this audit
+
+**Timer pattern (active-session.tsx):**
+
+> ⚠️ **Background timer:** Do NOT use `AppState` to subtract background time from elapsed. That pattern freezes the timer while the app is backgrounded. The correct approach:
+>
+> - Store `startTimeRef = Date.now()` (adjusted on resume so the delta always equals total elapsed)
+> - Each tick: `elapsed = Date.now() - startTimeRef` — wall-clock delta, naturally includes background time
+> - **Pause:** snapshot `elapsedAtPauseRef = elapsed`, call `clearInterval`
+> - **Resume:** `startTimeRef = Date.now() - elapsedAtPauseRef * 1000`, call `setInterval` again
+> - No AppState listener needed — interval stops firing while backgrounded, and the next tick after foreground correctly shows the real elapsed time
 
 **Skills to create (before building new material types or flows):**
 

@@ -12,7 +12,6 @@ import {
 	StyleSheet,
 	Text,
 	TextInput,
-	TouchableOpacity,
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -24,8 +23,7 @@ import { addMaterial, getMaterialById, getSubcategoriesByCategory, updateMateria
 
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
-import { borderRadius, spacing } from "@theme/spacing";
-import { typography } from "@theme/typography";
+import { spacing } from "@theme/spacing";
 
 export default function AddVideoScreen() {
 	const params = useLocalSearchParams();
@@ -218,10 +216,10 @@ export default function AddVideoScreen() {
 								{/* NEW FIELD ORDER: Title → Type → Creator → Videos */}
 
 								{/* 1. TITLE - FIRST */}
-								<View style={styles.formSection}>
-									<Text style={styles.label}>Title</Text>
+								<View style={globalStyles.inputContainer}>
+									<Text style={globalStyles.inputLabel}>Title</Text>
 									<TextInput
-										style={[styles.input, focusedField === "title" && styles.inputFocused]}
+										style={[globalStyles.input, focusedField === "title" && globalStyles.inputFocused]}
 										value={title}
 										onChangeText={setTitle}
 										onFocus={() => setFocusedField("title")}
@@ -240,26 +238,26 @@ export default function AddVideoScreen() {
 
 								{/* 2.5. CUSTOM SUBCATEGORY - SHOWN IF "Other" SELECTED */}
 								{selectedSubcategory === 'Other' && (
-									<View style={styles.formSection}>
-										<Text style={styles.label}>Custom subcategory</Text>
+									<View style={globalStyles.inputContainer}>
+										<Text style={globalStyles.inputLabel}>Custom subcategory</Text>
 										<TextInput
-											style={[styles.input, focusedField === "customSubcategory" && styles.inputFocused]}
+											style={[globalStyles.input, focusedField === "customSubcategory" && globalStyles.inputFocused]}
 											value={customSubcategory}
 											onChangeText={setCustomSubcategory}
 											onFocus={() => setFocusedField("customSubcategory")}
 											onBlur={() => setFocusedField(null)}
 											placeholder="Enter custom subcategory"
-											placeholderTextColor="#9CA3AF"
+											placeholderTextColor={colors.grayMedium}
 											autoCapitalize="words"
 										/>
 									</View>
 								)}
 
 								{/* 3. CREATOR/CHANNEL - THIRD */}
-								<View style={styles.formSection}>
-									<Text style={styles.label}>Creator/Channel</Text>
+								<View style={globalStyles.inputContainer}>
+									<Text style={globalStyles.inputLabel}>Creator/Channel</Text>
 									<TextInput
-										style={[styles.input, focusedField === "creator" && styles.inputFocused]}
+										style={[globalStyles.input, focusedField === "creator" && globalStyles.inputFocused]}
 										value={creator}
 										onChangeText={setCreator}
 										onFocus={() => setFocusedField("creator")}
@@ -269,10 +267,10 @@ export default function AddVideoScreen() {
 								</View>
 
 								{/* 4. TOTAL VIDEOS - FOURTH */}
-								<View style={styles.formSection}>
-									<Text style={styles.label}>Total videos</Text>
+								<View style={globalStyles.inputContainer}>
+									<Text style={globalStyles.inputLabel}>Total videos</Text>
 									<TextInput
-										style={[styles.input, focusedField === "totalVideos" && styles.inputFocused]}
+										style={[globalStyles.input, focusedField === "totalVideos" && globalStyles.inputFocused]}
 										value={totalVideos}
 										onChangeText={setTotalVideos}
 										onFocus={() => setFocusedField("totalVideos")}
@@ -328,29 +326,6 @@ const styles = StyleSheet.create({
 	loadingText: {
 		marginTop: spacing.md,
 		fontSize: 16,
-		color: "#6B7280",
-	},
-	formSection: {
-		marginBottom: spacing.lg,
-	},
-	label: {
-		fontSize: 15,
-		fontWeight: "500",
 		color: colors.grayMedium,
-		marginBottom: spacing.xs,
-	},
-	input: {
-		backgroundColor: "#FFFFFF",
-		paddingHorizontal: 12,
-		paddingVertical: 12,
-		fontSize: 16,
-		color: colors.grayDarkest,
-		borderWidth: 1,
-		borderColor: colors.gray200,
-		borderRadius: borderRadius.sm,
-		minHeight: 48,
-	},
-	inputFocused: {
-		borderColor: colors.primaryAccent,
 	},
 });

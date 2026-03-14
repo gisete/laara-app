@@ -26,6 +26,7 @@ interface Material {
 	total_units?: number;
 	current_unit?: number;
 	progress_percentage?: number;
+	language_code?: string;
 }
 
 interface MaterialCardProps {
@@ -340,9 +341,11 @@ const styles = StyleSheet.create({
 	},
 	emptyButton: {
 		backgroundColor: colors.primaryAccent,
-		paddingVertical: 16,
-		paddingHorizontal: 48,
-		borderRadius: borderRadius.sm,
+		height: 56,
+		borderRadius: borderRadius.button,
+		alignItems: "center",
+		justifyContent: "center",
+		width: "100%",
 	},
 	emptyButtonText: {
 		...typography.button,

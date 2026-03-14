@@ -3,8 +3,6 @@ import React, { useEffect, useRef, useState } from "react";
 import {
 	Alert,
 	Animated,
-	AppState,
-	AppStateStatus,
 	StatusBar,
 	StyleSheet,
 	Text,
@@ -48,12 +46,13 @@ export default function ActiveSessionScreen() {
 			date: string;
 		}>();
 
-	// --- Timer refs (avoid stale closures in effects) ---
+	// --- Timer refs ---
+	// startTimeRef is the effective start: adjusted on resume so Date.now() - startTimeRef
+	// always equals total elapsed (excluding paused time).
 	const startTimeRef = useRef(Date.now());
-	const totalPausedMsRef = useRef(0); // accumulated ms spent paused
-	const pauseStartRef = useRef(0); // when current pause began
-	const bgStartRef = useRef(0); // when app went to background
-	const isPausedRef = useRef(false); // ref copy for effect closures
+	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+	const isPausedRef = useRef(false);
+	const elapsedAtPauseRef = useRef(0); // seconds elapsed when last paused
 
 	// --- UI state (causes re-renders) ---
 	const [elapsed, setElapsed] = useState(0); // seconds, display only
@@ -93,34 +92,25 @@ export default function ActiveSessionScreen() {
 		return () => stopGlow();
 	}, []);
 
-	// --- Count-up interval (empty deps — reads only refs) ---
-	useEffect(() => {
-		const interval = setInterval(() => {
-			if (!isPausedRef.current) {
-				setElapsed(
-					Math.floor(
-						(Date.now() - startTimeRef.current - totalPausedMsRef.current) / 1000,
-					),
-				);
-			}
+	// --- Interval helpers ---
+	const startInterval = () => {
+		intervalRef.current = setInterval(() => {
+			setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
 		}, 1000);
-		return () => clearInterval(interval);
-	}, []);
+	};
 
-	// --- AppState: exclude background time from elapsed ---
+	const stopInterval = () => {
+		if (intervalRef.current !== null) {
+			clearInterval(intervalRef.current);
+			intervalRef.current = null;
+		}
+	};
+
+	// --- Start timer on mount ---
 	useEffect(() => {
-		const sub = AppState.addEventListener("change", (nextState: AppStateStatus) => {
-			if (nextState === "background" || nextState === "inactive") {
-				bgStartRef.current = Date.now();
-			} else if (nextState === "active" && bgStartRef.current > 0) {
-				if (!isPausedRef.current) {
-					// Only add bg time if timer was running (not already paused)
-					totalPausedMsRef.current += Date.now() - bgStartRef.current;
-				}
-				bgStartRef.current = 0;
-			}
-		});
-		return () => sub.remove();
+		startTimeRef.current = Date.now();
+		startInterval();
+		return () => stopInterval();
 	}, []);
 
 	const formatElapsed = (seconds: number): string => {
@@ -135,13 +125,16 @@ export default function ActiveSessionScreen() {
 	const handlePauseResume = () => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 		if (!isPausedRef.current) {
+			// Pausing — snapshot elapsed, stop the interval
+			elapsedAtPauseRef.current = Math.floor((Date.now() - startTimeRef.current) / 1000);
+			stopInterval();
 			isPausedRef.current = true;
-			pauseStartRef.current = Date.now();
 			setIsPaused(true);
 			stopGlow();
 		} else {
-			totalPausedMsRef.current += Date.now() - pauseStartRef.current;
-			pauseStartRef.current = 0;
+			// Resuming — shift startTime so the delta stays correct, restart interval
+			startTimeRef.current = Date.now() - elapsedAtPauseRef.current * 1000;
+			startInterval();
 			isPausedRef.current = false;
 			setIsPaused(false);
 			startGlow();
@@ -152,9 +145,7 @@ export default function ActiveSessionScreen() {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 		const elapsedSeconds = Math.max(
 			1,
-			Math.floor(
-				(Date.now() - startTimeRef.current - totalPausedMsRef.current) / 1000,
-			),
+			Math.floor((Date.now() - startTimeRef.current) / 1000),
 		);
 		router.replace({
 			pathname: "/log-session/session-summary",

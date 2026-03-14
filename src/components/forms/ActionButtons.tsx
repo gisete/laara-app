@@ -3,7 +3,7 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import * as Haptics from "expo-haptics";
 import { colors } from "@theme/colors";
-import { spacing } from "@theme/spacing";
+import { spacing, borderRadius } from "@theme/spacing";
 
 interface ActionButtonsProps {
 	onSave: () => void;
@@ -45,6 +45,12 @@ export default function ActionButtons({
 	);
 }
 
+const BUTTON_HEIGHT = 56;
+const BUTTON_FONT_SIZE = 16;
+const SAVE_SHADOW_OPACITY = 0.25;
+const SAVE_SHADOW_RADIUS = 25;
+const CANCEL_BG = "rgba(0,0,0,0.04)";
+
 const styles = StyleSheet.create({
 	container: {
 		paddingTop: spacing.xl,
@@ -54,29 +60,36 @@ const styles = StyleSheet.create({
 	},
 	saveButton: {
 		backgroundColor: colors.primaryAccent,
-		paddingVertical: 16,
-		borderRadius: 8,
+		height: BUTTON_HEIGHT,
+		borderRadius: borderRadius.button,
 		alignItems: "center",
+		justifyContent: "center",
 		width: "100%",
+		shadowColor: colors.primaryAccent,
+		shadowOffset: { width: 0, height: 10 },
+		shadowOpacity: SAVE_SHADOW_OPACITY,
+		shadowRadius: SAVE_SHADOW_RADIUS,
+		elevation: 4,
 	},
 	saveButtonDisabled: {
 		backgroundColor: "#D1D5DB",
 	},
 	saveButtonText: {
-		color: "#FFFFFF",
-		fontSize: 16,
-		fontWeight: "600",
+		color: colors.white,
+		fontSize: BUTTON_FONT_SIZE,
+		fontWeight: "800",
 	},
 	cancelButton: {
-		backgroundColor: "#E5E7EB",
-		paddingVertical: 16,
-		borderRadius: 8,
+		backgroundColor: CANCEL_BG,
+		height: BUTTON_HEIGHT,
+		borderRadius: borderRadius.button,
 		alignItems: "center",
+		justifyContent: "center",
 		width: "100%",
 	},
 	cancelButtonText: {
-		color: "#374151",
-		fontSize: 16,
-		fontWeight: "600",
+		color: colors.grayDarkest,
+		fontSize: BUTTON_FONT_SIZE,
+		fontWeight: "800",
 	},
 });
