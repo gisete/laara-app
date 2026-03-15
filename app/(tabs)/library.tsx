@@ -4,7 +4,7 @@ import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { deleteMaterial, getAllMaterials } from "@database/queries";
+import { deleteMaterial, getAllMaterials, getUserSettings, getLanguageByCode } from "@database/queries";
 
 // Import components
 import EmptyState from "@components/EmptyState";
@@ -42,11 +42,23 @@ export default function LibraryScreen() {
 	const [loading, setLoading] = useState(true);
 	const [selectedFilter, setSelectedFilter] = useState<string>("all");
 	const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+	const [activeLanguageCode, setActiveLanguageCode] = useState<string | null>(null);
+	const [activeLanguageFlag, setActiveLanguageFlag] = useState<string>("");
+	const [activeLanguageName, setActiveLanguageName] = useState<string>("");
 
 	const loadMaterials = useCallback(async () => {
 		try {
 			setLoading(true);
-			const materialsData = await getAllMaterials();
+			const [materialsData, settings] = await Promise.all([getAllMaterials(), getUserSettings()]);
+			const langCode = settings?.primary_language ?? null;
+			setActiveLanguageCode(langCode);
+
+			if (langCode) {
+				const lang = await getLanguageByCode(langCode);
+				setActiveLanguageFlag(lang?.flag ?? "");
+				setActiveLanguageName(lang?.name ?? "");
+			}
+
 			setMaterials(materialsData);
 			console.log("Materials loaded:", materialsData.length);
 		} catch (error) {
@@ -98,8 +110,16 @@ export default function LibraryScreen() {
 		router.push(`/edit-material/${material.id}`);
 	};
 
-	// Filter materials based on selected filter
-	const filteredMaterials = selectedFilter === "all" ? materials : materials.filter((m) => m.type === selectedFilter);
+	// Filter materials by active language (null-safe: null language_code matches active language)
+	const languageFilteredMaterials = activeLanguageCode
+		? materials.filter((m) => (m as any).language_code === null || (m as any).language_code === activeLanguageCode)
+		: materials;
+
+	// Filter by type
+	const filteredMaterials =
+		selectedFilter === "all"
+			? languageFilteredMaterials
+			: languageFilteredMaterials.filter((m) => m.type === selectedFilter);
 
 	const AddButton = (
 		<TouchableOpacity style={styles.addButton} onPress={handleAddMaterial} activeOpacity={0.8}>
@@ -113,6 +133,11 @@ export default function LibraryScreen() {
 
 			<View style={styles.content}>
 				<ScreenHeader title="Library" rightElement={materials.length > 0 ? AddButton : undefined} />
+				{activeLanguageCode && activeLanguageName ? (
+					<Text style={styles.languageIndicator}>
+						{activeLanguageFlag}  {activeLanguageName}
+					</Text>
+				) : null}
 
 				{/* Conditional content based on materials */}
 				{!loading && materials.length === 0 ? (
@@ -185,5 +210,12 @@ const styles = StyleSheet.create({
 	// Materials List
 	materialsContainer: {
 		paddingBottom: spacing.lg,
+	},
+
+	languageIndicator: {
+		fontSize: 13,
+		color: colors.grayMedium,
+		marginBottom: spacing.xs,
+		marginTop: -4,
 	},
 });

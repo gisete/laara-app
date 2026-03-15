@@ -13,7 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
 import Svg, { Circle } from "react-native-svg";
 
-import { getReportData, getStreakCount } from "@database/queries";
+import { getReportData, getStreakCount, getUserLanguages } from "@database/queries";
 import CardCover from "@components/tabs/library/CardCover";
 import ScreenHeader from "@components/ui/ScreenHeader";
 import { getUnitLabel } from "@utils/materialUtils";
@@ -27,6 +27,12 @@ import { globalStyles } from "@theme/styles";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Filter = "week" | "month" | "all";
+
+interface UserLanguage {
+	language_code: string;
+	name: string;
+	flag: string;
+}
 
 interface TypeBreakdown {
 	type: string;
@@ -175,32 +181,41 @@ const EMPTY_DATA: ReportData = {
 
 export default function ReportsScreen() {
 	const [filter, setFilter] = useState<Filter>("week");
+	const [activeLanguage, setActiveLanguage] = useState<string | null>(null);
 	const [data, setData] = useState<ReportData>(EMPTY_DATA);
 	const [streak, setStreak] = useState(0);
+	const [userLanguages, setUserLanguages] = useState<UserLanguage[]>([]);
 	const [loading, setLoading] = useState(true);
 
 	const loadData = useCallback(async () => {
 		try {
 			setLoading(true);
 			const { startDate, endDate } = getDateRange(filter);
-			const [reportData, streakCount] = await Promise.all([
-				getReportData(startDate, endDate),
+			const [reportData, streakCount, langs] = await Promise.all([
+				getReportData(startDate, endDate, activeLanguage),
 				getStreakCount(),
+				getUserLanguages(),
 			]);
 			setData(reportData as ReportData);
 			setStreak(streakCount as number);
+			setUserLanguages(langs as UserLanguage[]);
 		} catch (error) {
 			console.error("Error loading report data:", error);
 		} finally {
 			setLoading(false);
 		}
-	}, [filter]);
+	}, [filter, activeLanguage]);
 
 	useFocusEffect(
 		useCallback(() => {
 			loadData();
 		}, [loadData]),
 	);
+
+	const activeLangInfo = activeLanguage
+		? userLanguages.find((l) => l.language_code === activeLanguage) ?? null
+		: null;
+	const chartTotal = data.byType.reduce((sum, item) => sum + item.totalMinutes, 0);
 
 	if (loading) {
 		return (
@@ -220,7 +235,7 @@ export default function ReportsScreen() {
 			<ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 				<ScreenHeader title="Reports" />
 
-				{/* Filter tabs */}
+				{/* Period filter tabs */}
 				<View style={styles.filterBar}>
 					{FILTERS.map((f) => {
 						const selected = filter === f.key;
@@ -239,7 +254,37 @@ export default function ReportsScreen() {
 					})}
 				</View>
 
-				{/* Hero card — total time */}
+				{/* Language filter chips — only shown when user has more than one language */}
+				{userLanguages.length > 1 && (
+					<View style={[styles.filterBar, styles.languageFilterBar]}>
+						<TouchableOpacity
+							style={[styles.filterTab, activeLanguage === null && styles.filterTabSelected]}
+							onPress={() => setActiveLanguage(null)}
+							activeOpacity={0.7}
+						>
+							<Text style={[styles.filterTabText, activeLanguage === null && styles.filterTabTextSelected]}>
+								🌍 All
+							</Text>
+						</TouchableOpacity>
+						{userLanguages.map((lang) => {
+							const selected = activeLanguage === lang.language_code;
+							return (
+								<TouchableOpacity
+									key={lang.language_code}
+									style={[styles.filterTab, selected && styles.filterTabSelected]}
+									onPress={() => setActiveLanguage(lang.language_code)}
+									activeOpacity={0.7}
+								>
+									<Text style={[styles.filterTabText, selected && styles.filterTabTextSelected]}>
+										{lang.flag} {lang.name}
+									</Text>
+								</TouchableOpacity>
+							);
+						})}
+					</View>
+				)}
+
+				{/* Hero card — total time (always global) */}
 				<View style={[globalStyles.card, styles.heroCard]}>
 					<Text style={styles.heroTime}>{formatDuration(data.totalMinutes)}</Text>
 					<Text style={[globalStyles.inputLabel, styles.heroLabel]}>TOTAL TIME</Text>
@@ -247,7 +292,7 @@ export default function ReportsScreen() {
 
 				{/* Donut chart */}
 				<View style={styles.chartSection}>
-					<DonutChart byType={data.byType} total={data.totalMinutes} />
+					<DonutChart byType={data.byType} total={chartTotal} />
 					{data.byType.length > 0 && (
 						<View style={styles.legend}>
 							{data.byType.map((item) => (
@@ -270,7 +315,7 @@ export default function ReportsScreen() {
 					{[
 						{ value: data.sessionCount, label: "SESSIONS" },
 						{ value: data.daysStudied, label: "DAYS STUDIED" },
-						{ value: streak, label: "DAY STREAK" },
+						{ value: streak, label: activeLanguage ? "DAY STREAK 🌍" : "DAY STREAK" },
 					].map((stat) => (
 						<View key={stat.label} style={[globalStyles.card, styles.statCard]}>
 							<Text style={styles.statValue}>{stat.value}</Text>
@@ -484,4 +529,10 @@ const styles = StyleSheet.create({
 	bottomPadding: {
 		height: spacing.xxl,
 	},
+
+	// Language filter bar — same layout as filterBar, smaller bottom margin
+	languageFilterBar: {
+		marginBottom: spacing.md,
+	},
+
 });

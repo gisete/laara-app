@@ -17,7 +17,7 @@ import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import Svg, { Path } from "react-native-svg";
 
-import { clearAllUserData, getLanguageByCode, getLevels } from "@database/queries";
+import { getLevels } from "@database/queries";
 import ScreenHeader from "@components/ui/ScreenHeader";
 import { useUserProfile } from "@hooks/useUserProfile";
 
@@ -26,11 +26,6 @@ import { borderRadius, spacing } from "@theme/spacing";
 import { globalStyles } from "@theme/styles";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Language {
-	flag: string;
-	name: string;
-}
 
 interface Level {
 	code: string;
@@ -60,7 +55,6 @@ const ChevronRight = ({ color = colors.grayLightMedium }: { color?: string }) =>
 export default function SettingsScreen() {
 	// 1. Profile
 	const { profile, currentLevel, addLevelChange } = useUserProfile();
-	const [language, setLanguage] = useState<Language | null>(null);
 
 	// 2. State
 	const [notifications, setNotifications] = useState(false);
@@ -82,15 +76,6 @@ export default function SettingsScreen() {
 			.then((rows: any) => setLevels(rows))
 			.catch(console.error);
 	}, []);
-
-	useEffect(() => {
-		if (!profile?.language_code) return;
-		getLanguageByCode(profile.language_code)
-			.then((lang: any) => {
-				if (lang) setLanguage({ flag: lang.flag, name: lang.name });
-			})
-			.catch(console.error);
-	}, [profile?.language_code]);
 
 	// 4. Handlers — Toast
 	const showToast = useCallback(
@@ -138,30 +123,6 @@ export default function SettingsScreen() {
 	};
 
 	// 4. Handlers — Destructive
-	const handleChangeLanguage = () => {
-		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-		Alert.alert("Change language", "Changing your language will affect your data.", [
-			{
-				text: "Export first",
-				onPress: () => Alert.alert("Coming soon", "Data export is coming in a future update."),
-			},
-			{
-				text: "Switch anyway",
-				style: "destructive",
-				onPress: async () => {
-					try {
-						await clearAllUserData();
-						router.replace("/language-selection");
-					} catch (error) {
-						console.error("Error during language switch:", error);
-						Alert.alert("Error", "Something went wrong. Please try again.");
-					}
-				},
-			},
-			{ text: "Cancel", style: "cancel" },
-		]);
-	};
-
 	const handleClearData = () => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 		Alert.alert(
@@ -204,12 +165,18 @@ export default function SettingsScreen() {
 				<Text style={globalStyles.inputLabel}>My language</Text>
 				<View style={styles.sectionCard}>
 
-					{/* Language name — not tappable */}
-					<View style={[styles.row, styles.rowBorder]}>
-						<Text style={styles.rowLabel}>
-							{language ? `${language.flag}  ${language.name}` : "—"}
-						</Text>
-					</View>
+					{/* Manage languages */}
+					<TouchableOpacity
+						style={[styles.row, styles.rowBorder]}
+						onPress={() => {
+							Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+							router.push("/settings/manage-languages");
+						}}
+						activeOpacity={0.7}
+					>
+						<Text style={styles.rowLabel}>Manage languages</Text>
+						<ChevronRight />
+					</TouchableOpacity>
 
 					{/* Level */}
 					<TouchableOpacity
@@ -290,12 +257,6 @@ export default function SettingsScreen() {
 
 				{/* ─── DESTRUCTIVE ZONE ────────────────────────────────────── */}
 				<View style={styles.sectionCard}>
-
-					{/* Change language */}
-					<TouchableOpacity style={[styles.row, styles.rowBorder]} onPress={handleChangeLanguage} activeOpacity={0.7}>
-						<Text style={[styles.rowLabel, styles.rowLabelDestructive]}>Change language</Text>
-						<ChevronRight color={colors.error} />
-					</TouchableOpacity>
 
 					{/* Clear all data */}
 					<TouchableOpacity style={styles.row} onPress={handleClearData} activeOpacity={0.7}>

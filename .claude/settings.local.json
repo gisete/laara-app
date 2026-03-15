@@ -5,7 +5,8 @@
       "Bash(rm:*)",
       "Bash(xxd:*)",
       "Bash(python3:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

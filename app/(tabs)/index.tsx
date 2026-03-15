@@ -1,6 +1,7 @@
 // app/(tabs)/index.tsx
 import React, { useCallback, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator } from "react-native";
+import LanguageSwitcher from "@components/ui/LanguageSwitcher";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -78,6 +79,7 @@ export default function StudyScreen() {
 	const [lastMaterialName, setLastMaterialName] = useState<string | null>(null);
 	const [sessionRows, setSessionRows] = useState<SessionRow[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [switcherVisible, setSwitcherVisible] = useState(false);
 
 	const loadData = useCallback(async () => {
 		try {
@@ -160,6 +162,7 @@ export default function StudyScreen() {
 	const displayedRows = sessionRows.slice(0, 3);
 
 	return (
+		<>
 		<SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
 			<StatusBar barStyle="dark-content" backgroundColor={colors.gray50} />
 
@@ -168,10 +171,15 @@ export default function StudyScreen() {
 					<View style={styles.greetingRow}>
 						<Text style={styles.greeting}>{greeting}</Text>
 						<TouchableOpacity
-							onPress={() => console.log("language selector pressed")}
+							style={styles.flagTappable}
+							onPress={() => {
+								Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+								setSwitcherVisible(true);
+							}}
 							activeOpacity={0.7}
 						>
 							<Text style={styles.flagEmoji}>{flag}</Text>
+							<Text style={styles.flagChevron}>▾</Text>
 						</TouchableOpacity>
 					</View>
 					<View style={styles.statusPill}>
@@ -256,6 +264,13 @@ export default function StudyScreen() {
 				)}
 			</View>
 		</SafeAreaView>
+
+		<LanguageSwitcher
+			visible={switcherVisible}
+			onClose={() => setSwitcherVisible(false)}
+			onLanguageSelected={() => loadData()}
+		/>
+		</>
 	);
 }
 
@@ -298,7 +313,17 @@ const styles = StyleSheet.create({
 		paddingHorizontal: spacing.sm,
 		borderRadius: borderRadius.pill,
 	},
+	flagTappable: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 2,
+	},
 	flagEmoji: { fontSize: 24 },
+	flagChevron: {
+		fontSize: 12,
+		color: colors.grayMedium,
+		marginTop: 2,
+	},
 	streakText: {
 		fontSize: 11,
 		fontWeight: "800",

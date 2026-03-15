@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View, Alert, ActivityIndicator } from "react-native";
 import { colors } from "@theme/colors";
 import { spacing, borderRadius } from "@theme/spacing";
-import { seedLibraryData } from "@utils/seedLibraryData";
+import { seedLibraryData, seedTwoLanguages, seedFullState } from "@utils/seedLibraryData";
 
 interface EmptyStateProps {
 	onAddNew: () => void;
@@ -12,48 +12,66 @@ interface EmptyStateProps {
 }
 
 export default function EmptyState({ onAddNew, onDataSeeded }: EmptyStateProps) {
-	const [seeding, setSeeding] = useState(false);
+	const [seedingScenario, setSeedingScenario] = useState<string | null>(null);
 
 	const handleAddNew = () => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 		onAddNew();
 	};
 
-	const handleSeedData = async () => {
-		Alert.alert("Seed Library Data?", "This will add 25+ sample materials to your library for testing. Continue?", [
+	const runSeed = (
+		scenarioKey: string,
+		fn: () => Promise<{ success: boolean; added?: number; sessions?: number; error?: string }>,
+		title: string,
+		description: string,
+	) => {
+		Alert.alert(title, description, [
+			{ text: "Cancel", style: "cancel" },
 			{
-				text: "Cancel",
-				style: "cancel",
-			},
-			{
-				text: "Add Sample Data",
+				text: "Add Data",
 				onPress: async () => {
 					try {
-						setSeeding(true);
-						const result = await seedLibraryData();
-
+						setSeedingScenario(scenarioKey);
+						const result = await fn();
 						if (result.success) {
-							Alert.alert("✅ Success!", `Added ${result.added} materials to your library.`, [
-								{
-									text: "OK",
-									onPress: () => {
-										// Call the callback to refresh materials list
-										onDataSeeded?.();
-									},
-								},
+							const parts = [
+								result.added != null && `${result.added} materials`,
+								result.sessions != null && `${result.sessions} sessions`,
+							].filter(Boolean);
+							Alert.alert("✅ Done!", `Added ${parts.join(" + ")}.`, [
+								{ text: "OK", onPress: () => onDataSeeded?.() },
 							]);
 						} else {
-							Alert.alert("Error", `Failed to seed data: ${result.error}`);
+							Alert.alert("Error", `Failed: ${result.error}`);
 						}
-					} catch (error) {
-						Alert.alert("Error", `Something went wrong: ${error.message}`);
+					} catch (error: unknown) {
+						Alert.alert("Error", `Something went wrong: ${(error as Error).message}`);
 					} finally {
-						setSeeding(false);
+						setSeedingScenario(null);
 					}
 				},
 			},
 		]);
 	};
+
+	const handleSeedBasic = () =>
+		runSeed("basic", seedLibraryData, "Seed Basic Library?", "Adds 25+ sample materials for testing.");
+
+	const handleSeedTwoLanguages = () =>
+		runSeed(
+			"two-languages",
+			seedTwoLanguages,
+			"Seed Two Languages?",
+			"Sets up Spanish (active) + Japanese materials with partial progress.",
+		);
+
+	const handleSeedFullState = () =>
+		runSeed(
+			"full-state",
+			seedFullState,
+			"Seed Full State?",
+			"Sets up two languages + 5 study sessions across the last 7 days.",
+		);
 
 	return (
 		<View style={styles.container}>
@@ -76,7 +94,7 @@ export default function EmptyState({ onAddNew, onDataSeeded }: EmptyStateProps) 
 				<Text style={styles.addButtonText}>+ New Item</Text>
 			</TouchableOpacity>
 
-			{/* Development: Seed Data Button */}
+			{/* Development: Seed Data Buttons */}
 			{__DEV__ && (
 				<>
 					<View style={styles.divider}>
@@ -85,11 +103,42 @@ export default function EmptyState({ onAddNew, onDataSeeded }: EmptyStateProps) 
 						<View style={styles.dividerLine} />
 					</View>
 
-					<TouchableOpacity style={styles.seedButton} onPress={handleSeedData} activeOpacity={0.9} disabled={seeding}>
-						{seeding ? (
+					<TouchableOpacity
+						style={[styles.seedButton, seedingScenario !== null && { opacity: 0.6 }]}
+						onPress={handleSeedBasic}
+						activeOpacity={0.9}
+						disabled={seedingScenario !== null}
+					>
+						{seedingScenario === "basic" ? (
 							<ActivityIndicator color={colors.white} />
 						) : (
-							<Text style={styles.seedButtonText}>🌱 Add Sample Data (Dev)</Text>
+							<Text style={styles.seedButtonText}>🌱 Basic library (one language)</Text>
+						)}
+					</TouchableOpacity>
+
+					<TouchableOpacity
+						style={[styles.seedButton, { marginTop: spacing.sm }, seedingScenario !== null && { opacity: 0.6 }]}
+						onPress={handleSeedTwoLanguages}
+						activeOpacity={0.9}
+						disabled={seedingScenario !== null}
+					>
+						{seedingScenario === "two-languages" ? (
+							<ActivityIndicator color={colors.white} />
+						) : (
+							<Text style={styles.seedButtonText}>🎌 Two languages (Japanese + Spanish)</Text>
+						)}
+					</TouchableOpacity>
+
+					<TouchableOpacity
+						style={[styles.seedButton, { marginTop: spacing.sm }, seedingScenario !== null && { opacity: 0.6 }]}
+						onPress={handleSeedFullState}
+						activeOpacity={0.9}
+						disabled={seedingScenario !== null}
+					>
+						{seedingScenario === "full-state" ? (
+							<ActivityIndicator color={colors.white} />
+						) : (
+							<Text style={styles.seedButtonText}>📊 Full state (two languages + sessions)</Text>
 						)}
 					</TouchableOpacity>
 				</>

@@ -980,9 +980,25 @@ export const clearAllUserData = () => {
  * @param {string} endDate   - YYYY-MM-DD (inclusive)
  * @returns {Promise<{totalMinutes, sessionCount, daysStudied, byType, mostStudiedMaterial, unitsByType}>}
  */
-export const getReportData = (startDate, endDate) => {
+export const getReportData = (startDate, endDate, languageCode = null) => {
 	return new Promise((resolve, reject) => {
 		try {
+			// When a language filter is active, include legacy materials (language_code IS NULL)
+			// so old test data doesn't vanish.
+			const langFilter = languageCode
+				? "AND (m.language_code = ? OR m.language_code IS NULL)"
+				: "";
+			const baseParams = [startDate, endDate];
+			const params = languageCode ? [...baseParams, languageCode] : baseParams;
+
+			// totals — language-filtered when languageCode is provided
+			const totalsLangFilter = languageCode
+				? "AND (m.language_code = ? OR m.language_code IS NULL)"
+				: "";
+			const totalsParams = languageCode
+				? [startDate, endDate, languageCode]
+				: [startDate, endDate];
+
 			const totals = db.getFirstSync(
 				`SELECT
 					COALESCE(SUM(sa.duration_minutes), 0) as totalMinutes,
@@ -990,8 +1006,10 @@ export const getReportData = (startDate, endDate) => {
 					COUNT(DISTINCT ds.session_date) as daysStudied
 				FROM daily_sessions ds
 				LEFT JOIN session_activities sa ON sa.session_id = ds.id
-				WHERE ds.session_date BETWEEN ? AND ?`,
-				[startDate, endDate]
+				LEFT JOIN materials m ON sa.material_id = m.id
+				WHERE ds.session_date BETWEEN ? AND ?
+				${totalsLangFilter}`,
+				totalsParams
 			);
 
 			const byType = db.getAllSync(
@@ -1000,9 +1018,10 @@ export const getReportData = (startDate, endDate) => {
 				JOIN daily_sessions ds ON sa.session_id = ds.id
 				JOIN materials m ON sa.material_id = m.id
 				WHERE ds.session_date BETWEEN ? AND ?
+				${langFilter}
 				GROUP BY m.type
 				ORDER BY totalMinutes DESC`,
-				[startDate, endDate]
+				params
 			);
 
 			const mostStudiedMaterial = db.getFirstSync(
@@ -1012,10 +1031,11 @@ export const getReportData = (startDate, endDate) => {
 				JOIN daily_sessions ds ON sa.session_id = ds.id
 				JOIN materials m ON sa.material_id = m.id
 				WHERE ds.session_date BETWEEN ? AND ?
+				${langFilter}
 				GROUP BY m.id, m.name, m.type, m.subtype
 				ORDER BY totalMinutes DESC
 				LIMIT 1`,
-				[startDate, endDate]
+				params
 			);
 
 			const unitsByType = db.getAllSync(
@@ -1025,9 +1045,10 @@ export const getReportData = (startDate, endDate) => {
 				JOIN materials m ON sa.material_id = m.id
 				WHERE ds.session_date BETWEEN ? AND ?
 					AND sa.units_studied IS NOT NULL
+				${langFilter}
 				GROUP BY m.type
 				HAVING totalUnits > 0`,
-				[startDate, endDate]
+				params
 			);
 
 			resolve({
@@ -1040,6 +1061,93 @@ export const getReportData = (startDate, endDate) => {
 			});
 		} catch (error) {
 			console.error("Error fetching report data:", error);
+			reject(error);
+		}
+	});
+};
+
+// ============ USER LANGUAGES QUERIES ============
+
+/**
+ * Get all languages the user is studying, joined with the languages table for name/flag/greeting.
+ * @returns {Promise<Array>} [{ language_code, is_active, name, flag, greeting }]
+ */
+export const getUserLanguages = () => {
+	return new Promise((resolve, reject) => {
+		try {
+			const result = db.getAllSync(
+				`SELECT ul.language_code, ul.is_active, l.name, l.flag, l.greeting
+				FROM user_languages ul
+				JOIN languages l ON l.code = ul.language_code
+				ORDER BY ul.is_active DESC, ul.added_at ASC`
+			);
+			resolve(result || []);
+		} catch (error) {
+			console.error("Error fetching user languages:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
+ * Add a new language to the user's study list (does NOT set as active).
+ * Safe to call multiple times — INSERT OR IGNORE prevents duplicates.
+ * @param {string} code - Language code
+ * @returns {Promise<void>}
+ */
+export const addUserLanguage = (code) => {
+	return new Promise((resolve, reject) => {
+		try {
+			db.runSync(
+				"INSERT OR IGNORE INTO user_languages (language_code, is_active) VALUES (?, 0)",
+				[code]
+			);
+			console.log("User language added:", code);
+			resolve();
+		} catch (error) {
+			console.error("Error adding user language:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
+ * Switch the active language. Updates both user_languages.is_active
+ * and user_settings.primary_language atomically in one transaction.
+ * @param {string} code - Language code to activate
+ * @returns {Promise<void>}
+ */
+export const setActiveLanguage = (code) => {
+	return new Promise((resolve, reject) => {
+		try {
+			db.withTransactionSync(() => {
+				db.runSync("UPDATE user_languages SET is_active = 0 WHERE is_active = 1");
+				db.runSync("UPDATE user_languages SET is_active = 1 WHERE language_code = ?", [code]);
+				db.runSync("UPDATE user_settings SET primary_language = ? WHERE id = 1", [code]);
+			});
+			console.log("Active language switched to:", code);
+			resolve();
+		} catch (error) {
+			console.error("Error setting active language:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
+ * Remove a language from the user's study list.
+ * Does NOT delete materials or sessions — data is preserved.
+ * @param {string} code - Language code to remove
+ * @returns {Promise<void>}
+ */
+export const removeUserLanguage = (code) => {
+	return new Promise((resolve, reject) => {
+		try {
+			db.runSync("DELETE FROM user_languages WHERE language_code = ?", [code]);
+			console.log("User language removed:", code);
+			resolve();
+		} catch (error) {
+			console.error("Error removing user language:", error);
 			reject(error);
 		}
 	});

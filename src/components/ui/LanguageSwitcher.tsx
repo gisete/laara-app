@@ -1,0 +1,177 @@
+// src/components/ui/LanguageSwitcher.tsx
+import React, { useEffect, useState } from "react";
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { router } from "expo-router";
+import * as Haptics from "expo-haptics";
+
+import { getUserLanguages, setActiveLanguage } from "@database/queries";
+import { colors } from "@theme/colors";
+import { borderRadius, spacing } from "@theme/spacing";
+
+interface UserLanguage {
+	language_code: string;
+	is_active: number;
+	name: string;
+	flag: string;
+	greeting: string | null;
+}
+
+interface LanguageSwitcherProps {
+	visible: boolean;
+	onClose: () => void;
+	onLanguageSelected: (code: string) => void;
+}
+
+export default function LanguageSwitcher({ visible, onClose, onLanguageSelected }: LanguageSwitcherProps) {
+	const [languages, setLanguages] = useState<UserLanguage[]>([]);
+
+	// Reload languages on every open so it stays fresh after adding
+	useEffect(() => {
+		if (visible) {
+			getUserLanguages()
+				.then((rows) => setLanguages(rows as UserLanguage[]))
+				.catch(console.error);
+		}
+	}, [visible]);
+
+	const handleSelectLanguage = async (code: string, isActive: number) => {
+		if (isActive) {
+			onClose();
+			return;
+		}
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+		try {
+			await setActiveLanguage(code);
+			onLanguageSelected(code);
+			onClose();
+		} catch (error) {
+			console.error("Error switching language:", error);
+		}
+	};
+
+	const handleAddLanguage = () => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+		onClose();
+		router.push({ pathname: "/language-selection", params: { mode: "add" } });
+	};
+
+	return (
+		<Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+			<TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
+				<View style={styles.sheet} onStartShouldSetResponder={() => true}>
+					<View style={styles.handle} />
+					<Text style={styles.title}>Switch Language</Text>
+
+					<ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+						{languages.map((lang) => (
+							<TouchableOpacity
+								key={lang.language_code}
+								style={styles.row}
+								onPress={() => handleSelectLanguage(lang.language_code, lang.is_active)}
+								activeOpacity={0.7}
+							>
+								<Text style={styles.flag}>{lang.flag}</Text>
+								<Text style={[styles.langName, lang.is_active ? styles.langNameActive : null]}>
+									{lang.name}
+								</Text>
+								{lang.is_active ? (
+									<View style={styles.checkmark}>
+										<Text style={styles.checkmarkText}>✓</Text>
+									</View>
+								) : null}
+							</TouchableOpacity>
+						))}
+
+						<TouchableOpacity style={[styles.row, styles.addRow]} onPress={handleAddLanguage} activeOpacity={0.7}>
+							<Text style={styles.addIcon}>＋</Text>
+							<Text style={styles.addText}>Add a language</Text>
+						</TouchableOpacity>
+					</ScrollView>
+				</View>
+			</TouchableOpacity>
+		</Modal>
+	);
+}
+
+const styles = StyleSheet.create({
+	overlay: {
+		flex: 1,
+		backgroundColor: "rgba(0,0,0,0.4)",
+		justifyContent: "flex-end",
+	},
+	sheet: {
+		backgroundColor: colors.white,
+		borderTopLeftRadius: borderRadius.lg,
+		borderTopRightRadius: borderRadius.lg,
+		paddingHorizontal: spacing.lg,
+		paddingTop: spacing.sm,
+		paddingBottom: spacing.xl,
+	},
+	handle: {
+		width: 36,
+		height: 4,
+		borderRadius: 2,
+		backgroundColor: colors.gray300,
+		alignSelf: "center",
+		marginBottom: spacing.md,
+	},
+	title: {
+		fontFamily: "Domine-Medium",
+		fontSize: 18,
+		color: colors.grayDarkest,
+		textAlign: "center",
+		marginBottom: spacing.lg,
+	},
+	row: {
+		flexDirection: "row",
+		alignItems: "center",
+		paddingVertical: spacing.md,
+		paddingHorizontal: spacing.md,
+		borderRadius: borderRadius.sm,
+		backgroundColor: colors.gray50,
+		marginBottom: spacing.sm,
+	},
+	flag: {
+		fontSize: 24,
+		marginRight: spacing.md,
+	},
+	langName: {
+		flex: 1,
+		fontSize: 16,
+		fontWeight: "500",
+		color: colors.grayDarkest,
+	},
+	langNameActive: {
+		color: colors.primaryAccent,
+		fontWeight: "600",
+	},
+	checkmark: {
+		width: 24,
+		height: 24,
+		borderRadius: 12,
+		backgroundColor: colors.primaryAccent,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	checkmarkText: {
+		color: colors.white,
+		fontSize: 13,
+		fontWeight: "600",
+	},
+	addRow: {
+		backgroundColor: colors.grayLight,
+	},
+	addIcon: {
+		fontSize: 20,
+		color: colors.grayMedium,
+		marginRight: spacing.md,
+		width: 24,
+		textAlign: "center",
+	},
+	addText: {
+		flex: 1,
+		fontSize: 16,
+		fontWeight: "500",
+		color: colors.grayMedium,
+	},
+});

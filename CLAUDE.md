@@ -29,8 +29,8 @@ laara-app/
 │   │   ├── _layout.tsx           # Tab config (Study, Library, Reports, Settings)
 │   │   ├── index.tsx             # Study/Dashboard tab
 │   │   ├── library.tsx           # Library tab
-│   │   ├── reports.tsx           # Reports tab (stub)
-│   │   └── settings.tsx          # Settings tab (stub)
+│   │   ├── reports.tsx           # Reports tab
+│   │   └── settings.tsx          # Settings tab
 │   ├── add-material/             # Material creation flow (modal-style screens)
 │   │   ├── index.tsx             # Category picker
 │   │   ├── book.tsx
@@ -38,6 +38,8 @@ laara-app/
 │   │   ├── video.tsx
 │   │   ├── class.tsx
 │   │   └── app.tsx
+│   ├── settings/                 # Settings sub-screens
+│   │   └── manage-languages.tsx  # Manage user languages
 │   ├── log-session/              # Session logging flow
 │   │   ├── select-material.tsx   # Material picker
 │   │   ├── active-session.tsx    # Count-up timer
@@ -189,7 +191,7 @@ Horizontal scrolling filter bar for the library screen. Pass `filters: {label, v
 
 ### EmptyState
 
-Full-screen empty state with illustration and CTA. Has a `__DEV__`-only seed data button.
+Full-screen empty state with illustration and CTA. Has three `__DEV__`-only seed scenario buttons: Basic library (one language), Two languages (ES+JA), Full state (two languages + sessions).
 
 ---
 
@@ -281,11 +283,55 @@ interface Activity {
 - `getOnboardingCompleted()` → `Promise<boolean>` — reads `onboarding_completed` from `user_settings`; returns `false` on error (safe default shows onboarding)
 - `setOnboardingCompleted()` → `Promise<void>` — sets `onboarding_completed = 1`
 
+**User Languages:**
+
+- `getUserLanguages()` → `UserLanguage[]` — `{ language_code, name, flag, greeting, is_active }`
+- `removeUserLanguage(code)` → void — DELETE from `user_languages` only; materials/sessions preserved
+
+**Reports:**
+
+- `getReportData(startDate, endDate, languageCode = null)` → `ReportData` — accepts optional language filter. All sub-queries (totals, byType, mostStudied, unitsByType) filter by `language_code` when provided. Uses `AND (m.language_code = ? OR m.language_code IS NULL)` to include legacy materials with NULL language_code. Totals query uses LEFT JOINs to preserve days with no activities in `daysStudied` count.
+
 **Categories:**
 
 - `getSubcategoriesByCategory(categoryCode)` → subcategory objects
 - `getAllActiveCategories()` → category objects
 - `getCategoryByCode(code)` → category object
+
+---
+
+## Multi-Language Architecture
+
+### `user_languages` table
+
+Stores which languages a user is learning. Each row: `language_code` (FK → `languages`), `is_active` (1 = currently active language shown on dashboard), `added_at`.
+
+- A user always has at least one language. The active language cannot be removed.
+- `removeUserLanguage(code)` only removes from `user_languages` — materials and sessions with that `language_code` are preserved.
+- To switch active language: update `is_active` flag (future feature).
+
+### `materials.language_code` column
+
+Each material is tagged with the language it belongs to. Materials added before this column existed may have `language_code = NULL` — treat these as belonging to all languages (always include them in any language-filtered query).
+
+### Language filter pattern in queries
+
+```js
+const langFilter = languageCode
+  ? "AND (m.language_code = ? OR m.language_code IS NULL)"
+  : "";
+const params = languageCode ? [...baseParams, languageCode] : baseParams;
+```
+
+Use LEFT JOINs (not INNER) when adding materials to aggregate queries — INNER JOIN drops sessions that have no matching activities, distorting `daysStudied`.
+
+### Reports language filter
+
+`getReportData(startDate, endDate, languageCode = null)` — third param is optional. When null, returns data for all languages. When set, filters all sub-queries. The streak counter (`getStreakCount`) is always global — it counts any study day regardless of language.
+
+### Language filter UI (reports.tsx)
+
+Language chips row is only rendered when `userLanguages.length > 1`. Default is "All" (null). When a specific language is active, the streak label shows `"DAY STREAK 🌍"` to indicate the streak is global, not per-language.
 
 ---
 
@@ -379,6 +425,10 @@ useFocusEffect(
 
 6. **`updateMaterialProgress` called with 2 args** — function signature requires 3: `(materialId, unitsToAdd, progressPercentage)`. Third arg is always `undefined` currently, so `progress_percentage` column never updates. Fix: fetch material first, calculate percentage, pass it. (`session-summary.tsx` already does this correctly.)
 
+7. **`user_languages.is_active` semantics unclear** — `is_active` on `user_languages` tracks the "primary" language shown on the dashboard, but there's no enforcement that exactly one row has `is_active = 1`. If the active language is removed (currently blocked in UI) or if seeding sets multiple active flags, the dashboard greeting may show wrong data. Add a constraint or enforce in queries.
+
+8. **`getStreakCount()` is always global** — streak counts any study day regardless of language filter. This is intentional for now (streak shown in Reports always uses 🌍 indicator when language filter is active), but if per-language streaks are ever wanted, a separate query will be needed.
+
 ---
 
 ## What's Built vs. What's Needed
@@ -397,15 +447,21 @@ useFocusEffect(
 - TypeSelectorModal label updated to match global input label token
 - All add-material form screens (book, audio, video, class, app) now use global input tokens — no local label/input/inputFocused styles
 - session-summary.tsx redesigned — circular × discard button, global input tokens, Duration + unit fields in side-by-side row
+- **Reports tab** — fully built: period filter (week/month/all), language filter chips, donut chart by type, hero time card, stats row (sessions/days/streak), most studied card, units breakdown card
+- **Multi-language support** — `user_languages` table, `materials.language_code`, language filter in `getReportData`, language chip filter in Reports, manage-languages screen in Settings
+- **Settings tab** — built: Manage languages row, Level modal (two-step: reason + level picker), toast, notifications toggle (UI only), export/restore/about stubs, clear data stub
+- **Manage Languages screen** (`app/settings/manage-languages.tsx`) — list of user languages, active badge, remove button (inactive non-sole languages only), add language CTA
+- **Dev seed scenarios** — three `__DEV__` seed buttons in EmptyState: Basic library, Two languages (ES+JA), Full state (two languages + 5 sessions across 7 days)
 
 ### Needs Building 🔨
 
-- **Reports tab** — stub exists, needs content
-- **Settings/Profile tab** — planning in progress
+- **Settings/Profile tab** — notifications (expo-notifications), export data, restore from backup, clear all data (all stubbed)
+- **Paywall / upgrade screen** — triggered when free user hits material limit or taps locked analytics
 
 ### Next Up 🎯
 
-- Profile/Settings tab — design and build
+- Notifications (expo-notifications) — requires physical iOS device to test
+- Export data flow
 
 ---
 
@@ -426,23 +482,25 @@ All theme files are `.js`, not `.ts`.
 | `src/utils/activityLogValidation.ts`  | ✅     | `validateActivityForm()` returns `boolean` (not an object). Alert shown internally                                                                                                                                                                           |
 | `src/utils/dateHelper.ts`             | ✅     | `formatDateToYYYYMMDD`, `getCurrentWeekDates`, `isToday`, `getRelativeTime`, `getDayLetter`                                                                                                                                                                  |
 | `src/utils/materialUtils.ts`          | ✅     | `getUnitLabel(type, count)`, `getProgressText(type, current, total)`, `getActivityText(type, units)`                                                                                                                                                         |
-| `src/utils/seedLibraryData.js`        | ✅     | `seedLibraryData()` → `{ success, added, failed, total }`                                                                                                                                                                                                    |
+| `src/utils/seedLibraryData.js`        | ✅     | `seedLibraryData()` → `{ success, added, failed, total }`. Also exports `seedTwoLanguages()` (ES+JA materials, sets `user_languages`) and `seedFullState()` (two languages + 5 sessions over 7 days, 3-day streak).                                           |
 | `app/log-session/select-material.tsx` | ✅     | Built, working. Recently Studied section for 5+ materials                                                                                                                                                                                                    |
 | `app/log-session/active-session.tsx`  | ✅     | Count-up timer. Ref-based state (avoids stale closures). AppState backgrounding. Pause/resume. Navigates to `session-summary` on End via `router.replace`.                                                                                                   |
 | `app/log-session/session-summary.tsx` | ✅     | Post-session logging form. Receives `elapsedSeconds`, pre-fills duration. Type-aware unit field label. Notes field. Full save logic (getOrCreateTodaySession → addSessionActivity → updateSessionTotalDuration → updateMaterialProgress).                    |
 | `app/(tabs)/index.tsx`                | ✅     | Redesigned study tab — greeting header, weekly calendar strip (Sun–Sat), 144px coral BEGIN button with glow, recent sessions card                                                                                                                            |
 | `app/(tabs)/library.tsx`              | ✅     | Filter bar, list, edit, delete                                                                                                                                                                                                                               |
-| `app/(tabs)/reports.tsx`              | ✅     | Stub only                                                                                                                                                                                                                                                    |
-| `app/(tabs)/settings.tsx`             | ✅     | Stub only                                                                                                                                                                                                                                                    |
+| `app/(tabs)/reports.tsx`              | ✅     | Fully built. Period filter (week/month/all time), language filter chips (hidden when single language), donut chart, hero time card, stats row, most studied card, units breakdown. `getReportData(startDate, endDate, languageCode)` — language param optional. |
+| `app/(tabs)/settings.tsx`             | ✅     | Fully built. "Manage languages" row → `/settings/manage-languages`. Level row → two-step Modal. Joined date read-only. Notifications toggle (UI only). Export/restore/about stubs. Clear all data stub (destructive zone).                                    |
+| `app/settings/manage-languages.tsx`   | ✅     | Lists user languages. Active language shows coral badge, cannot be removed. Inactive language (when >1 exist) shows Remove button → Alert → `removeUserLanguage()`. "＋ Add a language" → `/language-selection?mode=add`. Auto-discovers via Expo Router.     |
 | `app/onboarding/level-selection.tsx`  | ✅     | CEFR picker, saves via `updateUserLevel`                                                                                                                                                                                                                     |
 | `app/add-material/*.tsx`              | ✅     | book, audio, video, class, app — all support add + edit mode via `params.id`                                                                                                                                                                                 |
 
+| `app/language-selection.tsx`          | ✅     | Language picker for onboarding and adding new languages. Accepts `mode` param: `"onboarding"` (default) or `"add"`. In `"add"` mode: inserts into `user_languages` and calls `router.back()` instead of navigating to level selection.                        |
+
 ### Still unconfirmed:
 
-| File                         | What to check                                                                                |
-| ---------------------------- | -------------------------------------------------------------------------------------------- |
-| `src/types/`                 | What type definitions exist — avoid duplicating `Material`, `Activity`, `Session` interfaces |
-| `app/language-selection.tsx` | Exists and navigates correctly to onboarding                                                 |
+| File           | What to check                                                                                |
+| -------------- | -------------------------------------------------------------------------------------------- |
+| `src/types/`   | What type definitions exist — avoid duplicating `Material`, `Activity`, `Session` interfaces |
 
 ---
 
@@ -510,6 +568,20 @@ BEGIN → select-material → active-session (timer) → session-summary → Stu
 
 ## Screen Flows
 
+### Manage Languages (`app/settings/manage-languages.tsx`)
+
+Accessed from Settings → "Manage languages".
+
+- Lists all languages in `user_languages`
+- Active language: coral pill badge ("Active"), no remove action
+- Inactive language (when user has >1 total): red "Remove" text → Alert confirmation → `removeUserLanguage(code)` → refresh
+- Sole remaining language: no remove option on any row (prevents empty state)
+- "＋ Add a language" row at bottom → `router.push({ pathname: '/language-selection', params: { mode: 'add' } })`
+- `useFocusEffect` refreshes list when returning from language-selection
+- No _layout.tsx registration needed — Expo Router auto-discovers `app/settings/` routes
+
+---
+
 ### Main Dashboard (`app/(tabs)/index.tsx`)
 
 Visual layout (mockup approved, fonts/sizes not final):
@@ -557,6 +629,20 @@ Purpose: choose what to study right now. Not a management screen — no edit/del
 - Future: this may be where free/paid limit surfaces (free users see only recent 5, full library requires unlock)
 
 All states → selecting any item → navigates to `app/log-session/active-session.tsx`
+
+---
+
+### Reports Tab (`app/(tabs)/reports.tsx`)
+
+- **Period filter**: Week / Month / All Time (pill tabs). Changes `startDate`/`endDate` passed to `getReportData`.
+- **Language filter chips**: Only rendered when user has >1 language. "🌍 All" (null) + one chip per language. Changes `activeLanguage` state.
+- **Hero card**: TOTAL TIME — always shows filtered total. Label is always "TOTAL TIME".
+- **Donut chart**: `DonutChart` receives `byType` data and `chartTotal` (sum of `byType`, not raw total). This ensures the ring is always complete even when the language filter causes fewer segments than the global total.
+- **Stats row**: Sessions · Days Studied · DAY STREAK (streak is always global; shows "DAY STREAK 🌍" when language filter active)
+- **Most studied**: top material by time in the period/language
+- **Units breakdown**: total units (pages/episodes/etc) per type
+
+Data load: `Promise.all([getReportData(start, end, activeLanguage), getStreakCount(), getUserLanguages()])` inside `useFocusEffect`.
 
 ---
 
@@ -691,7 +777,7 @@ ALTER TABLE user_settings ADD COLUMN onboarding_completed INTEGER DEFAULT 0;
 
 ### My Language section
 
-- Language row: flag + display name, not tappable, derived from language_code
+- "Manage languages" row: tappable, ChevronRight, navigates to `/settings/manage-languages`
 - Level row: opens Modal (see below) — NOT a BottomSheet (gesture conflicts)
 - Joined row: read-only, shows profile.created_at as "MMM YYYY", no chevron
 
@@ -706,9 +792,7 @@ ALTER TABLE user_settings ADD COLUMN onboarding_completed INTEGER DEFAULT 0;
 
 ### Destructive zone (no section header)
 
-- "Change language": colors.error text, confirms then calls clearAllUserData() +
-  router.replace("/language-selection"). Resets onboarding_completed = 0.
-- "Clear all data": colors.error text, confirmation Alert (functionality coming)
+- "Clear all data": colors.error text, confirmation Alert (functionality coming — stub only)
 
 ### Level Modal
 

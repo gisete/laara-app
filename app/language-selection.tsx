@@ -1,6 +1,6 @@
 // app/language-selection.tsx - Updated with comprehensive language list
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
@@ -13,7 +13,7 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getFeaturedLanguages, getAllNonFeaturedLanguages, updateUserSettings } from "@database/queries";
+import { getFeaturedLanguages, getAllNonFeaturedLanguages, updateUserSettings, addUserLanguage } from "@database/queries";
 import SearchBar from "@components/forms/SearchBar";
 
 // Import global styles
@@ -33,6 +33,9 @@ interface Language {
 }
 
 export default function LanguageSelectionScreen() {
+	const { mode } = useLocalSearchParams<{ mode?: string }>();
+	const isAddMode = mode === "add";
+
 	const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
 	const [featuredLanguages, setFeaturedLanguages] = useState<Language[]>([]);
 	const [allLanguages, setAllLanguages] = useState<Language[]>([]);
@@ -82,25 +85,30 @@ export default function LanguageSelectionScreen() {
 		try {
 			Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-			// Save the selected language to user settings
-			await updateUserSettings({
-				primary_language: selectedLanguage,
-				notification_enabled: false,
-				notification_time: "19:00",
-			});
+			if (isAddMode) {
+				// Add mode: add to user's language list and go back
+				await addUserLanguage(selectedLanguage);
+				console.log("Language added to user list:", selectedLanguage);
+				router.back();
+			} else {
+				// Onboarding mode: save as primary language and proceed to level selection
+				await updateUserSettings({
+					primary_language: selectedLanguage,
+					notification_enabled: false,
+					notification_time: "19:00",
+				});
 
-			console.log("Selected language saved:", selectedLanguage);
+				console.log("Selected language saved:", selectedLanguage);
 
-			// Find the language name to pass to level selection
-			const languageName =
-				[...featuredLanguages, ...allLanguages].find((lang) => lang.code === selectedLanguage)?.name ||
-				selectedLanguage;
+				const languageName =
+					[...featuredLanguages, ...allLanguages].find((lang) => lang.code === selectedLanguage)?.name ||
+					selectedLanguage;
 
-			// Navigate to level selection screen with language name
-			router.push({
-				pathname: "/onboarding/level-selection",
-				params: { language: languageName },
-			});
+				router.push({
+					pathname: "/onboarding/level-selection",
+					params: { language: languageName },
+				});
+			}
 		} catch (error) {
 			console.error("Error saving language preference:", error);
 			Alert.alert("Error", "Failed to save language preference. Please try again.");
@@ -125,8 +133,8 @@ export default function LanguageSelectionScreen() {
 			<View style={styles.content}>
 				{/* Header */}
 				<View style={styles.header}>
-					<Text style={styles.title}>Choose a Language</Text>
-					<Text style={styles.subtitle}>I'm learning</Text>
+					<Text style={styles.title}>{isAddMode ? "Add a language" : "Choose a Language"}</Text>
+					<Text style={styles.subtitle}>{isAddMode ? "I also want to learn" : "I'm learning"}</Text>
 				</View>
 
 				{/* Language List */}

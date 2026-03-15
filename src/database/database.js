@@ -338,6 +338,29 @@ export const initDatabase = () => {
 				}
 			}
 
+			// Create user_languages table (multi-language support)
+			const userLangTableExists = db.getFirstSync(
+				"SELECT name FROM sqlite_master WHERE type='table' AND name='user_languages'"
+			);
+			if (!userLangTableExists) {
+				db.execSync(`
+          CREATE TABLE user_languages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            language_code TEXT NOT NULL UNIQUE,
+            is_active INTEGER NOT NULL DEFAULT 0,
+            added_at TEXT DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+				// Seed from existing primary_language so returning users don't lose their language
+				const seedSettings = db.getFirstSync("SELECT primary_language FROM user_settings WHERE id = 1");
+				if (seedSettings?.primary_language) {
+					db.runSync(
+						"INSERT OR IGNORE INTO user_languages (language_code, is_active) VALUES (?, 1)",
+						[seedSettings.primary_language]
+					);
+				}
+			}
+
 			// Create user_profile table (single row, id = 1)
 			db.execSync(`
         CREATE TABLE IF NOT EXISTS user_profile (
