@@ -8,10 +8,10 @@ export const spacing = {
 };
 
 export const borderRadius = {
-	sm: 8, // Cards
-	md: 12, // Larger cards
-	lg: 16, // Modals
-	pill: 20, // Pills/tags
-	button: 16, // Standard button border radius
-	input: 10, // Standard input border radius
+	sm: 6,
+	md: 10,
+	lg: 14,
+	pill: 18,
+	button: 10,
+	input: 8,
 };

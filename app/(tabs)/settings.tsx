@@ -17,13 +17,14 @@ import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import Svg, { Path } from "react-native-svg";
 
-import { getLevels, getUserSettings, clearLanguageData } from "@database/queries";
+import { getLevels, getUserSettings, clearLanguageData, nukeAllData } from "@database/queries";
 import ScreenHeader from "@components/ui/ScreenHeader";
 import { useUserProfile } from "@hooks/useUserProfile";
 
 import { colors } from "@theme/colors";
 import { borderRadius, spacing } from "@theme/spacing";
 import { globalStyles } from "@theme/styles";
+import { fonts } from "@theme/typography";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -120,6 +121,30 @@ export default function SettingsScreen() {
 		} catch (error) {
 			console.error("Error saving level change:", error);
 		}
+	};
+
+	// 4. Handlers — Dev
+	const handleNukeEverything = () => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+		Alert.alert(
+			"💣 Nuke Everything",
+			"This will delete ALL data and reset the app to first launch. Are you sure?",
+			[
+				{ text: "Cancel", style: "cancel" },
+				{
+					text: "Nuke it",
+					style: "destructive",
+					onPress: async () => {
+						try {
+							await nukeAllData();
+							router.replace("/");
+						} catch {
+							Alert.alert("Error", "Something went wrong.");
+						}
+					},
+				},
+			]
+		);
 	};
 
 	// 4. Handlers — Destructive
@@ -283,6 +308,21 @@ export default function SettingsScreen() {
 				</View>
 
 				<View style={{ height: spacing.xxl }} />
+
+				{__DEV__ && (
+					<>
+						<Text style={[globalStyles.inputLabel, { marginTop: spacing.xl, color: colors.error }]}>
+							DEV ONLY
+						</Text>
+						<View style={styles.sectionCard}>
+							<TouchableOpacity style={styles.row} onPress={handleNukeEverything} activeOpacity={0.7}>
+								<Text style={[styles.rowLabel, styles.rowLabelDestructive]}>
+									💣 Nuke everything & reset onboarding
+								</Text>
+							</TouchableOpacity>
+						</View>
+					</>
+				)}
 			</ScrollView>
 
 			{/* ─── Toast ───────────────────────────────────────────────────── */}
@@ -443,7 +483,7 @@ const styles = StyleSheet.create({
 		marginBottom: spacing.md,
 	},
 	sheetTitle: {
-		fontFamily: "Domine-Medium",
+		fontFamily: fonts.heading.medium,
 		fontSize: 18,
 		color: colors.grayDarkest,
 		textAlign: "center",

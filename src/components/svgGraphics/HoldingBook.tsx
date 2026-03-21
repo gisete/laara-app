@@ -1,5 +1,6 @@
 import React from "react";
 import Svg, { Path, SvgProps } from "react-native-svg";
+import { colors } from "@theme/colors";
 
 /**
  * A React component that renders an icon of a person reading a book.
@@ -9,7 +10,7 @@ interface ReadingIconProps extends SvgProps {
 	accentColor?: string;
 }
 
-const ReadingIcon: React.FC<ReadingIconProps> = ({ accentColor = "#E86E55", ...props }) => {
+const ReadingIcon: React.FC<ReadingIconProps> = ({ accentColor = colors.accentPrimary, ...props }) => {
 	return (
 		<Svg
 			fillRule="evenodd"

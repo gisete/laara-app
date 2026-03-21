@@ -124,11 +124,8 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.white,
 		borderRadius: borderRadius.sm,
 		marginBottom: spacing.sm,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.05,
-		shadowRadius: 8,
-		elevation: 2,
+		borderWidth: 1,
+		borderColor: colors.borderDefault,
 	},
 	cardInner: {
 		borderRadius: borderRadius.sm,

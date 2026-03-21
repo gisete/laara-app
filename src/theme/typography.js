@@ -1,63 +1,74 @@
-import { Platform } from "react-native";
+import { Platform } from 'react-native';
+
+// ─── Font family tokens ───────────────────────────────────────────────────────
+// Change these two values to retheme all typography across the app.
+
+export const fonts = {
+  heading: {
+    regular:    'Heading-Regular',
+    medium:     'Heading-Medium',
+    semiBold:   'Heading-SemiBold',
+    bold:       'Heading-Bold',
+    italic:     'Heading-Italic',
+    boldItalic: 'Heading-BoldItalic',
+  },
+  body: {
+    regular: Platform.select({ ios: 'Helvetica Neue', android: 'sans-serif' }),
+    medium:  Platform.select({ ios: 'Helvetica Neue', android: 'sans-serif-medium' }),
+  },
+};
+
+// ─── Typographic scale ────────────────────────────────────────────────────────
 
 export const typography = {
-	// Headings use Domine (you'll need to load this font)
-	headingLarge: {
-		fontFamily: Platform.select({
-			ios: "Domine-SemiBold",
-			android: "Domine-SemiBold",
-		}),
-		fontSize: 48,
-		fontWeight: "600",
-		lineHeight: 56,
-	},
-
-	headingMedium: {
-		fontFamily: Platform.select({
-			ios: "Domine-SemiBold",
-			android: "Domine-SemiBold",
-		}),
-		fontSize: 32,
-		fontWeight: "600",
-		lineHeight: 40,
-	},
-
-	headingSmall: {
-		fontFamily: Platform.select({
-			ios: "Domine-Medium",
-			android: "Domine-Medium",
-		}),
-		fontSize: 20,
-		fontWeight: "500",
-		lineHeight: 28,
-	},
-
-	// Body text uses system font
-	bodyLarge: {
-		fontSize: 17,
-		fontWeight: "400",
-		lineHeight: 24,
-	},
-
-	bodyMedium: {
-		fontSize: 15,
-		fontWeight: "400",
-		lineHeight: 22,
-	},
-
-	bodySmall: {
-		fontSize: 13,
-		fontWeight: "400",
-		lineHeight: 18,
-	},
-
-	button: {
-		fontSize: 17,
-		fontWeight: "500",
-	},
-
-	label: {
-		fontSize: 15,
-		fontWeight: "500",
-	},
+  headingLarge: {
+    fontFamily: fonts.heading.medium,
+    fontSize: 48,
+    lineHeight: 56,
+  },
+  headingMedium: {
+    fontFamily: fonts.heading.medium,
+    fontSize: 32,
+    lineHeight: 40,
+  },
+  headingSmall: {
+    fontFamily: fonts.heading.medium,
+    fontSize: 20,
+    lineHeight: 28,
+  },
+  headingItalic: {
+    fontFamily: fonts.heading.italic,
+  },
+  bodyLarge: {
+    fontFamily: fonts.body.regular,
+    fontSize: 17,
+    lineHeight: 26,
+  },
+  bodyMedium: {
+    fontFamily: fonts.body.regular,
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  bodySmall: {
+    fontFamily: fonts.body.regular,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  button: {
+    fontFamily: fonts.body.regular,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  label: {
+    fontFamily: fonts.body.medium,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  caption: {
+    fontFamily: fonts.body.regular,
+    fontSize: 12,
+    lineHeight: 16,
+  },
 };

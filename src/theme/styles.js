@@ -24,14 +24,11 @@ export const globalStyles = StyleSheet.create({
 
 	// Card styles
 	card: {
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		borderRadius: borderRadius.md,
 		padding: spacing.lg,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.05,
-		shadowRadius: 3,
-		elevation: 2,
+		borderWidth: 1,
+		borderColor: colors.borderDefault,
 	},
 
 	// Button styles
@@ -43,7 +40,7 @@ export const globalStyles = StyleSheet.create({
 	buttonPrimaryText: {
 		color: colors.white,
 		fontSize: 16,
-		fontWeight: "800",
+		fontWeight: "500",
 	},
 
 	buttonOutline: {
@@ -56,7 +53,7 @@ export const globalStyles = StyleSheet.create({
 	buttonOutlineText: {
 		color: colors.grayDarkest,
 		fontSize: 16,
-		fontWeight: "800",
+		fontWeight: "500",
 	},
 
 	buttonSecondaryFilled: {
@@ -67,7 +64,7 @@ export const globalStyles = StyleSheet.create({
 	buttonSecondaryFilledText: {
 		color: colors.grayDarkest,
 		fontSize: 16,
-		fontWeight: "800",
+		fontWeight: "500",
 	},
 
 	buttonSecondaryOutline: {
@@ -80,7 +77,7 @@ export const globalStyles = StyleSheet.create({
 	buttonSecondaryOutlineText: {
 		color: colors.grayDark,
 		fontSize: 16,
-		fontWeight: "800",
+		fontWeight: "500",
 	},
 
 	buttonDisabled: {
@@ -91,7 +88,7 @@ export const globalStyles = StyleSheet.create({
 	buttonDisabledText: {
 		color: colors.gray300,
 		fontSize: 16,
-		fontWeight: "800",
+		fontWeight: "500",
 	},
 
 	// Input styles
@@ -136,7 +133,7 @@ export const globalStyles = StyleSheet.create({
 	},
 
 	selectionCardSelected: {
-		backgroundColor: "#F1EDEA",
+		backgroundColor: colors.surfaceSubtle,
 		borderColor: colors.grayLightMedium,
 	},
 

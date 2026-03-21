@@ -47,8 +47,6 @@ export default function ActionButtons({
 
 const BUTTON_HEIGHT = 56;
 const BUTTON_FONT_SIZE = 16;
-const SAVE_SHADOW_OPACITY = 0.25;
-const SAVE_SHADOW_RADIUS = 25;
 const CANCEL_BG = "rgba(0,0,0,0.04)";
 
 const styles = StyleSheet.create({
@@ -65,11 +63,6 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		width: "100%",
-		shadowColor: colors.primaryAccent,
-		shadowOffset: { width: 0, height: 10 },
-		shadowOpacity: SAVE_SHADOW_OPACITY,
-		shadowRadius: SAVE_SHADOW_RADIUS,
-		elevation: 4,
 	},
 	saveButtonDisabled: {
 		backgroundColor: "#D1D5DB",
@@ -77,7 +70,7 @@ const styles = StyleSheet.create({
 	saveButtonText: {
 		color: colors.white,
 		fontSize: BUTTON_FONT_SIZE,
-		fontWeight: "800",
+		fontWeight: "500",
 	},
 	cancelButton: {
 		backgroundColor: CANCEL_BG,
@@ -90,6 +83,6 @@ const styles = StyleSheet.create({
 	cancelButtonText: {
 		color: colors.grayDarkest,
 		fontSize: BUTTON_FONT_SIZE,
-		fontWeight: "800",
+		fontWeight: "500",
 	},
 });

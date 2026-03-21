@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.grayDark, // #44403C - Stone 700
 	},
 	studyDayContainer: {
-		backgroundColor: colors.primaryAccentLight, // #EF9381 - Light coral
+		backgroundColor: colors.primaryAccentLight,
 	},
 	dayLetter: {
 		fontSize: 12,

@@ -13,14 +13,14 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Svg, { Path } from "react-native-svg";
 import { getFeaturedLanguages, getAllNonFeaturedLanguages, updateUserSettings, addUserLanguage } from "@database/queries";
 import SearchBar from "@components/forms/SearchBar";
 
-// Import global styles
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
 import { spacing, borderRadius } from "@theme/spacing";
-import { typography } from "@theme/typography";
+import { fonts } from "@theme/typography";
 
 interface Language {
 	id: number;
@@ -54,7 +54,7 @@ export default function LanguageSelectionScreen() {
 			const all = await getAllNonFeaturedLanguages();
 			setFeaturedLanguages(featured);
 			setAllLanguages(all);
-			setFilteredLanguages(all); // Initially show all
+			setFilteredLanguages(all);
 			console.log(`Loaded ${featured.length} featured + ${all.length} other languages`);
 		} catch (error) {
 			console.error("Error loading languages:", error);
@@ -86,12 +86,10 @@ export default function LanguageSelectionScreen() {
 			Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
 			if (isAddMode) {
-				// Add mode: add to user's language list and go back
 				await addUserLanguage(selectedLanguage);
 				console.log("Language added to user list:", selectedLanguage);
 				router.back();
 			} else {
-				// Onboarding mode: save as primary language and proceed to level selection
 				await updateUserSettings({
 					primary_language: selectedLanguage,
 					notification_enabled: false,
@@ -130,80 +128,67 @@ export default function LanguageSelectionScreen() {
 		<SafeAreaView style={globalStyles.container}>
 			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
-			<View style={styles.content}>
+			<ScrollView
+				style={{ flex: 1 }}
+				contentContainerStyle={styles.scrollContent}
+				showsVerticalScrollIndicator={false}
+			>
 				{/* Header */}
 				<View style={styles.header}>
 					<Text style={styles.title}>{isAddMode ? "Add a language" : "Choose a Language"}</Text>
 					<Text style={styles.subtitle}>{isAddMode ? "I also want to learn" : "I'm learning"}</Text>
 				</View>
 
-				{/* Language List */}
-				<ScrollView
-					style={styles.languageList}
-					showsVerticalScrollIndicator={false}
-					contentContainerStyle={styles.languageListContent}
-				>
-					{/* Featured Languages Section */}
-					<View style={styles.featuredSection}>
-						{featuredLanguages.map((language) => (
+				{/* Featured Languages Section */}
+				<View style={styles.featuredSection}>
+					{featuredLanguages.map((language) => (
+						<TouchableOpacity
+							key={language.id}
+							style={styles.languageItem}
+							onPress={() => handleLanguageSelect(language.code)}
+							activeOpacity={0.7}
+						>
+							<Text style={styles.flag}>{language.flag}</Text>
+							<Text style={styles.languageName}>{language.name}</Text>
+							<Svg width={18} height={18} viewBox="0 0 24 24" fill="none" style={selectedLanguage !== language.code && styles.checkmarkHidden}>
+					<Path d="M5 12L10 17L19 8" stroke={colors.primaryAccent} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+				</Svg>
+						</TouchableOpacity>
+					))}
+				</View>
+
+				{/* Divider */}
+				<View style={styles.divider} />
+
+				{/* All Languages Section */}
+				<View style={styles.allLanguagesSection}>
+					<Text style={styles.sectionTitle}>All Languages</Text>
+
+					<SearchBar value={searchQuery} onChangeText={handleSearch} placeholder="Search languages..." />
+
+					{filteredLanguages.length > 0 ? (
+						filteredLanguages.map((language) => (
 							<TouchableOpacity
 								key={language.id}
-								style={[styles.languageItem, selectedLanguage === language.code && styles.languageItemSelected]}
+								style={styles.languageItem}
 								onPress={() => handleLanguageSelect(language.code)}
 								activeOpacity={0.7}
 							>
 								<Text style={styles.flag}>{language.flag}</Text>
-								<Text style={[styles.languageName, selectedLanguage === language.code && styles.languageNameSelected]}>
-									{language.name}
-								</Text>
-								{selectedLanguage === language.code && (
-									<View style={styles.checkmark}>
-										<Text style={styles.checkmarkText}>✓</Text>
-									</View>
-								)}
+								<Text style={styles.languageName}>{language.name}</Text>
+								<Svg width={18} height={18} viewBox="0 0 24 24" fill="none" style={selectedLanguage !== language.code && styles.checkmarkHidden}>
+					<Path d="M5 12L10 17L19 8" stroke={colors.primaryAccent} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+				</Svg>
 							</TouchableOpacity>
-						))}
-					</View>
+						))
+					) : (
+						<Text style={styles.noResultsText}>No languages found</Text>
+					)}
+				</View>
+			</ScrollView>
 
-					{/* Divider */}
-					<View style={styles.divider} />
-
-					{/* All Languages Section */}
-					<View style={styles.allLanguagesSection}>
-						<Text style={styles.sectionTitle}>All Languages</Text>
-
-						{/* Search Bar */}
-						<SearchBar value={searchQuery} onChangeText={handleSearch} placeholder="Search languages..." />
-
-						{/* Alphabetical List */}
-						{filteredLanguages.length > 0 ? (
-							filteredLanguages.map((language) => (
-								<TouchableOpacity
-									key={language.id}
-									style={[styles.languageItem, selectedLanguage === language.code && styles.languageItemSelected]}
-									onPress={() => handleLanguageSelect(language.code)}
-									activeOpacity={0.7}
-								>
-									<Text style={styles.flag}>{language.flag}</Text>
-									<Text
-										style={[styles.languageName, selectedLanguage === language.code && styles.languageNameSelected]}
-									>
-										{language.name}
-									</Text>
-									{selectedLanguage === language.code && (
-										<View style={styles.checkmark}>
-											<Text style={styles.checkmarkText}>✓</Text>
-										</View>
-									)}
-								</TouchableOpacity>
-							))
-						) : (
-							<Text style={styles.noResultsText}>No languages found</Text>
-						)}
-					</View>
-				</ScrollView>
-
-				{/* Next Button */}
+			{/* Next Button — pinned outside scroll */}
+			<View style={styles.buttonContainer}>
 				<TouchableOpacity
 					style={[styles.nextButton, !selectedLanguage && styles.nextButtonDisabled]}
 					onPress={handleNext}
@@ -218,13 +203,6 @@ export default function LanguageSelectionScreen() {
 }
 
 const styles = StyleSheet.create({
-	content: {
-		flex: 1,
-		paddingHorizontal: spacing.md,
-		paddingTop: spacing.xxl,
-		paddingBottom: spacing.xl,
-	},
-
 	// Loading
 	loadingContainer: {
 		flex: 1,
@@ -237,13 +215,19 @@ const styles = StyleSheet.create({
 		color: colors.grayMedium,
 	},
 
+	// Scroll
+	scrollContent: {
+		paddingHorizontal: spacing.lg,
+		paddingTop: spacing.lg,
+		paddingBottom: spacing.md,
+	},
+
 	// Header
 	header: {
-		alignItems: "flex-start",
-		marginBottom: spacing.sm,
+		marginBottom: spacing.lg,
 	},
 	title: {
-		...typography.headingMedium,
+		fontFamily: fonts.heading.medium,
 		fontSize: 28,
 		color: colors.grayDarkest,
 		marginBottom: spacing.xs,
@@ -257,25 +241,21 @@ const styles = StyleSheet.create({
 		marginTop: spacing.lg,
 	},
 
-	// Language List
-	languageList: {
-		flex: 1,
-	},
-	languageListContent: {
-		paddingBottom: 120, // Extra space for button
-	},
-
-	// Featured Section
+	// Featured section
 	featuredSection: {
 		marginBottom: 0,
 	},
 
 	// Language Item
 	languageItem: {
-		...globalStyles.selectionCard,
-	},
-	languageItemSelected: {
-		...globalStyles.selectionCardSelected,
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: colors.white,
+		borderRadius: borderRadius.sm,
+		borderWidth: 1,
+		borderColor: colors.gray200,
+		padding: spacing.md,
+		marginBottom: spacing.xs,
 	},
 	flag: {
 		fontSize: 24,
@@ -283,22 +263,12 @@ const styles = StyleSheet.create({
 	},
 	languageName: {
 		flex: 1,
-		...globalStyles.bodyMedium,
 		fontSize: 16,
 		fontWeight: "400",
 		color: colors.grayDark,
 	},
-	languageNameSelected: {
-		color: colors.primaryAccent,
-		fontWeight: "600",
-	},
-	checkmark: {
-		...globalStyles.checkmark,
-	},
-	checkmarkText: {
-		color: colors.white,
-		fontSize: 14,
-		fontWeight: "600",
+	checkmarkHidden: {
+		opacity: 0,
 	},
 
 	// Divider
@@ -328,14 +298,17 @@ const styles = StyleSheet.create({
 		fontStyle: "italic",
 	},
 
-	// Next Button
+	// Button container — pinned at bottom
+	buttonContainer: {
+		paddingHorizontal: spacing.lg,
+		paddingBottom: spacing.lg,
+		paddingTop: spacing.sm,
+		gap: spacing.xs,
+		backgroundColor: colors.appBackground,
+	},
 	nextButton: {
 		...globalStyles.buttonPrimary,
 		borderRadius: borderRadius.button,
-		width: "100%",
-		elevation: 8,
-		marginTop: spacing.lg,
-		alignSelf: "center",
 	},
 	nextButtonDisabled: {
 		backgroundColor: colors.gray300,

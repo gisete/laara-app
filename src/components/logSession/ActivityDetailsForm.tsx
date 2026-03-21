@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
 	quickTimeText: {
 		...typography.bodyMedium,
 		color: colors.grayDarkest,
-		fontWeight: "600",
+		fontWeight: "500",
 	},
 	quickTimeTextSelected: {
 		color: colors.white,

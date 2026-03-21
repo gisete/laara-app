@@ -7,6 +7,7 @@ import * as Haptics from "expo-haptics";
 import { getUserLanguages, setActiveLanguage } from "@database/queries";
 import { colors } from "@theme/colors";
 import { borderRadius, spacing } from "@theme/spacing";
+import { fonts } from "@theme/typography";
 
 interface UserLanguage {
 	language_code: string;
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
 		marginBottom: spacing.md,
 	},
 	title: {
-		fontFamily: "Domine-Medium",
+		fontFamily: fonts.heading.medium,
 		fontSize: 18,
 		color: colors.grayDarkest,
 		textAlign: "center",

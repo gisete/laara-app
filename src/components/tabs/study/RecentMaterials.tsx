@@ -235,6 +235,6 @@ const styles = StyleSheet.create({
 		...typography.button,
 		fontSize: 14,
 		color: colors.primaryAccent,
-		fontWeight: "600",
+		fontWeight: "500",
 	},
 });

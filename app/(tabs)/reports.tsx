@@ -21,7 +21,7 @@ import { formatDateToYYYYMMDD } from "@utils/dateHelper";
 
 import { colors } from "@theme/colors";
 import { spacing, borderRadius } from "@theme/spacing";
-import { typography } from "@theme/typography";
+import { typography, fonts } from "@theme/typography";
 import { globalStyles } from "@theme/styles";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
 		marginBottom: spacing.lg,
 	},
 	heroTime: {
-		fontFamily: "Domine-SemiBold",
+		fontFamily: fonts.heading.medium,
 		fontSize: 48,
 		lineHeight: 56,
 		color: colors.grayDarkest,
@@ -467,9 +467,8 @@ const styles = StyleSheet.create({
 		paddingHorizontal: spacing.xs,
 	},
 	statValue: {
-		fontFamily: "Domine-Medium",
+		fontFamily: fonts.heading.medium,
 		fontSize: 20,
-		fontWeight: "500",
 		lineHeight: 28,
 		color: colors.grayDarkest,
 		marginBottom: 4,
@@ -502,8 +501,7 @@ const styles = StyleSheet.create({
 		marginBottom: 4,
 	},
 	mostStudiedTime: {
-		fontFamily: "Domine-Medium",
-		fontStyle: "italic",
+		fontFamily: fonts.heading.italic,
 		fontSize: 15,
 		color: colors.grayMedium,
 	},

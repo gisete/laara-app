@@ -2,14 +2,13 @@
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React from "react";
-import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// Import your global styles and the new SVG component
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
 import { spacing, borderRadius } from "@theme/spacing";
-import { typography } from "@theme/typography";
+import { fonts } from "@theme/typography";
 import IntroIllustration from "@components/svgGraphics/IntroScreen";
 
 export default function WelcomeScreen() {
@@ -21,7 +20,12 @@ export default function WelcomeScreen() {
 	return (
 		<SafeAreaView style={globalStyles.container}>
 			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
-			<View style={styles.content}>
+
+			<ScrollView
+				style={{ flex: 1 }}
+				contentContainerStyle={styles.scrollContent}
+				showsVerticalScrollIndicator={false}
+			>
 				<View style={styles.illustrationContainer}>
 					<IntroIllustration width="100%" height="100%" accentColor={colors.primaryAccent} />
 				</View>
@@ -30,7 +34,9 @@ export default function WelcomeScreen() {
 					<Text style={styles.title}>Welcome to Laara</Text>
 					<Text style={styles.subtitle}>Keep your language learning tools organized, track your progress</Text>
 				</View>
+			</ScrollView>
 
+			<View style={styles.buttonContainer}>
 				<TouchableOpacity style={styles.getStartedButton} onPress={handleGetStarted} activeOpacity={0.9}>
 					<Text style={styles.buttonText}>Get Started</Text>
 				</TouchableOpacity>
@@ -40,16 +46,17 @@ export default function WelcomeScreen() {
 }
 
 const styles = StyleSheet.create({
-	content: {
-		flex: 1,
-		paddingHorizontal: spacing.xl,
-		paddingBottom: 60,
-		justifyContent: "flex-end",
+	scrollContent: {
+		paddingHorizontal: spacing.lg,
+		paddingTop: spacing.lg,
+		paddingBottom: spacing.md,
+		flexGrow: 1,
+		justifyContent: "center",
 		alignItems: "center",
 	},
 	illustrationContainer: {
 		width: "70%",
-		aspectRatio: 160 / 180, // Aspect ratio from the SVG's viewBox (width / height)
+		aspectRatio: 160 / 180,
 		marginBottom: spacing.lg,
 	},
 	textContainer: {
@@ -58,7 +65,7 @@ const styles = StyleSheet.create({
 		marginBottom: spacing.xxl,
 	},
 	title: {
-		...typography.headingMedium,
+		fontFamily: fonts.heading.medium,
 		fontSize: 28,
 		color: colors.grayDarkest,
 		marginBottom: spacing.md,
@@ -72,12 +79,17 @@ const styles = StyleSheet.create({
 		lineHeight: 24,
 		maxWidth: 280,
 	},
+	buttonContainer: {
+		paddingHorizontal: spacing.lg,
+		paddingBottom: spacing.lg,
+		paddingTop: spacing.sm,
+		gap: spacing.xs,
+		backgroundColor: colors.appBackground,
+	},
 	getStartedButton: {
 		...globalStyles.buttonPrimary,
 		borderRadius: borderRadius.button,
 		width: "100%",
-		maxWidth: 330,
-		elevation: 8,
 	},
 	buttonText: {
 		...globalStyles.buttonPrimaryText,

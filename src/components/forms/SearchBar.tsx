@@ -4,6 +4,7 @@ import React from "react";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 import CloseIcon from "@components/icons/CloseIcon";
 import SearchIcon from "@components/icons/SearchIcon";
+import { colors } from "@theme/colors";
 
 interface SearchBarProps {
 	value: string;
@@ -74,8 +75,8 @@ const styles = StyleSheet.create({
 		borderColor: "#E5E7EB",
 	},
 	inputDisabled: {
-		backgroundColor: "#F3F4F6",
-		color: "#9CA3AF",
+		backgroundColor: colors.surfaceSubtle,
+		color: colors.textTertiary,
 	},
 	clearButton: {
 		position: "absolute",

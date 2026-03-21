@@ -1,5 +1,6 @@
 // app/onboarding/level-selection.tsx
 import React, { useState } from "react";
+import Svg, { Path } from "react-native-svg";
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, StatusBar } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
@@ -7,7 +8,7 @@ import * as Haptics from "expo-haptics";
 import { updateUserLevel, setOnboardingCompleted } from "@database/queries";
 import { colors } from "@theme/colors";
 import { spacing, borderRadius } from "@theme/spacing";
-import { typography } from "@theme/typography";
+import { fonts } from "@theme/typography";
 import { globalStyles } from "@theme/styles";
 
 interface LevelOption {
@@ -77,31 +78,29 @@ export default function LevelSelectionScreen() {
 		<SafeAreaView style={globalStyles.container}>
 			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
-			<ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-				<Text style={styles.title}>What's your current level in {selectedLanguage}?</Text>
+			<View style={styles.screen}>
+				<ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+					<Text style={styles.title}>What's your current level in {selectedLanguage}?</Text>
 
-				<View style={styles.optionsContainer}>
-					{levels.map((level) => (
-						<TouchableOpacity
-							key={level.code}
-							style={[styles.levelOption, selectedLevel === level.code && styles.levelOptionSelected]}
-							onPress={() => handleLevelSelect(level.code)}
-							activeOpacity={0.7}
-						>
-							<View style={styles.radioContainer}>
-								<View style={[styles.radioOuter, selectedLevel === level.code && styles.radioOuterSelected]}>
-									{selectedLevel === level.code && <View style={styles.radioInner} />}
+					<View style={styles.optionsContainer}>
+						{levels.map((level) => (
+							<TouchableOpacity
+								key={level.code}
+								style={styles.levelOption}
+								onPress={() => handleLevelSelect(level.code)}
+								activeOpacity={0.7}
+							>
+								<View style={styles.levelInfo}>
+									<Text style={styles.levelName}>{level.code} – {level.name}</Text>
+									<Text style={styles.levelDescription}>{level.description}</Text>
 								</View>
-							</View>
-							<View style={styles.levelInfo}>
-								<Text style={[styles.levelName, selectedLevel === level.code && styles.levelNameSelected]}>
-									{level.code} - {level.name}
-								</Text>
-								<Text style={styles.levelDescription}>{level.description}</Text>
-							</View>
-						</TouchableOpacity>
-					))}
-				</View>
+								<Svg width={18} height={18} viewBox="0 0 24 24" fill="none" style={selectedLevel !== level.code && styles.checkmarkHidden}>
+						<Path d="M5 12L10 17L19 8" stroke={colors.primaryAccent} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+					</Svg>
+							</TouchableOpacity>
+						))}
+					</View>
+				</ScrollView>
 
 				<View style={styles.buttonContainer}>
 					<TouchableOpacity style={styles.skipButton} onPress={handleSkip} disabled={loading} activeOpacity={0.7}>
@@ -117,96 +116,78 @@ export default function LevelSelectionScreen() {
 						<Text style={styles.continueButtonText}>{loading ? "Saving..." : "Continue"}</Text>
 					</TouchableOpacity>
 				</View>
-			</ScrollView>
+			</View>
 		</SafeAreaView>
 	);
 }
 
 const styles = StyleSheet.create({
+	screen: {
+		flex: 1,
+	},
 	scrollView: {
 		flex: 1,
 	},
-	content: {
+	scrollContent: {
 		paddingHorizontal: spacing.lg,
-		paddingTop: spacing.xxl,
-		paddingBottom: spacing.xl,
+		paddingTop: spacing.lg,
+		paddingBottom: spacing.md,
 	},
 	title: {
-		fontSize: 28,
-		fontWeight: "700",
+		fontFamily: fonts.heading.medium,
+		fontSize: 26,
 		color: colors.grayDarkest,
 		marginBottom: spacing.xl,
 		textAlign: "left",
 	},
 	optionsContainer: {
-		gap: spacing.md,
 		marginBottom: spacing.lg,
 	},
 	levelOption: {
 		flexDirection: "row",
 		alignItems: "center",
-		padding: spacing.md,
-		borderRadius: borderRadius.sm,
-		borderWidth: 1.5,
-		borderColor: colors.gray200,
 		backgroundColor: colors.white,
-	},
-	levelOptionSelected: {
-		borderColor: colors.primaryAccent,
-		backgroundColor: "#FEF5F3",
-	},
-	radioContainer: {
-		marginRight: spacing.md,
-	},
-	radioOuter: {
-		width: 24,
-		height: 24,
-		borderRadius: 12,
-		borderWidth: 2,
-		borderColor: colors.gray300,
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	radioOuterSelected: {
-		borderColor: colors.primaryAccent,
-	},
-	radioInner: {
-		width: 12,
-		height: 12,
-		borderRadius: 6,
-		backgroundColor: colors.primaryAccent,
+		borderRadius: borderRadius.sm,
+		borderWidth: 1,
+		borderColor: colors.gray200,
+		padding: spacing.md,
+		marginBottom: spacing.xs,
 	},
 	levelInfo: {
 		flex: 1,
 	},
 	levelName: {
 		fontSize: 16,
-		fontWeight: "600",
+		fontWeight: "500",
 		color: colors.grayDarkest,
 		marginBottom: 4,
-	},
-	levelNameSelected: {
-		color: colors.primaryAccent,
 	},
 	levelDescription: {
 		fontSize: 14,
 		color: colors.grayMedium,
 	},
+	checkmarkHidden: {
+		opacity: 0,
+	},
 	buttonContainer: {
-		gap: spacing.md,
-		marginTop: spacing.xl,
+		paddingHorizontal: spacing.lg,
+		paddingBottom: spacing.lg,
+		paddingTop: spacing.sm,
+		gap: spacing.xs,
+		backgroundColor: colors.appBackground,
 	},
 	skipButton: {
-		padding: spacing.md,
-		borderRadius: borderRadius.sm,
+		height: 56,
+		borderRadius: borderRadius.button,
 		alignItems: "center",
-		borderWidth: 1.5,
+		justifyContent: "center",
+		borderWidth: 1,
 		borderColor: colors.gray200,
 		backgroundColor: colors.white,
 	},
 	skipButtonText: {
 		fontSize: 16,
-		fontWeight: "600",
+		fontWeight: "500",
 		color: colors.grayMedium,
 	},
 	continueButton: {
@@ -221,7 +202,7 @@ const styles = StyleSheet.create({
 	},
 	continueButtonText: {
 		fontSize: 16,
-		fontWeight: "600",
+		fontWeight: "500",
 		color: colors.white,
 	},
 });

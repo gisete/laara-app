@@ -937,3 +937,71 @@ Codebase audit completed before building session summary screen. Changes made:
 1. `add-material-type` — touches 6+ files: `database.js`, `add-material/index.tsx`, new form screen, `CardCover`, `ItemMetadata`, `RecentMaterials`, `FilterBar`
 2. `add-db-column` — PRAGMA-check pattern in `database.js` + update query function + update TS interfaces
 3. `add-log-session-screen` — registering screen, wiring params chain (`materialId`, `materialName`, `materialType`, `materialSubtype`, `date`), ensuring `router.replace("/(tabs)")` at end
+
+---
+
+## Typography
+
+### Font system
+Headings use **Lora** loaded via `@expo-google-fonts/lora`. Body text uses Helvetica Neue (iOS system font).
+
+Font keys are semantic, not typeface-specific. They are defined in `app/_layout.tsx`:
+- `Heading-Regular`, `Heading-Medium`, `Heading-SemiBold`, `Heading-Bold`, `Heading-Italic`, `Heading-BoldItalic`
+
+To swap the heading font in future: change the imports and mapping in `app/_layout.tsx` only. No other files need to change.
+
+All components import font families from `src/theme/typography.js`:
+```ts
+import { fonts } from '@theme/typography';
+
+// Correct usage:
+fontFamily: fonts.heading.medium   // headings
+fontFamily: fonts.body.regular     // body text
+```
+
+Never hardcode font family strings like `'Lora'` or `'Helvetica Neue'` directly in components.
+
+### Heading weight
+All headings use `fonts.heading.medium` — not bold, not semiBold. This is a deliberate design decision for a lighter, more editorial feel. Do not use `fonts.heading.bold` or `fonts.heading.semiBold` for headings unless explicitly instructed.
+
+### Button text
+Button labels use `fontWeight: '500'` — not bold. Do not add weight to button text beyond 500.
+
+---
+
+## Design decisions
+
+### No shadows
+Cards and buttons use borders instead of shadows. This is intentional.
+
+**Never add** `shadowColor`, `shadowOffset`, `shadowOpacity`, `shadowRadius`, or `elevation` to buttons or cards. The correct pattern for cards is:
+```ts
+borderWidth: 1,
+borderColor: colors.gray200,
+```
+Shadows are only acceptable on modals and bottom sheets where they serve a functional purpose of lifting the sheet above content.
+
+### SVG checkmarks
+Never use the `✓` unicode character for checkmarks in React Native — it renders in system gray regardless of the style color prop. Always use an SVG:
+```tsx
+import Svg, { Path } from 'react-native-svg';
+
+<Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
+  <Path
+    d="M5 12L10 17L19 8"
+    stroke={colors.primaryAccent}
+    strokeWidth={2.5}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+</Svg>
+```
+
+### Color tokens
+`src/theme/colors.js` has two layers:
+- **Primitives** — raw hex values at the top of the file, named by value (e.g. `stone50`, `coral600`)
+- **Semantic tokens** — named by purpose (e.g. `appBackground`, `accentPrimary`, `textPrimary`)
+
+New components should always use semantic tokens. The legacy gray aliases (`grayDarkest`, `gray200` etc.) still exist for backwards compatibility but should not be used in new code.
+
+To retheme the app, only edit the primitive values. The semantic tokens and all components update automatically.

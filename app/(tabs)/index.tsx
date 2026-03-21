@@ -20,7 +20,7 @@ import CardCover from "@components/tabs/library/CardCover";
 
 import { colors } from "@theme/colors";
 import { spacing, borderRadius } from "@theme/spacing";
-import { typography } from "@theme/typography";
+import { typography, fonts } from "@theme/typography";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
 		gap: spacing.xs,
 	},
 	greeting: {
-		fontFamily: "Domine-Bold",
+		fontFamily: fonts.heading.medium,
 		fontSize: 30,
 		color: colors.grayDarkest,
 	},
@@ -376,8 +376,7 @@ const styles = StyleSheet.create({
 		marginBottom: 4,
 	},
 	materialTitle: {
-		fontFamily: "Domine-Medium",
-		fontStyle: "italic",
+		fontFamily: fonts.heading.italic,
 		fontSize: 15,
 		color: colors.grayLightMedium,
 		marginBottom: spacing.md,
@@ -401,7 +400,7 @@ const styles = StyleSheet.create({
 	beginIcon: { fontSize: 32, color: colors.white, marginLeft: 4, marginBottom: 2 },
 	beginLabel: {
 		fontSize: 11,
-		fontWeight: "800",
+		fontWeight: "500",
 		color: colors.white,
 		letterSpacing: 2,
 		textTransform: "uppercase",
@@ -441,8 +440,7 @@ const styles = StyleSheet.create({
 	sessionName: { fontSize: 15, fontWeight: "600", color: colors.grayDarkest, marginBottom: 2 },
 	sessionMeta: { fontSize: 12, color: colors.grayMedium },
 	sessionDuration: {
-		fontFamily: "Domine-Medium",
-		fontStyle: "italic",
+		fontFamily: fonts.heading.italic,
 		fontSize: 14,
 		color: colors.grayDark,
 	},

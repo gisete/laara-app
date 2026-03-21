@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View, Alert, ActivityIndicator } from "react-native";
 import { colors } from "@theme/colors";
 import { spacing, borderRadius } from "@theme/spacing";
+import { fonts } from "@theme/typography";
 import { seedLibraryData, seedTwoLanguages, seedFullState } from "@utils/seedLibraryData";
 
 interface EmptyStateProps {
@@ -163,10 +164,9 @@ const styles = StyleSheet.create({
 		height: 200,
 	},
 	title: {
-		fontFamily: "Domine-Medium",
+		fontFamily: fonts.heading.medium,
 		fontSize: 22,
-		fontWeight: "700",
-		color: "#1F2937",
+		color: colors.grayDarkest,
 		marginBottom: 12,
 		textAlign: "center",
 	},
@@ -226,6 +226,6 @@ const styles = StyleSheet.create({
 	seedButtonText: {
 		color: colors.white,
 		fontSize: 15,
-		fontWeight: "600",
+		fontWeight: "500",
 	},
 });

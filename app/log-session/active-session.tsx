@@ -16,7 +16,7 @@ import * as Haptics from "expo-haptics";
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
 import { spacing, borderRadius } from "@theme/spacing";
-import { typography } from "@theme/typography";
+import { typography, fonts } from "@theme/typography";
 import CardCover from "@components/tabs/library/CardCover";
 
 const getMaterialTypeLabel = (type: string): string => {
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
 		marginBottom: spacing.sm,
 	},
 	materialName: {
-		fontFamily: "Domine-SemiBold",
+		fontFamily: fonts.heading.medium,
 		fontSize: 22,
 		color: colors.grayDarkest,
 		textAlign: "center",
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.primaryAccent,
 	},
 	timerDisplay: {
-		fontFamily: "Domine-Bold",
+		fontFamily: fonts.heading.medium,
 		fontSize: 80,
 		color: colors.grayDarkest,
 		fontVariant: ["tabular-nums"],

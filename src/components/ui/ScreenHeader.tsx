@@ -4,6 +4,7 @@ import { View, Text, StyleSheet } from "react-native";
 
 import { colors } from "@theme/colors";
 import { spacing } from "@theme/spacing";
+import { fonts } from "@theme/typography";
 
 interface Props {
 	title: string;
@@ -31,7 +32,7 @@ const styles = StyleSheet.create({
 	},
 	title: {
 		flex: 1,
-		fontFamily: "Domine-Bold",
+		fontFamily: fonts.heading.medium,
 		fontSize: 32,
 		color: colors.grayDarkest,
 	},

@@ -1,5 +1,13 @@
 // app/_layout.tsx - Root layout for Expo Router
 import { useFonts } from "expo-font";
+import {
+	Lora_400Regular,
+	Lora_500Medium,
+	Lora_600SemiBold,
+	Lora_700Bold,
+	Lora_400Regular_Italic,
+	Lora_700Bold_Italic,
+} from "@expo-google-fonts/lora";
 import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
@@ -8,6 +16,7 @@ import { initDatabase } from "@database/database";
 import { getOnboardingCompleted } from "@database/queries";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PortalProvider } from "@gorhom/portal";
+import { colors } from "@theme/colors";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -16,10 +25,12 @@ export default function RootLayout() {
 	const [skipOnboarding, setSkipOnboarding] = useState(false);
 
 	const [fontsLoaded] = useFonts({
-		"Domine-Regular": require("../assets/fonts/Domine-Regular.ttf"),
-		"Domine-Medium": require("../assets/fonts/Domine-Medium.ttf"),
-		"Domine-SemiBold": require("../assets/fonts/Domine-SemiBold.ttf"),
-		"Domine-Bold": require("../assets/fonts/Domine-Bold.ttf"),
+		"Heading-Regular":    Lora_400Regular,
+		"Heading-Medium":     Lora_500Medium,
+		"Heading-SemiBold":   Lora_600SemiBold,
+		"Heading-Bold":       Lora_700Bold,
+		"Heading-Italic":     Lora_400Regular_Italic,
+		"Heading-BoldItalic": Lora_700Bold_Italic,
 	});
 
 	// Database initialization — check onboarding status before rendering
@@ -57,7 +68,7 @@ export default function RootLayout() {
 	if (!fontsLoaded || !isReady) {
 		return (
 			<View style={styles.loadingContainer}>
-				<ActivityIndicator size="large" color="#FF6B35" />
+				<ActivityIndicator size="large" color={colors.accentPrimary} />
 				<Text style={styles.loadingText}>Initializing Laara...</Text>
 			</View>
 		);

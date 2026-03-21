@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { getLanguageByCode, getUserSettings } from "@database/queries";
+import { colors } from "@theme/colors";
+import { fonts } from "@theme/typography";
 
 interface TopBarProps {
 	greeting?: string; // Optional fallback greeting
@@ -87,14 +89,14 @@ const styles = StyleSheet.create({
 	},
 	greeting: {
 		fontSize: 28,
-		fontFamily: "Domine-Bold",
-		color: "#111827",
+		fontFamily: fonts.heading.medium,
+		color: colors.grayDarkest,
 	},
 	flagContainer: {
 		width: 40,
 		height: 40,
 		borderRadius: 20,
-		backgroundColor: "#F3F4F6",
+		backgroundColor: colors.surfaceSubtle,
 		alignItems: "center",
 		justifyContent: "center",
 	},

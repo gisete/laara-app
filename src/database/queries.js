@@ -1178,3 +1178,34 @@ export const getLevels = () => {
 		}
 	});
 };
+
+// ============ DEV ONLY ============
+
+/**
+ * DEV ONLY: Wipe all user data and reset onboarding so the app
+ * behaves as if freshly installed.
+ * @returns {Promise<void>}
+ */
+export const nukeAllData = () => {
+	return new Promise((resolve, reject) => {
+		try {
+			db.withTransactionSync(() => {
+				db.runSync("DELETE FROM session_activities");
+				db.runSync("DELETE FROM daily_sessions");
+				db.runSync("DELETE FROM study_sessions");
+				db.runSync("DELETE FROM materials");
+				db.runSync("DELETE FROM user_languages");
+				db.runSync("DELETE FROM level_history");
+				db.runSync("DELETE FROM user_profile");
+				db.runSync(
+					"UPDATE user_settings SET onboarding_completed = 0, primary_language = NULL, proficiency_level = NULL WHERE id = 1"
+				);
+			});
+			console.log("[DEV] All data nuked");
+			resolve();
+		} catch (error) {
+			console.error("[DEV] Error nuking data:", error);
+			reject(error);
+		}
+	});
+};
