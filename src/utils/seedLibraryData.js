@@ -12,6 +12,10 @@ export const seedLibraryData = async () => {
 	try {
 		console.log("🌱 Starting to seed library data...");
 
+		const activeLanguageCode =
+			db.getFirstSync("SELECT primary_language FROM user_settings WHERE id = 1")?.primary_language || null;
+		console.log("🌱 Seeding with language_code:", activeLanguageCode);
+
 		const materials = [
 			// BOOKS
 			{
@@ -237,7 +241,7 @@ export const seedLibraryData = async () => {
 
 		for (const material of materials) {
 			try {
-				await addMaterial(material);
+				await addMaterial({ ...material, language_code: activeLanguageCode });
 				successCount++;
 				console.log(`✅ Added: ${material.name}`);
 			} catch (error) {

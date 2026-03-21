@@ -67,7 +67,9 @@ export const addMaterial = (material) => {
 					material.type,
 					material.subtype,
 					material.language || "english",
-					material.language_code || null,
+					material.language_code ||
+					db.getFirstSync("SELECT primary_language FROM user_settings WHERE id = 1")?.primary_language ||
+					null,
 					material.author || "",
 					material.total_units || 0,
 				]
@@ -942,31 +944,38 @@ export const getStreakCount = () => {
 // ============ DATA MANAGEMENT QUERIES ============
 
 /**
- * Clear all user-generated data for the "Change language" flow.
- * Deletes all sessions, activities, materials, level history, and the user profile row.
- * Also resets onboarding_completed in user_settings so the next cold launch
- * runs through onboarding rather than skipping straight to tabs.
+ * Delete all materials, sessions, and activities for a specific language.
+ * Also removes the language from user_languages.
+ * Orphaned daily_sessions (those with no remaining activities) are cleaned up globally.
+ * Does NOT touch user_settings.
  * All deletions run in a single transaction — all succeed or none do.
+ * @param {string} languageCode
  * @returns {Promise<void>}
  */
-export const clearAllUserData = () => {
+export const clearLanguageData = (languageCode) => {
 	return new Promise((resolve, reject) => {
 		try {
+			const materialsForLang = db.getAllSync(
+				"SELECT id, name, language_code FROM materials WHERE language_code = ?",
+				[languageCode]
+			);
+			console.log("Materials matching language:", JSON.stringify(materialsForLang));
 			db.withTransactionSync(() => {
-				db.runSync("DELETE FROM session_activities");
-				db.runSync("DELETE FROM daily_sessions");
-				db.runSync("DELETE FROM study_sessions");
-				db.runSync("DELETE FROM materials");
-				db.runSync("DELETE FROM level_history");
-				db.runSync("DELETE FROM user_profile WHERE id = 1");
+				console.log("Clearing data for language:", languageCode);
 				db.runSync(
-					"UPDATE user_settings SET onboarding_completed = 0, primary_language = NULL WHERE id = 1"
+					"DELETE FROM session_activities WHERE material_id IN (SELECT id FROM materials WHERE language_code = ? OR language_code IS NULL)",
+					[languageCode]
 				);
+				db.runSync(
+					"DELETE FROM daily_sessions WHERE id NOT IN (SELECT DISTINCT session_id FROM session_activities)"
+				);
+				db.runSync("DELETE FROM materials WHERE language_code = ? OR language_code IS NULL", [languageCode]);
+				db.runSync("DELETE FROM user_languages WHERE language_code = ?", [languageCode]);
 			});
-			console.log("All user data cleared");
+			console.log("Language data cleared:", languageCode);
 			resolve();
 		} catch (error) {
-			console.error("Error clearing user data:", error);
+			console.error("Error clearing language data:", error);
 			reject(error);
 		}
 	});

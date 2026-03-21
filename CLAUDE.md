@@ -246,7 +246,7 @@ interface Activity {
 
 - `getAllMaterials()` → `Material[]` (includes `calculated_progress`)
 - `getMaterialById(id)` → `Material`
-- `addMaterial(data)` → `number` (new ID)
+- `addMaterial(data)` → `number` (new ID). `language_code` is always stamped on insert — if the caller doesn't supply it (or passes null/undefined), it falls back to reading `primary_language` from `user_settings` synchronously via `db.getFirstSync`. Materials will never be inserted with a null `language_code` as long as `primary_language` is set.
 - `updateMaterialProgress(materialId, unitsToAdd, progressPercentage)` → void — **3 args**
 - `deleteMaterial(id)` → void
 
@@ -287,6 +287,7 @@ interface Activity {
 
 - `getUserLanguages()` → `UserLanguage[]` — `{ language_code, name, flag, greeting, is_active }`
 - `removeUserLanguage(code)` → void — DELETE from `user_languages` only; materials/sessions preserved
+- `clearLanguageData(languageCode)` → `Promise<void>` — single transaction: (1) deletes `session_activities` where `material_id IN (SELECT id FROM materials WHERE language_code = ? OR language_code IS NULL)`, (2) deletes orphaned `daily_sessions` with no remaining activities, (3) deletes `materials WHERE language_code = ? OR language_code IS NULL`, (4) deletes from `user_languages WHERE language_code = ?`. The `OR language_code IS NULL` clauses sweep up legacy materials that predate the language_code column. Does NOT touch `user_settings`.
 
 **Reports:**
 
@@ -482,12 +483,12 @@ All theme files are `.js`, not `.ts`.
 | `src/utils/activityLogValidation.ts`  | ✅     | `validateActivityForm()` returns `boolean` (not an object). Alert shown internally                                                                                                                                                                           |
 | `src/utils/dateHelper.ts`             | ✅     | `formatDateToYYYYMMDD`, `getCurrentWeekDates`, `isToday`, `getRelativeTime`, `getDayLetter`                                                                                                                                                                  |
 | `src/utils/materialUtils.ts`          | ✅     | `getUnitLabel(type, count)`, `getProgressText(type, current, total)`, `getActivityText(type, units)`                                                                                                                                                         |
-| `src/utils/seedLibraryData.js`        | ✅     | `seedLibraryData()` → `{ success, added, failed, total }`. Also exports `seedTwoLanguages()` (ES+JA materials, sets `user_languages`) and `seedFullState()` (two languages + 5 sessions over 7 days, 3-day streak).                                           |
+| `src/utils/seedLibraryData.js`        | ✅     | `seedLibraryData()` reads `primary_language` from `user_settings` at the top and stamps `language_code` on every material before insert — returns `{ success, added, failed, total }`. `seedTwoLanguages()` sets `language_code` explicitly on each material (ES/JA). `seedFullState()` calls `seedTwoLanguages` then adds 5 sessions over 7 days (3-day current streak).                                                                                       |
 | `app/log-session/select-material.tsx` | ✅     | Built, working. Recently Studied section for 5+ materials                                                                                                                                                                                                    |
 | `app/log-session/active-session.tsx`  | ✅     | Count-up timer. Ref-based state (avoids stale closures). AppState backgrounding. Pause/resume. Navigates to `session-summary` on End via `router.replace`.                                                                                                   |
 | `app/log-session/session-summary.tsx` | ✅     | Post-session logging form. Receives `elapsedSeconds`, pre-fills duration. Type-aware unit field label. Notes field. Full save logic (getOrCreateTodaySession → addSessionActivity → updateSessionTotalDuration → updateMaterialProgress).                    |
 | `app/(tabs)/index.tsx`                | ✅     | Redesigned study tab — greeting header, weekly calendar strip (Sun–Sat), 144px coral BEGIN button with glow, recent sessions card                                                                                                                            |
-| `app/(tabs)/library.tsx`              | ✅     | Filter bar, list, edit, delete                                                                                                                                                                                                                               |
+| `app/(tabs)/library.tsx`              | ✅     | Filter bar, list, edit, delete. Empty state condition uses `languageFilteredMaterials.length === 0` (not `materials.length`) so it shows correctly after a language clear. Add button visibility uses the same check for consistency.                          |
 | `app/(tabs)/reports.tsx`              | ✅     | Fully built. Period filter (week/month/all time), language filter chips (hidden when single language), donut chart, hero time card, stats row, most studied card, units breakdown. `getReportData(startDate, endDate, languageCode)` — language param optional. |
 | `app/(tabs)/settings.tsx`             | ✅     | Fully built. "Manage languages" row → `/settings/manage-languages`. Level row → two-step Modal. Joined date read-only. Notifications toggle (UI only). Export/restore/about stubs. Clear all data stub (destructive zone).                                    |
 | `app/settings/manage-languages.tsx`   | ✅     | Lists user languages. Active language shows coral badge, cannot be removed. Inactive language (when >1 exist) shows Remove button → Alert → `removeUserLanguage()`. "＋ Add a language" → `/language-selection?mode=add`. Auto-discovers via Expo Router.     |
@@ -792,7 +793,7 @@ ALTER TABLE user_settings ADD COLUMN onboarding_completed INTEGER DEFAULT 0;
 
 ### Destructive zone (no section header)
 
-- "Clear all data": colors.error text, confirmation Alert (functionality coming — stub only)
+- "Clear all data": colors.error text → Alert → calls `clearLanguageData(primary_language)` → `router.replace("/(tabs)")`. Language-scoped: only deletes materials and sessions for the active language. Does not reset onboarding or touch user_settings.
 
 ### Level Modal
 

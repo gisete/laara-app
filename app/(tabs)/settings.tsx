@@ -17,7 +17,7 @@ import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import Svg, { Path } from "react-native-svg";
 
-import { getLevels } from "@database/queries";
+import { getLevels, getUserSettings, clearLanguageData } from "@database/queries";
 import ScreenHeader from "@components/ui/ScreenHeader";
 import { useUserProfile } from "@hooks/useUserProfile";
 
@@ -123,16 +123,33 @@ export default function SettingsScreen() {
 	};
 
 	// 4. Handlers — Destructive
-	const handleClearData = () => {
+	const handleClearData = async () => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+		let activeLanguage: string | null = null;
+		try {
+			const settings = await getUserSettings() as { primary_language?: string } | null;
+			activeLanguage = settings?.primary_language ?? null;
+		} catch {
+			// proceed without language code — Alert will still show
+		}
 		Alert.alert(
 			"Clear all data",
-			"This will permanently delete all your sessions and materials. This cannot be undone.",
+			"This will delete all materials and study history for your current language. This cannot be undone.",
 			[
 				{
 					text: "Delete everything",
 					style: "destructive",
-					onPress: () => Alert.alert("Coming soon", "Data clearing is coming in a future update."),
+					onPress: async () => {
+						try {
+							if (activeLanguage) {
+								await clearLanguageData(activeLanguage);
+								console.log("clearLanguageData called with:", activeLanguage);
+							}
+							router.replace("/(tabs)");
+						} catch {
+							Alert.alert("Error", "Something went wrong. Please try again.");
+						}
+					},
 				},
 				{ text: "Cancel", style: "cancel" },
 			],

@@ -60,7 +60,12 @@ export default function LibraryScreen() {
 			}
 
 			setMaterials(materialsData);
-			console.log("Materials loaded:", materialsData.length);
+			const languageFilteredMaterials = langCode
+				? materialsData.filter((m: any) => m.language_code === null || m.language_code === langCode)
+				: materialsData;
+			console.log("All materials:", JSON.stringify(materialsData.map((m: any) => ({ id: m.id, name: m.name, language_code: m.language_code }))));
+			console.log("Active language:", langCode);
+			console.log("Language filtered:", languageFilteredMaterials.length);
 		} catch (error) {
 			console.error("Error loading materials:", error);
 		} finally {
@@ -132,7 +137,7 @@ export default function LibraryScreen() {
 			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
 			<View style={styles.content}>
-				<ScreenHeader title="Library" rightElement={materials.length > 0 ? AddButton : undefined} />
+				<ScreenHeader title="Library" rightElement={languageFilteredMaterials.length > 0 ? AddButton : undefined} />
 				{activeLanguageCode && activeLanguageName ? (
 					<Text style={styles.languageIndicator}>
 						{activeLanguageFlag}  {activeLanguageName}
@@ -140,7 +145,7 @@ export default function LibraryScreen() {
 				) : null}
 
 				{/* Conditional content based on materials */}
-				{!loading && materials.length === 0 ? (
+				{!loading && languageFilteredMaterials.length === 0 ? (
 					<EmptyState onAddNew={() => router.push("/add-material")} />
 				) : (
 					<>
