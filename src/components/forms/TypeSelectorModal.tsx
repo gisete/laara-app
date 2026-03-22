@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
 		fontWeight: "500",
 	},
 	categoryTextSelected: {
-		color: "#FFFFFF",
+		color: colors.buttonOnAccentText,
 	},
 	checkmark: {
 		width: 24,
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "#E5E7EB",
 	},
 	applyButtonText: {
-		color: "#FFFFFF",
+		color: colors.buttonOnAccentText,
 		fontSize: 16,
 		fontWeight: "500",
 	},

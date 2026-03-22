@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "#D1D5DB",
 	},
 	saveButtonText: {
-		color: colors.white,
+		color: colors.buttonOnAccentText,
 		fontSize: BUTTON_FONT_SIZE,
 		fontWeight: "500",
 	},

@@ -38,7 +38,7 @@ export const globalStyles = StyleSheet.create({
 	},
 
 	buttonPrimaryText: {
-		color: colors.white,
+		color: colors.buttonOnAccentText,
 		fontSize: 16,
 		fontWeight: "500",
 	},

@@ -3,19 +3,19 @@
 const primitive = {
 	// Backgrounds
 	white: "#FFFFFF",
-	stone50: "#F9F7F4",
-	stone100: "#F5F3F0",
-	stone200: "#EDE9E4",
-	stone300: "#DDD8D0",
-	stone400: "#C4BDB3",
-	stone500: "#9E9890",
-	stone600: "#6B6560",
-	stone700: "#3D3A36",
-	stone800: "#1C1A17",
+	gray100: "#F5F5F5",
+	gray200: "#E5E5E5",
+	gray300: "#D4D4D4",
+	gray400: "#A3A3A3",
+	gray500: "#737373",
+	gray600: "#525252",
+	gray700: "#404040",
+	gray800: "#262626",
 
 	// Accent
-	coral600: "#F58063",
-	coral400: "#f6bbac",
+	coral600: "#C0AEF7",
+	coral400: "#F1EFFF",
+	purple800: "#7B61D4",
 
 	// Category backgrounds
 	categoryBookBg: "#EEF2F7",
@@ -39,23 +39,25 @@ const primitive = {
 
 export const colors = {
 	// Surfaces
-	appBackground: primitive.stone50,
+	appBackground: primitive.gray100,
 	surfaceDefault: primitive.white,
-	surfaceSubtle: primitive.stone100,
+	surfaceSubtle: primitive.gray100,
 
 	// Borders & dividers
-	borderDefault: primitive.stone300,
-	borderStrong: primitive.stone400,
+	borderDefault: primitive.gray300,
+	borderStrong: primitive.gray400,
 
 	// Text
-	textPrimary: primitive.stone800,
-	textSecondary: primitive.stone600,
-	textTertiary: primitive.stone500,
-	textDisabled: primitive.stone400,
+	textPrimary: primitive.gray800,
+	textSecondary: primitive.gray600,
+	textTertiary: primitive.gray500,
+	textDisabled: primitive.gray400,
 
 	// Accent
 	accentPrimary: primitive.coral600,
 	accentSecondary: primitive.coral400,
+	buttonOnAccentText: "#000000",
+	textLink: primitive.purple800,
 
 	// Categories
 	categoryBook: primitive.categoryBookBg,
@@ -75,21 +77,21 @@ export const colors = {
 	// Legacy aliases — keeps existing code working without a refactor sweep
 	// These can be removed once components are updated to semantic tokens
 	white: primitive.white,
-	gray50: primitive.stone50,
-	grayLightest: primitive.stone100,
-	grayLight: primitive.stone200,
-	gray200: primitive.stone300,
-	gray300: primitive.stone400,
-	grayLightMedium: primitive.stone500,
-	grayMedium: primitive.stone600,
-	grayDark: primitive.stone700,
-	grayDarkest: primitive.stone800,
+	gray50: primitive.gray100,
+	grayLightest: primitive.gray100,
+	grayLight: primitive.gray200,
+	gray200: primitive.gray300,
+	gray300: primitive.gray400,
+	grayLightMedium: primitive.gray500,
+	grayMedium: primitive.gray600,
+	grayDark: primitive.gray700,
+	grayDarkest: primitive.gray800,
 	primaryAccent: primitive.coral600,
 	primaryAccentLight: primitive.coral400,
 };
 
 colors.categoryColors = {
-	book: { bg: colors.categoryBook, icon: colors.categoryBookIcon, progress: primitive.stone700 },
+	book: { bg: colors.categoryBook, icon: colors.categoryBookIcon, progress: primitive.gray700 },
 	audio: { bg: colors.categoryAudio, icon: colors.categoryAudioIcon, progress: primitive.categoryAudioFg },
 	video: { bg: colors.categoryVideo, icon: colors.categoryVideoIcon, progress: primitive.categoryVideoFg },
 	class: { bg: colors.categoryClass, icon: colors.categoryClassIcon, progress: primitive.categoryClassFg },

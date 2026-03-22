@@ -14,7 +14,7 @@ interface TabIconProps {
 }
 
 export default function TabIcon({ focused, iconName }: TabIconProps) {
-	const iconColor = focused ? colors.primaryAccent : "#9CA3AF";
+	const iconColor = focused ? colors.textLink : "#9CA3AF";
 	const iconSize = 24;
 
 	const renderIcon = () => {

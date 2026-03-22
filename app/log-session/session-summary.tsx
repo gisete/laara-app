@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
 	},
 	saveButtonText: {
 		...typography.button,
-		color: colors.white,
+		color: colors.buttonOnAccentText,
 	},
 	loadingContainer: {
 		flex: 1,

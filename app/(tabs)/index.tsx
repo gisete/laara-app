@@ -223,11 +223,11 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		marginTop: spacing.lg,
 	},
-	beginIcon: { fontSize: 32, color: colors.white, marginLeft: 4, marginBottom: 2 },
+	beginIcon: { fontSize: 32, color: colors.buttonOnAccentText, marginLeft: 4, marginBottom: 2 },
 	beginLabel: {
 		fontSize: 11,
 		fontWeight: "500",
-		color: colors.white,
+		color: colors.buttonOnAccentText,
 		letterSpacing: 2,
 		textTransform: "uppercase",
 	},

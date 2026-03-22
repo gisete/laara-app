@@ -203,6 +203,6 @@ const styles = StyleSheet.create({
 	continueButtonText: {
 		fontSize: 16,
 		fontWeight: "500",
-		color: colors.white,
+		color: colors.buttonOnAccentText,
 	},
 });

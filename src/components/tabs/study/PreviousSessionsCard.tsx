@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
 		marginBottom: spacing.md,
 	},
 	sessionsCardTitle: { ...typography.headingSmall, color: colors.grayDarkest },
-	seeAllText: { fontSize: 14, fontWeight: "600", color: colors.primaryAccent },
+	seeAllText: { fontSize: 14, fontWeight: "600", color: colors.textLink },
 	emptyText: {
 		fontSize: 15,
 		color: colors.grayMedium,

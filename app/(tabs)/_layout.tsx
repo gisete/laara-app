@@ -12,7 +12,7 @@ export default function TabLayout() {
 				headerShown: false,
 				tabBarStyle: styles.tabBar,
 				tabBarLabelStyle: styles.tabLabel,
-				tabBarActiveTintColor: colors.primaryAccent,
+				tabBarActiveTintColor: colors.textLink,
 				tabBarInactiveTintColor: "#6B7280",
 				tabBarItemStyle: styles.tabItem,
 				tabBarIconStyle: styles.tabIconStyle,

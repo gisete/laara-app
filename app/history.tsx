@@ -316,12 +316,12 @@ const styles = StyleSheet.create({
 	},
 	fabIcon: {
 		fontSize: 22,
-		color: "#FFFFFF",
+		color: colors.buttonOnAccentText,
 		fontWeight: "300",
 	},
 	fabLabel: {
 		fontSize: 15,
 		fontWeight: "500",
-		color: "#FFFFFF",
+		color: colors.buttonOnAccentText,
 	},
 });
