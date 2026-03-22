@@ -137,15 +137,16 @@ export default function HistoryScreen() {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 		router.push({
 			pathname: "/log-session/select-material",
-			params: { entryMode: "manual", returnTo: "history" },
+			params: {
+				date: selectedDate ?? formatDateToYYYYMMDD(new Date()),
+				entryMode: "manual",
+				returnTo: "history",
+			},
 		});
 	};
 
 	const listItems = buildListItems(filteredSessions);
 
-	const isLoggableDate =
-		selectedDate !== null &&
-		selectedDate <= new Date().toISOString().split("T")[0];
 
 	const renderItem = ({ item }: { item: ListItem }) => {
 		if (item.kind === "header") {
@@ -202,32 +203,14 @@ export default function HistoryScreen() {
 								? "No sessions on this day"
 								: `No sessions in ${displayMonth.toLocaleString("default", { month: "long" })}`}
 						</Text>
-						{isLoggableDate && (
-							<TouchableOpacity
-								style={styles.logManuallyButton}
-								onPress={() => {
-									Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-									router.push({
-										pathname: "/log-session/select-material",
-										params: {
-											date: selectedDate as string,
-											entryMode: "manual",
-											returnTo: "history",
-										},
-									});
-								}}
-								activeOpacity={0.7}
-							>
-								<Text style={styles.logManuallyButtonText}>Log session manually</Text>
-							</TouchableOpacity>
-						)}
-					</View>
+							</View>
 				}
 			/>
 
 			<View style={styles.fabContainer} pointerEvents="box-none">
 				<TouchableOpacity style={styles.fab} onPress={handleFabPress} activeOpacity={0.85}>
 					<Text style={styles.fabIcon}>+</Text>
+					<Text style={styles.fabLabel}>Log session</Text>
 				</TouchableOpacity>
 			</View>
 		</SafeAreaView>
@@ -255,19 +238,6 @@ const styles = StyleSheet.create({
 		marginBottom: spacing.md,
 		textAlign: "center",
 	},
-	logManuallyButton: {
-		paddingVertical: spacing.sm,
-		paddingHorizontal: spacing.lg,
-		borderRadius: borderRadius.button,
-		borderWidth: 1,
-		borderColor: colors.primaryAccent,
-	},
-	logManuallyButtonText: {
-		...(typography.bodyMedium as object),
-		color: colors.primaryAccent,
-		fontWeight: "500",
-	},
-
 	// Date section header
 	dateHeader: {
 		flexDirection: "row",
@@ -336,17 +306,22 @@ const styles = StyleSheet.create({
 		pointerEvents: "box-none",
 	},
 	fab: {
-		width: 52,
-		height: 52,
-		borderRadius: 26,
-		backgroundColor: colors.primaryAccent,
+		flexDirection: "row",
 		alignItems: "center",
-		justifyContent: "center",
+		paddingHorizontal: spacing.lg,
+		paddingVertical: 14,
+		borderRadius: borderRadius.pill,
+		backgroundColor: colors.primaryAccent,
+		gap: spacing.xs,
 	},
 	fabIcon: {
-		fontSize: 28,
+		fontSize: 22,
 		color: "#FFFFFF",
-		lineHeight: 32,
 		fontWeight: "300",
+	},
+	fabLabel: {
+		fontSize: 15,
+		fontWeight: "500",
+		color: "#FFFFFF",
 	},
 });

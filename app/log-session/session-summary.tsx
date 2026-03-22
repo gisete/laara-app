@@ -25,6 +25,7 @@ import {
 	updateMaterialProgress,
 } from "@database/queries";
 import CardCover from "@components/tabs/library/CardCover";
+import { formatDateToYYYYMMDD } from "@utils/dateHelper";
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
 import { spacing, borderRadius } from "@theme/spacing";
@@ -162,6 +163,19 @@ export default function SessionSummaryScreen() {
 		]);
 	};
 
+	const formatDateLabel = (dateStr: string): string => {
+		if (!dateStr) return "Today";
+		const todayStr = formatDateToYYYYMMDD(new Date());
+		const yesterday = new Date();
+		yesterday.setDate(yesterday.getDate() - 1);
+		const yesterdayStr = formatDateToYYYYMMDD(yesterday);
+		if (dateStr === todayStr) return "Today";
+		if (dateStr === yesterdayStr) return "Yesterday";
+		const [year, month, day] = dateStr.split("-").map(Number);
+		const d = new Date(year, month - 1, day);
+		return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+	};
+
 	if (loadingMaterial) {
 		return (
 			<SafeAreaView style={globalStyles.container}>
@@ -180,7 +194,10 @@ export default function SessionSummaryScreen() {
 			<View style={styles.content}>
 				{/* Header */}
 				<View style={styles.header}>
-					<Text style={styles.headerTitle}>Session Summary</Text>
+					<View style={{ flex: 1 }}>
+						<Text style={styles.headerTitle}>Log Session</Text>
+						<Text style={styles.headerDate}>{formatDateLabel(date)}</Text>
+					</View>
 					<TouchableOpacity style={styles.discardButton} onPress={handleDiscard} activeOpacity={0.7}>
 						<Text style={styles.discardButtonText}>×</Text>
 					</TouchableOpacity>
@@ -305,6 +322,11 @@ const styles = StyleSheet.create({
 	headerTitle: {
 		...typography.headingSmall,
 		color: colors.grayDarkest,
+	},
+	headerDate: {
+		fontSize: 13,
+		color: colors.grayMedium,
+		marginTop: 2,
 	},
 	discardButton: {
 		width: 36,

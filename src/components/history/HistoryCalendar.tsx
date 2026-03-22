@@ -134,11 +134,11 @@ export default function HistoryCalendar({
 						let circleBg: string | undefined;
 						let textColor: string;
 						let dimCircle = false;
-						if (isSelected) {
-							circleBg = colors.primaryAccent;
-							textColor = "#FFFFFF";
-						} else if (isToday) {
+						if (isToday) {
 							circleBg = colors.textPrimary;
+							textColor = "#FFFFFF";
+						} else if (isSelected) {
+							circleBg = colors.primaryAccent;
 							textColor = "#FFFFFF";
 						} else if (isPast && hasSession) {
 							circleBg = colors.primaryAccentLight;

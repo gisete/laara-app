@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // Import database queries
 import { getAllMaterials, getRecentlyStudiedMaterials } from "@database/queries";
+import { formatDateToYYYYMMDD } from "@utils/dateHelper";
 
 // Import components
 import CardCover from "@components/tabs/library/CardCover";
@@ -83,7 +84,7 @@ const EmptyMaterialState = ({ onAddMaterial }: { onAddMaterial: () => void }) =>
 export default function SelectMaterialScreen() {
 	const params = useLocalSearchParams();
 	// Get the date from params, or default to today
-	const sessionDate = (params.date as string) || new Date().toISOString().split("T")[0];
+	const sessionDate = (params.date as string) || formatDateToYYYYMMDD(new Date());
 	const entryMode = (params.entryMode as string) || "timed";
 	const returnTo = (params.returnTo as string) || "";
 
