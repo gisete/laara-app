@@ -10,7 +10,7 @@ import { getAllMaterials, getRecentlyStudiedMaterials } from "@database/queries"
 import { formatDateToYYYYMMDD } from "@utils/dateHelper";
 
 // Import components
-import CardCover from "@components/tabs/library/CardCover";
+import { MaterialIcon } from "@components/shared/MaterialIcon";
 
 // Import theme
 import { globalStyles } from "@theme/styles";
@@ -58,7 +58,7 @@ const MaterialCard = ({ material, onPress }: MaterialCardProps) => {
 
 	return (
 		<TouchableOpacity style={styles.materialCard} onPress={onPress} activeOpacity={0.7}>
-			<CardCover type={material.type} />
+			<MaterialIcon type={material.type} />
 
 			<View style={styles.materialInfo}>
 				<Text style={styles.materialName} numberOfLines={1}>
@@ -311,6 +311,7 @@ const styles = StyleSheet.create({
 	materialCard: {
 		flexDirection: "row",
 		alignItems: "center",
+		gap: spacing.sm,
 		padding: spacing.md,
 		backgroundColor: colors.white,
 		borderRadius: borderRadius.sm,
@@ -319,7 +320,6 @@ const styles = StyleSheet.create({
 		borderColor: colors.gray200,
 	},
 	materialInfo: {
-		marginLeft: spacing.md,
 		flex: 1,
 	},
 	materialName: {

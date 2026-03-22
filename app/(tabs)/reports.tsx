@@ -15,7 +15,7 @@ import Svg, { Circle } from "react-native-svg";
 
 import { router } from "expo-router";
 import { getReportData, getStreakCount, getUserLanguages } from "@database/queries";
-import CardCover from "@components/tabs/library/CardCover";
+import { MaterialIcon } from "@components/shared/MaterialIcon";
 import ScreenHeader from "@components/ui/ScreenHeader";
 import { getUnitLabel } from "@utils/materialUtils";
 import { formatDateToYYYYMMDD } from "@utils/dateHelper";
@@ -330,7 +330,7 @@ export default function ReportsScreen() {
 					<Text style={globalStyles.inputLabel}>MOST STUDIED</Text>
 					{data.mostStudiedMaterial ? (
 						<View style={styles.mostStudiedRow}>
-							<CardCover type={data.mostStudiedMaterial.type} size={44} />
+							<MaterialIcon type={data.mostStudiedMaterial.type} />
 							<View style={styles.mostStudiedInfo}>
 								<Text style={styles.mostStudiedName} numberOfLines={2}>
 									{data.mostStudiedMaterial.name}

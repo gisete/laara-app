@@ -1,12 +1,13 @@
 // components/tabs/library/LibraryItem.tsx
 import React from "react";
 import { Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import CardCover from "./CardCover";
+import { MaterialIcon } from "@components/shared/MaterialIcon";
 import LibraryItemActions from "./LibraryItemActions";
 import MoreOptionsIcon from "@components/icons/MoreOptionsIcon";
 import ProgressBar from "./ProgressBar";
 import { router } from "expo-router";
-import { colors, getCategoryColors } from "@theme/colors";
+import { colors } from "@theme/colors";
+import { getMaterialAccent } from "@utils/materialColors";
 import { spacing, borderRadius } from "@theme/spacing";
 import { typography } from "@theme/typography";
 
@@ -52,7 +53,6 @@ export default function LibraryItem({
 	const progressPercentage = material.progress_percentage || 0;
 	const currentUnit = material.current_unit || 0;
 	const totalUnits = material.total_units || 0;
-	const categoryColors = getCategoryColors(material.type);
 	const tagLabel = material.subtype || material.type;
 
 	const handleEdit = () => {
@@ -70,7 +70,7 @@ export default function LibraryItem({
 			<View style={styles.cardShadow}>
 			<View style={styles.cardInner}>
 				<Pressable style={styles.topRow} onPress={onCloseMenu}>
-					<CardCover type={material.type} />
+					<MaterialIcon type={material.type} />
 
 					<View style={styles.info}>
 						<View style={styles.titleRow}>
@@ -90,8 +90,8 @@ export default function LibraryItem({
 
 						{/* Tag + metadata on one line */}
 						<View style={styles.metaRow}>
-							<View style={[styles.typeTag, { backgroundColor: categoryColors.bg }]}>
-								<Text style={[styles.typeTagText, { color: categoryColors.icon }]}>{tagLabel}</Text>
+							<View style={[styles.typeTag, { backgroundColor: getMaterialAccent(material.type) }]}>
+								<Text style={[styles.typeTagText, { color: colors.textPrimary }]}>{tagLabel}</Text>
 							</View>
 							{totalUnits > 0 && (
 								<>
@@ -110,7 +110,7 @@ export default function LibraryItem({
 					total={totalUnits}
 					unitLabel={getUnitLabel(material.type, totalUnits - currentUnit)}
 					percentage={progressPercentage}
-					color={categoryColors.progress}
+					color={getMaterialAccent(material.type)}
 				/>
 			</View>
 			</View>
@@ -124,8 +124,6 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.white,
 		borderRadius: borderRadius.sm,
 		marginBottom: spacing.sm,
-		borderWidth: 1,
-		borderColor: colors.borderDefault,
 	},
 	cardInner: {
 		borderRadius: borderRadius.sm,
@@ -134,6 +132,7 @@ const styles = StyleSheet.create({
 	// Pressable carries all padding — CardCover + info side by side
 	topRow: {
 		flexDirection: "row",
+		gap: spacing.sm,
 		padding: spacing.sm,
 	},
 	info: {
@@ -165,7 +164,7 @@ const styles = StyleSheet.create({
 	},
 	typeTagText: {
 		fontSize: 10,
-		fontWeight: "700",
+		fontWeight: "400",
 		textTransform: "uppercase",
 		letterSpacing: 0.5,
 	},

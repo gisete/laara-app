@@ -2,7 +2,7 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { colors } from "@theme/colors";
-import { spacing } from "@theme/spacing";
+import { spacing, borderRadius } from "@theme/spacing";
 
 interface ProgressBarProps {
 	current: number;
@@ -56,10 +56,12 @@ const styles = StyleSheet.create({
 	},
 	track: {
 		height: 7,
-		backgroundColor: colors.grayLight,
+		backgroundColor: colors.gray50,
+		borderRadius: borderRadius.pill,
 		overflow: "hidden",
 	},
 	fill: {
 		height: "100%",
+		borderRadius: borderRadius.pill,
 	},
 });

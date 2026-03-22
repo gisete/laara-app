@@ -140,7 +140,7 @@ export default function LibraryScreen() {
 				<ScreenHeader title="Library" rightElement={languageFilteredMaterials.length > 0 ? AddButton : undefined} />
 				{activeLanguageCode && activeLanguageName ? (
 					<Text style={styles.languageIndicator}>
-						{activeLanguageFlag}  {activeLanguageName}
+						{activeLanguageName}
 					</Text>
 				) : null}
 

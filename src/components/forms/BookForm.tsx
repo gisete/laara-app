@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import TypeSelectorModal from "@components/forms/TypeSelectorModal";
-import CardCover from "@components/tabs/library/CardCover";
+import { MaterialIcon } from "@components/shared/MaterialIcon";
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
 import { spacing } from "@theme/spacing";
@@ -41,7 +41,7 @@ export default function BookForm({
 		<>
 			{/* HERO ICON */}
 			<View style={styles.heroSection}>
-				<CardCover type="book" size={64} />
+				<MaterialIcon type="book" size={64} />
 				<Text style={styles.heroLabel}>NEW MATERIAL</Text>
 			</View>
 

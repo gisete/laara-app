@@ -13,7 +13,7 @@ import { router, useFocusEffect } from "expo-router";
 import * as Haptics from "expo-haptics";
 
 import { getAllSessions } from "@database/queries";
-import CardCover from "@components/tabs/library/CardCover";
+import { MaterialIcon } from "@components/shared/MaterialIcon";
 import FormHeader from "@components/forms/FormHeader";
 import HistoryCalendar from "@components/history/HistoryCalendar";
 import { getActivityText } from "@utils/materialUtils";
@@ -161,7 +161,7 @@ export default function HistoryScreen() {
 		const { activity, isLast } = item;
 		return (
 			<View style={[styles.activityRow, isLast && styles.activityRowLast]}>
-				<CardCover type={activity.material_type} size={44} />
+				<MaterialIcon type={activity.material_type} />
 				<View style={styles.activityInfo}>
 					<Text style={styles.activityName} numberOfLines={1}>
 						{activity.material_name}
@@ -264,6 +264,7 @@ const styles = StyleSheet.create({
 	activityRow: {
 		flexDirection: "row",
 		alignItems: "center",
+		gap: spacing.sm,
 		backgroundColor: colors.surfaceDefault,
 		paddingVertical: 12,
 		paddingHorizontal: spacing.lg,
@@ -275,7 +276,6 @@ const styles = StyleSheet.create({
 	},
 	activityInfo: {
 		flex: 1,
-		marginLeft: spacing.sm,
 		marginRight: spacing.sm,
 	},
 	activityName: {

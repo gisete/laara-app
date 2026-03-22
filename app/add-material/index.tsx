@@ -1,25 +1,18 @@
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { SvgProps } from "react-native-svg";
 import { ActivityIndicator, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getAllActiveCategories } from "@database/queries";
 
 import CategoryCard from "@components/addMaterial/CategoryCard";
 
-import AudioIcon from "@components/icons/AudioIcon";
-import BookIcon from "@components/icons/BookIcon";
-import VideoIcon from "@components/icons/VideoIcon";
-import AppIcon from "@components/icons/AppIcon";
-import ClassIcon from "@components/icons/ClassIcon";
-import MyIcon from "@components/icons/AudioIcon"; // A default fallback icon
-
 // Import global styles
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
 import { spacing } from "@theme/spacing";
 import { typography } from "@theme/typography";
+
 
 interface Category {
 	id: number;
@@ -60,14 +53,6 @@ export default function AddMaterialCategoryScreen() {
 		router.push(`/add-material/${category.code}`);
 	};
 
-	// Create a map from category code to the imported component
-	const iconMap: { [key: string]: React.FC<SvgProps> } = {
-		book: BookIcon,
-		audio: AudioIcon,
-		video: VideoIcon,
-		app: AppIcon,
-		class: ClassIcon,
-	};
 
 	if (loading) {
 		return (
@@ -101,17 +86,14 @@ export default function AddMaterialCategoryScreen() {
 					showsVerticalScrollIndicator={false}
 					contentContainerStyle={styles.scrollContent}
 				>
-					{categories.map((category) => {
-						const IconComponent = iconMap[category.code] || MyIcon;
-						return (
-							<CategoryCard
-								key={category.id}
-								category={category}
-								IconComponent={IconComponent}
-								onPress={() => handleCategorySelect(category)}
-							/>
-						);
-					})}
+					{categories.map((category) => (
+						<CategoryCard
+							key={category.id}
+							category={category}
+							type={category.code}
+							onPress={() => handleCategorySelect(category)}
+						/>
+					))}
 				</ScrollView>
 			</View>
 		</SafeAreaView>

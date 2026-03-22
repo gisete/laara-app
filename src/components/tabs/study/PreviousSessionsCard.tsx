@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { router } from "expo-router";
-import CardCover from "@components/tabs/library/CardCover";
+import { MaterialIcon } from "@components/shared/MaterialIcon";
 import { colors } from "@theme/colors";
 import { spacing } from "@theme/spacing";
 import { typography } from "@theme/typography";
@@ -54,7 +54,7 @@ export default function PreviousSessionsCard({ sessionRows }: PreviousSessionsCa
 						key={row.key}
 						style={[styles.sessionRow, index === displayedRows.length - 1 && styles.sessionRowLast]}
 					>
-						<CardCover type={row.materialType} size={40} />
+						<MaterialIcon type={row.materialType} />
 						<View style={styles.sessionInfo}>
 							<Text style={styles.sessionName} numberOfLines={1}>
 								{row.materialName}
@@ -96,6 +96,7 @@ const styles = StyleSheet.create({
 	sessionRow: {
 		flexDirection: "row",
 		alignItems: "center",
+		gap: spacing.sm,
 		paddingVertical: 10,
 		borderBottomWidth: 1,
 		borderBottomColor: colors.gray200,

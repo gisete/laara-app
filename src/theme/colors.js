@@ -71,6 +71,13 @@ export const colors = {
 	categoryApp: primitive.categoryAppBg,
 	categoryAppIcon: primitive.categoryAppFg,
 
+	// Material type accent colors — backgrounds for icon cards
+	materialBookAccent: "#ffddbd",
+	materialAudioAccent: "#baf6b9",
+	materialVideoAccent: "#f2baf6",
+	materialClassAccent: "#faeb87",
+	materialAppAccent: "#b4edf7",
+
 	// Feedback
 	error: primitive.red600,
 

@@ -24,7 +24,7 @@ import {
 	updateSessionTotalDuration,
 	updateMaterialProgress,
 } from "@database/queries";
-import CardCover from "@components/tabs/library/CardCover";
+import { MaterialIcon } from "@components/shared/MaterialIcon";
 import { formatDateToYYYYMMDD } from "@utils/dateHelper";
 import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
@@ -216,7 +216,7 @@ export default function SessionSummaryScreen() {
 					>
 						{/* Material info */}
 						<View style={styles.materialRow}>
-							<CardCover type={materialType} />
+							<MaterialIcon type={materialType} />
 							<View style={styles.materialInfo}>
 								<Text style={styles.materialName} numberOfLines={1}>
 									{materialName}
@@ -356,6 +356,7 @@ const styles = StyleSheet.create({
 	materialRow: {
 		flexDirection: "row",
 		alignItems: "center",
+		gap: spacing.sm,
 		backgroundColor: colors.white,
 		padding: spacing.md,
 		borderRadius: borderRadius.sm,
@@ -365,7 +366,6 @@ const styles = StyleSheet.create({
 	},
 	materialInfo: {
 		flex: 1,
-		marginLeft: spacing.md,
 	},
 	materialName: {
 		...typography.bodyLarge,

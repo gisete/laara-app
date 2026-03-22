@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { SvgProps } from "react-native-svg";
+import { MaterialIcon } from "@components/shared/MaterialIcon";
+import { spacing } from "@theme/spacing";
 
 interface Category {
 	id: number;
@@ -10,19 +11,14 @@ interface Category {
 
 interface CategoryCardProps {
 	category: Category;
-	IconComponent: React.FC<SvgProps>; // The icon component to render
-	onPress: () => void; // Function to call when the card is pressed
+	type: string;
+	onPress: () => void;
 }
 
-const CategoryCard: React.FC<CategoryCardProps> = ({ category, IconComponent, onPress }) => {
-	const iconColor = "#9CA3AF";
-	const iconSize = 80;
-
+const CategoryCard: React.FC<CategoryCardProps> = ({ category, type, onPress }) => {
 	return (
 		<TouchableOpacity style={styles.categoryCard} onPress={onPress} activeOpacity={0.7}>
-			<View style={styles.categoryIconContainer}>
-				<IconComponent width={iconSize} height={iconSize} fill={iconColor} />
-			</View>
+			<MaterialIcon type={type} size={40} />
 			<View style={styles.categoryTextContainer}>
 				<Text style={styles.categoryName}>{category.name}</Text>
 				<Text style={styles.categoryDescription}>{category.description}</Text>
@@ -35,6 +31,7 @@ const styles = StyleSheet.create({
 	categoryCard: {
 		flexDirection: "row",
 		alignItems: "center",
+		gap: spacing.sm,
 		backgroundColor: "#FFFFFF",
 		borderRadius: 12,
 		padding: 20,
@@ -47,13 +44,6 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.05,
 		shadowRadius: 8,
 		elevation: 2,
-	},
-	categoryIconContainer: {
-		width: 40,
-		height: 40,
-		marginRight: 16,
-		justifyContent: "center",
-		alignItems: "center",
 	},
 	categoryTextContainer: {
 		flex: 1,

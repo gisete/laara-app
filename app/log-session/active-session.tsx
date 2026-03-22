@@ -17,7 +17,7 @@ import { globalStyles } from "@theme/styles";
 import { colors } from "@theme/colors";
 import { spacing, borderRadius } from "@theme/spacing";
 import { typography, fonts } from "@theme/typography";
-import CardCover from "@components/tabs/library/CardCover";
+import { MaterialIcon } from "@components/shared/MaterialIcon";
 
 const getMaterialTypeLabel = (type: string): string => {
 	switch (type) {
@@ -205,7 +205,7 @@ export default function ActiveSessionScreen() {
 				{/* Material identity — centered */}
 				<View style={styles.materialSection}>
 					<View style={styles.cardCoverWrapper}>
-						<CardCover type={materialType} size={48} />
+						<MaterialIcon type={materialType} />
 					</View>
 					<Text style={styles.materialName} numberOfLines={2}>
 						{materialName}
