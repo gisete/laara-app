@@ -1,6 +1,6 @@
 // src/components/ui/LanguageSwitcher.tsx
-import React, { useEffect, useState } from "react";
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Animated, Easing, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 
@@ -25,26 +25,47 @@ interface LanguageSwitcherProps {
 
 export default function LanguageSwitcher({ visible, onClose, onLanguageSelected }: LanguageSwitcherProps) {
 	const [languages, setLanguages] = useState<UserLanguage[]>([]);
+	const [modalMounted, setModalMounted] = useState(false);
+	const slideAnim = useRef(new Animated.Value(300)).current;
 
-	// Reload languages on every open so it stays fresh after adding
 	useEffect(() => {
 		if (visible) {
+			setModalMounted(true);
 			getUserLanguages()
 				.then((rows) => setLanguages(rows as UserLanguage[]))
 				.catch(console.error);
+			Animated.timing(slideAnim, {
+				toValue: 0,
+				duration: 280,
+				easing: Easing.out(Easing.cubic),
+				useNativeDriver: true,
+			}).start();
 		}
 	}, [visible]);
 
+	const handleClose = () => {
+		Animated.timing(slideAnim, {
+			toValue: 300,
+			duration: 240,
+			easing: Easing.in(Easing.cubic),
+			useNativeDriver: true,
+		}).start(() => {
+			setModalMounted(false);
+			slideAnim.setValue(300);
+			onClose();
+		});
+	};
+
 	const handleSelectLanguage = async (code: string, isActive: number) => {
 		if (isActive) {
-			onClose();
+			handleClose();
 			return;
 		}
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 		try {
 			await setActiveLanguage(code);
 			onLanguageSelected(code);
-			onClose();
+			handleClose();
 		} catch (error) {
 			console.error("Error switching language:", error);
 		}
@@ -52,14 +73,14 @@ export default function LanguageSwitcher({ visible, onClose, onLanguageSelected 
 
 	const handleAddLanguage = () => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-		onClose();
+		handleClose();
 		router.push({ pathname: "/language-selection", params: { mode: "add" } });
 	};
 
 	return (
-		<Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-			<TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
-				<View style={styles.sheet} onStartShouldSetResponder={() => true}>
+		<Modal visible={modalMounted} transparent animationType="none" onRequestClose={handleClose}>
+			<TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={handleClose}>
+				<Animated.View style={[styles.sheet, { transform: [{ translateY: slideAnim }] }]} onStartShouldSetResponder={() => true}>
 					<View style={styles.handle} />
 					<Text style={styles.title}>Switch Language</Text>
 
@@ -88,7 +109,7 @@ export default function LanguageSwitcher({ visible, onClose, onLanguageSelected 
 							<Text style={styles.addText}>Add a language</Text>
 						</TouchableOpacity>
 					</ScrollView>
-				</View>
+				</Animated.View>
 			</TouchableOpacity>
 		</Modal>
 	);

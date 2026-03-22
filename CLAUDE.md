@@ -487,7 +487,7 @@ All theme files are `.js`, not `.ts`.
 | `app/log-session/select-material.tsx` | ✅     | Built, working. Recently Studied section for 5+ materials                                                                                                                                                                                                    |
 | `app/log-session/active-session.tsx`  | ✅     | Count-up timer. Ref-based state (avoids stale closures). AppState backgrounding. Pause/resume. Navigates to `session-summary` on End via `router.replace`.                                                                                                   |
 | `app/log-session/session-summary.tsx` | ✅     | Post-session logging form. Receives `elapsedSeconds`, pre-fills duration. Type-aware unit field label. Notes field. Full save logic (getOrCreateTodaySession → addSessionActivity → updateSessionTotalDuration → updateMaterialProgress).                    |
-| `app/(tabs)/index.tsx`                | ✅     | Redesigned study tab — greeting header, weekly calendar strip (Sun–Sat), 144px coral BEGIN button with glow, recent sessions card                                                                                                                            |
+| `app/(tabs)/index.tsx`                | ✅     | Redesigned study tab — greeting header, weekly calendar strip (Sun–Sat), 144px coral BEGIN button (no glow/shadow), recent sessions card                                                                                                                            |
 | `app/(tabs)/library.tsx`              | ✅     | Filter bar, list, edit, delete. Empty state condition uses `languageFilteredMaterials.length === 0` (not `materials.length`) so it shows correctly after a language clear. Add button visibility uses the same check for consistency.                          |
 | `app/(tabs)/reports.tsx`              | ✅     | Fully built. Period filter (week/month/all time), language filter chips (hidden when single language), donut chart, hero time card, stats row, most studied card, units breakdown. `getReportData(startDate, endDate, languageCode)` — language param optional. |
 | `app/(tabs)/settings.tsx`             | ✅     | Fully built. "Manage languages" row → `/settings/manage-languages`. Level row → two-step Modal. Joined date read-only. Notifications toggle (UI only). Export/restore/about stubs. Clear all data stub (destructive zone).                                    |
@@ -507,14 +507,8 @@ All theme files are `.js`, not `.ts`.
 
 ## Fonts
 
-Custom font: **Domine** (Regular, Medium, SemiBold, Bold).
-Loaded in `_layout.tsx` via `expo-font`.
-
-```ts
-fontFamily: "Domine-Bold"; // for headings
-fontFamily: "Domine-Medium"; // for subheadings
-// Most body text uses system font weight instead of Domine
-```
+Custom font: **Lora** (Regular, Medium, SemiBold, Bold, Italic, BoldItalic).
+Loaded in `_layout.tsx` via `@expo-google-fonts/lora`. Font keys are semantic — see Typography section for usage.
 
 ---
 
@@ -828,6 +822,24 @@ ALTER TABLE user_settings ADD COLUMN onboarding_completed INTEGER DEFAULT 0;
 - No Portal when BottomSheet is direct child of tab screen SafeAreaView
 - Portal only when sheet needs to escape clipping from ScrollView or nested component
 - If tab screen row taps stop working near a BottomSheet → switch to plain Modal
+
+---
+
+## Animated Modal pattern (slide up / slide down)
+
+Use this pattern for any custom bottom sheet built with React Native's `Modal`.
+Do NOT use `animationType="slide"` on the Modal itself — it slides the backdrop too.
+
+**The pattern (`LanguageSwitcher.tsx` is the reference implementation):**
+- `modalMounted` state controls whether the Modal is mounted (replaces `visible` on the Modal)
+- `slideAnim` is an `Animated.Value` starting at `300` (offscreen)
+- A `useEffect` watching the `visible` prop triggers mount + slide-up on open
+- A `handleClose` function runs slide-down first, then sets `modalMounted = false`, resets `slideAnim` to `300`, and calls `onClose()` — modal only unmounts after animation completes
+- All dismiss paths (backdrop tap, item select, navigation away) must call `handleClose()` not `onClose()` directly
+- Open duration: 280ms, `Easing.out(Easing.cubic)`
+- Close duration: 240ms, `Easing.in(Easing.cubic)`
+- Backdrop (`TouchableOpacity` with overlay style) has no animation — appears and disappears instantly
+- Sheet content wrapped in `Animated.View` with `transform: [{ translateY: slideAnim }]`
 
 ---
 
