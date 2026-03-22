@@ -81,6 +81,7 @@ export default function RootLayout() {
 					<Stack.Screen name="index" />
 					<Stack.Screen name="language-selection" />
 					<Stack.Screen name="(tabs)" />
+					<Stack.Screen name="history" />
 				</Stack>
 			</PortalProvider>
 		</GestureHandlerRootView>

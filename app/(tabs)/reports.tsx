@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
 import Svg, { Circle } from "react-native-svg";
 
+import { router } from "expo-router";
 import { getReportData, getStreakCount, getUserLanguages } from "@database/queries";
 import CardCover from "@components/tabs/library/CardCover";
 import ScreenHeader from "@components/ui/ScreenHeader";
@@ -364,7 +365,16 @@ export default function ReportsScreen() {
 					</View>
 				)}
 
-				<View style={styles.bottomPadding} />
+			{/* View history link */}
+			<TouchableOpacity
+				style={styles.viewHistoryRow}
+				activeOpacity={0.7}
+				onPress={() => router.push("/history")}
+			>
+				<Text style={styles.viewHistoryText}>View session history →</Text>
+			</TouchableOpacity>
+
+			<View style={styles.bottomPadding} />
 			</ScrollView>
 		</SafeAreaView>
 	);
@@ -522,6 +532,16 @@ const styles = StyleSheet.create({
 	unitText: {
 		...typography.bodyMedium,
 		color: colors.grayDark,
+	},
+
+	viewHistoryRow: {
+		alignItems: "center",
+		paddingVertical: spacing.lg,
+	},
+	viewHistoryText: {
+		fontSize: 15,
+		fontWeight: "600",
+		color: colors.primaryAccent,
 	},
 
 	bottomPadding: {

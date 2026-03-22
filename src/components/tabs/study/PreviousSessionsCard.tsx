@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { router } from "expo-router";
 import CardCover from "@components/tabs/library/CardCover";
 import { colors } from "@theme/colors";
 import { spacing } from "@theme/spacing";
@@ -39,7 +40,7 @@ export default function PreviousSessionsCard({ sessionRows }: PreviousSessionsCa
 			<View style={styles.sessionsCardHeader}>
 				<Text style={styles.sessionsCardTitle}>Previous sessions</Text>
 				{sessionRows.length > 0 && (
-					<TouchableOpacity activeOpacity={0.7}>
+					<TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/history")}>
 						<Text style={styles.seeAllText}>See all</Text>
 					</TouchableOpacity>
 				)}

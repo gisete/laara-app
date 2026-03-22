@@ -84,6 +84,8 @@ export default function SelectMaterialScreen() {
 	const params = useLocalSearchParams();
 	// Get the date from params, or default to today
 	const sessionDate = (params.date as string) || new Date().toISOString().split("T")[0];
+	const entryMode = (params.entryMode as string) || "timed";
+	const returnTo = (params.returnTo as string) || "";
 
 	const [allMaterials, setAllMaterials] = useState<Material[]>([]);
 	const [recentMaterials, setRecentMaterials] = useState<Material[]>([]);
@@ -139,16 +141,32 @@ export default function SelectMaterialScreen() {
 
 	const handleSelectMaterial = (material: Material) => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-		router.push({
-			pathname: "/log-session/active-session",
-			params: {
-				materialId: material.id.toString(),
-				materialName: material.name,
-				materialType: material.type,
-				materialSubtype: material.subtype || "",
-				date: sessionDate,
-			},
-		});
+		if (entryMode === "manual") {
+			router.push({
+				pathname: "/log-session/session-summary",
+				params: {
+					materialId: material.id.toString(),
+					materialName: material.name,
+					materialType: material.type,
+					materialSubtype: material.subtype || "",
+					date: sessionDate,
+					elapsedSeconds: "0",
+					entryMode: "manual",
+					returnTo,
+				},
+			});
+		} else {
+			router.push({
+				pathname: "/log-session/active-session",
+				params: {
+					materialId: material.id.toString(),
+					materialName: material.name,
+					materialType: material.type,
+					materialSubtype: material.subtype || "",
+					date: sessionDate,
+				},
+			});
+		}
 	};
 
 	const handleBack = () => {

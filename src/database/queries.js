@@ -941,6 +941,36 @@ export const getStreakCount = () => {
 	});
 };
 
+/**
+ * Get all sessions with their activities, ordered newest first.
+ * Sessions with no activities are excluded.
+ * @returns {Promise<Array>}
+ */
+export const getAllSessions = () => {
+	return new Promise((resolve, reject) => {
+		try {
+			const sessions = db.getAllSync(
+				`SELECT * FROM daily_sessions ORDER BY session_date DESC`
+			);
+			const sessionsWithActivities = sessions.map((session) => {
+				const activities = db.getAllSync(
+					`SELECT sa.*, m.name as material_name, m.type as material_type, m.subtype as material_subtype
+					 FROM session_activities sa
+					 JOIN materials m ON sa.material_id = m.id
+					 WHERE sa.session_id = ?
+					 ORDER BY sa.created_at ASC`,
+					[session.id]
+				);
+				return { ...session, activities: activities || [] };
+			});
+			resolve(sessionsWithActivities.filter((s) => s.activities.length > 0));
+		} catch (error) {
+			console.error("Error getting all sessions:", error);
+			reject(error);
+		}
+	});
+};
+
 // ============ DATA MANAGEMENT QUERIES ============
 
 /**

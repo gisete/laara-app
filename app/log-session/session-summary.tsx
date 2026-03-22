@@ -59,7 +59,7 @@ const getUnitPlaceholder = (type: string): string => {
 };
 
 export default function SessionSummaryScreen() {
-	const { materialId, materialName, materialType, materialSubtype, date, elapsedSeconds } =
+	const { materialId, materialName, materialType, materialSubtype, date, elapsedSeconds, entryMode, returnTo } =
 		useLocalSearchParams<{
 			materialId: string;
 			materialName: string;
@@ -67,6 +67,8 @@ export default function SessionSummaryScreen() {
 			materialSubtype: string;
 			date: string;
 			elapsedSeconds: string;
+			entryMode: string;
+			returnTo: string;
 		}>();
 
 	const materialIdNum = parseInt(materialId, 10);
@@ -139,7 +141,7 @@ export default function SessionSummaryScreen() {
 			}
 
 			Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-			router.replace("/(tabs)");
+			router.replace(returnTo === "history" ? "/history" : "/(tabs)");
 		} catch (error) {
 			console.error("Error saving session:", error);
 			Alert.alert("Error", "Failed to save session. Please try again.");
@@ -155,7 +157,7 @@ export default function SessionSummaryScreen() {
 			{
 				text: "Discard",
 				style: "destructive",
-				onPress: () => router.replace("/(tabs)"),
+				onPress: () => router.replace(returnTo === "history" ? "/history" : "/(tabs)"),
 			},
 		]);
 	};
