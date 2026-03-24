@@ -19,7 +19,7 @@ export default function WelcomeScreen() {
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+			<StatusBar barStyle="dark-content" backgroundColor={colors.surfaceDefault} />
 
 			<ScrollView
 				style={{ flex: 1 }}
@@ -27,7 +27,7 @@ export default function WelcomeScreen() {
 				showsVerticalScrollIndicator={false}
 			>
 				<View style={styles.illustrationContainer}>
-					<IntroIllustration width="100%" height="100%" accentColor={colors.primaryAccent} />
+					<IntroIllustration width="100%" height="100%" accentColor={colors.accentPrimary} />
 				</View>
 
 				<View style={styles.textContainer}>
@@ -67,14 +67,14 @@ const styles = StyleSheet.create({
 	title: {
 		fontFamily: fonts.heading.medium,
 		fontSize: 28,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginBottom: spacing.md,
 		textAlign: "center",
 	},
 	subtitle: {
 		...globalStyles.bodyMedium,
 		fontSize: 16,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		textAlign: "center",
 		lineHeight: 24,
 		maxWidth: 280,

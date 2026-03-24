@@ -30,7 +30,7 @@ export default function DashboardHeader({ greeting, flag, streakCount, onFlagPre
 					<Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
 						<Path
 							d="M6 9L12 15L18 9"
-							stroke={colors.grayMedium}
+							stroke={colors.textSecondary}
 							strokeWidth={2.5}
 							strokeLinecap="round"
 							strokeLinejoin="round"
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
 	greeting: {
 		fontFamily: fonts.heading.medium,
 		fontSize: 30,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 	flagTappable: {
 		flexDirection: "row",
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
 	statusPill: {
 		flexDirection: "row",
 		alignItems: "center",
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		paddingVertical: 6,
 		paddingHorizontal: spacing.sm,
 		borderRadius: borderRadius.pill,
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
 	streakText: {
 		fontSize: 11,
 		fontWeight: "800",
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		letterSpacing: 0.5,
 	},
 });

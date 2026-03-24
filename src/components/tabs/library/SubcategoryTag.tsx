@@ -21,7 +21,7 @@ export default function SubcategoryTag({ label }: SubcategoryTagProps) {
 
 const styles = StyleSheet.create({
 	badge: {
-		backgroundColor: colors.grayLight,
+		backgroundColor: colors.borderSubtle,
 		paddingHorizontal: 6,
 		paddingVertical: 4,
 		borderRadius: 5,
@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
 	badgeText: {
 		fontSize: 14,
 		fontWeight: "400",
-		color: colors.grayDark,
+		color: colors.textStrong,
 		textTransform: "capitalize",
 	},
 });

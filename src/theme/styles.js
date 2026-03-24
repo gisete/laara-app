@@ -15,7 +15,7 @@ export const globalStyles = StyleSheet.create({
 	// Container styles
 	container: {
 		flex: 1,
-		backgroundColor: colors.gray50,
+		backgroundColor: colors.appBackground,
 	},
 
 	screenPadding: {
@@ -34,7 +34,7 @@ export const globalStyles = StyleSheet.create({
 	// Button styles
 	buttonPrimary: {
 		...buttonBase,
-		backgroundColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
 	},
 
 	buttonPrimaryText: {
@@ -45,24 +45,24 @@ export const globalStyles = StyleSheet.create({
 
 	buttonOutline: {
 		...buttonBase,
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		borderWidth: 1,
-		borderColor: colors.gray300,
+		borderColor: colors.borderStrong,
 	},
 
 	buttonOutlineText: {
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		fontSize: 16,
 		fontWeight: "500",
 	},
 
 	buttonSecondaryFilled: {
 		...buttonBase,
-		backgroundColor: colors.gray200,
+		backgroundColor: colors.borderDefault,
 	},
 
 	buttonSecondaryFilledText: {
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		fontSize: 16,
 		fontWeight: "500",
 	},
@@ -71,22 +71,22 @@ export const globalStyles = StyleSheet.create({
 		...buttonBase,
 		backgroundColor: "transparent",
 		borderWidth: 1.5,
-		borderColor: colors.grayDark,
+		borderColor: colors.textStrong,
 	},
 
 	buttonSecondaryOutlineText: {
-		color: colors.grayDark,
+		color: colors.textStrong,
 		fontSize: 16,
 		fontWeight: "500",
 	},
 
 	buttonDisabled: {
 		...buttonBase,
-		backgroundColor: colors.grayLight,
+		backgroundColor: colors.borderSubtle,
 	},
 
 	buttonDisabledText: {
-		color: colors.gray300,
+		color: colors.borderStrong,
 		fontSize: 16,
 		fontWeight: "500",
 	},
@@ -101,30 +101,30 @@ export const globalStyles = StyleSheet.create({
 		fontWeight: "800",
 		textTransform: "uppercase",
 		letterSpacing: 1,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		marginBottom: 6,
 		marginLeft: 4,
 	},
 
 	input: {
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		borderWidth: 1.5,
-		borderColor: colors.gray200,
+		borderColor: colors.borderDefault,
 		borderRadius: borderRadius.input,
 		paddingHorizontal: 16,
 		paddingVertical: 14,
 		fontSize: 15,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 
 	inputFocused: {
-		borderColor: colors.primaryAccent,
+		borderColor: colors.accentPrimary,
 	},
 
 	// Selection card styles
 	selectionCard: {
 		borderBottomWidth: 1,
-		borderBottomColor: colors.gray200,
+		borderBottomColor: colors.borderDefault,
 		borderRadius: borderRadius.sm,
 		padding: spacing.md,
 		paddingVertical: spacing.sm,
@@ -134,13 +134,13 @@ export const globalStyles = StyleSheet.create({
 
 	selectionCardSelected: {
 		backgroundColor: colors.surfaceSubtle,
-		borderColor: colors.grayLightMedium,
+		borderColor: colors.textTertiary,
 	},
 
 	selectionCardIcon: {
 		width: 48,
 		height: 48,
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		borderRadius: borderRadius.sm,
 		alignItems: "center",
 		justifyContent: "center",
@@ -152,13 +152,13 @@ export const globalStyles = StyleSheet.create({
 	},
 
 	selectionCardTitle: {
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		...typography.bodyLarge,
 		fontWeight: "500",
 	},
 
 	selectionCardSubtitle: {
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		...typography.bodyMedium,
 		marginTop: 2,
 	},
@@ -167,14 +167,14 @@ export const globalStyles = StyleSheet.create({
 		width: 24,
 		height: 24,
 		borderRadius: 12,
-		backgroundColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
 		alignItems: "center",
 		justifyContent: "center",
 	},
 
 	// Pill/Tag styles
 	pill: {
-		backgroundColor: colors.gray200,
+		backgroundColor: colors.borderDefault,
 		paddingVertical: 10,
 		paddingHorizontal: 20,
 		borderRadius: borderRadius.pill,
@@ -183,47 +183,47 @@ export const globalStyles = StyleSheet.create({
 	},
 
 	pillText: {
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		...typography.bodyMedium,
 	},
 
 	pillSelected: {
-		backgroundColor: colors.grayDarkest,
+		backgroundColor: colors.textPrimary,
 	},
 
 	pillTextSelected: {
-		color: colors.white,
+		color: colors.surfaceDefault,
 	},
 
 	// Typography styles
 	headingLarge: {
 		...typography.headingLarge,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 
 	headingMedium: {
 		...typography.headingMedium,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 
 	headingSmall: {
 		...typography.headingSmall,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 
 	bodyLarge: {
 		...typography.bodyLarge,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 
 	bodyMedium: {
 		...typography.bodyMedium,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 
 	bodySecondary: {
 		...typography.bodyMedium,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 	},
 
 	// Empty state styles
@@ -236,7 +236,7 @@ export const globalStyles = StyleSheet.create({
 
 	emptyStateTitle: {
 		...typography.headingMedium,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		textAlign: "center",
 		marginTop: spacing.lg,
 		marginBottom: spacing.sm,
@@ -244,7 +244,7 @@ export const globalStyles = StyleSheet.create({
 
 	emptyStateDescription: {
 		...typography.bodyMedium,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		textAlign: "center",
 		marginBottom: spacing.xl,
 	},

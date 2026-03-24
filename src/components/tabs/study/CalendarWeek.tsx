@@ -114,38 +114,38 @@ const styles = StyleSheet.create({
 		position: "relative",
 	},
 	selectedDayContainer: {
-		backgroundColor: colors.grayDark, // #44403C - Stone 700
+		backgroundColor: colors.textStrong, // #44403C - Stone 700
 	},
 	todayContainer: {
-		backgroundColor: colors.grayDark, // #44403C - Stone 700
+		backgroundColor: colors.textStrong, // #44403C - Stone 700
 	},
 	studyDayContainer: {
-		backgroundColor: colors.primaryAccentLight,
+		backgroundColor: colors.accentSecondary,
 	},
 	dayLetter: {
 		fontSize: 12,
-		color: colors.grayMedium, // #78716C - Stone 500
+		color: colors.textSecondary, // #78716C - Stone 500
 		marginBottom: 4,
 		fontWeight: "500",
 	},
 	dayNumber: {
 		fontSize: 16,
-		color: colors.grayDarkest, // #211E1C - Stone 900
+		color: colors.textPrimary, // #211E1C - Stone 900
 		fontWeight: "600",
 	},
 	selectedText: {
-		color: colors.white,
+		color: colors.surfaceDefault,
 	},
 	sessionDot: {
 		width: 6,
 		height: 6,
 		borderRadius: 3,
-		backgroundColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
 		marginTop: 4,
 		position: "absolute",
 		bottom: 4,
 	},
 	sessionDotSelected: {
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 	},
 });

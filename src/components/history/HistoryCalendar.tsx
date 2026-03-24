@@ -18,30 +18,79 @@ interface Props {
 	onMonthChange: (direction: "prev" | "next") => void;
 }
 
+type DayStyle = {
+	circleBg: string | undefined;
+	textColor: string;
+	dimOpacity: number;
+	fontWeight: "400" | "500";
+};
+
+// All day-state logic in one place. Priority order matters:
+// today wins over selected, selected wins over has-session, etc.
+function getDayStyle(isToday: boolean, isSelected: boolean, isPast: boolean, hasSession: boolean): DayStyle {
+	if (isToday) {
+		return {
+			circleBg: colors.textPrimary,
+			textColor: colors.surfaceDefault,
+			dimOpacity: 1,
+			fontWeight: "500",
+		};
+	}
+	if (isSelected) {
+		return {
+			circleBg: colors.accentDark,
+			textColor: colors.surfaceDefault,
+			dimOpacity: 1,
+			fontWeight: "500",
+		};
+	}
+	if (isPast && hasSession) {
+		return {
+			circleBg: colors.accentPrimary,
+			textColor: colors.buttonOnAccentText,
+			dimOpacity: 1,
+			fontWeight: "500",
+		};
+	}
+	if (isPast) {
+		return {
+			circleBg: colors.borderDefault,
+			textColor: colors.textSecondary,
+			dimOpacity: 0.5,
+			fontWeight: "500",
+		};
+	}
+	// Future date
+	return {
+		circleBg: undefined,
+		textColor: colors.textSecondary,
+		dimOpacity: 1,
+		fontWeight: "400",
+	};
+}
+
 const pad = (n: number) => String(n).padStart(2, "0");
 
-const toDateString = (year: number, month: number, day: number): string =>
-	`${year}-${pad(month + 1)}-${pad(day)}`;
+const toDateString = (year: number, month: number, day: number): string => `${year}-${pad(month + 1)}-${pad(day)}`;
 
-const buildCells = (displayMonth: Date): (string | null)[] => {
+function buildCells(displayMonth: Date): (string | null)[] {
 	const year = displayMonth.getFullYear();
 	const month = displayMonth.getMonth();
 	const firstDay = new Date(year, month, 1);
-	// getDay(): 0=Sun,1=Mon,...,6=Sat — convert to Mon-first index
+	// getDay(): 0=Sun … 6=Sat — convert to Mon-first index
 	const offset = (firstDay.getDay() + 6) % 7;
 	const daysInMonth = new Date(year, month + 1, 0).getDate();
 
 	const cells: (string | null)[] = [];
 	for (let i = 0; i < 42; i++) {
 		const dayNum = i - offset + 1;
-		if (dayNum < 1 || dayNum > daysInMonth) {
-			cells.push(null);
-		} else {
-			cells.push(toDateString(year, month, dayNum));
-		}
+		cells.push(dayNum < 1 || dayNum > daysInMonth ? null : toDateString(year, month, dayNum));
 	}
 	return cells;
-};
+}
+
+// Stable: today's date string never changes within a session.
+const TODAY_STR = new Date().toISOString().split("T")[0];
 
 export default function HistoryCalendar({
 	displayMonth,
@@ -50,14 +99,19 @@ export default function HistoryCalendar({
 	onDayPress,
 	onMonthChange,
 }: Props) {
-	const todayStr = new Date().toISOString().split("T")[0];
-	const cells = buildCells(displayMonth);
-	const rows = Array.from({ length: 6 }, (_, i) => cells.slice(i * 7, i * 7 + 7));
+	// Memoised: only recompute when displayMonth changes.
+	const { cells, rows } = useMemo(() => {
+		const c = buildCells(displayMonth);
+		const r = Array.from({ length: 6 }, (_, i) => c.slice(i * 7, i * 7 + 7));
+		return { cells: c, rows: r };
+	}, [displayMonth]);
 
 	const title = displayMonth.toLocaleString("default", { month: "long", year: "numeric" });
 
-	const earliestSessionDate = useMemo(() => {
-		if (sessionDates.size === 0) return new Date();
+	// When there are no sessions yet, don't clamp prev navigation at all —
+	// fall back to null so isPrevDisabled stays false.
+	const earliestSessionDate = useMemo<Date | null>(() => {
+		if (sessionDates.size === 0) return null;
 		const sorted = Array.from(sessionDates).sort();
 		return new Date(sorted[0] + "T00:00:00");
 	}, [sessionDates]);
@@ -65,12 +119,12 @@ export default function HistoryCalendar({
 	const today = new Date();
 
 	const isPrevDisabled =
+		earliestSessionDate !== null &&
 		displayMonth.getFullYear() === earliestSessionDate.getFullYear() &&
 		displayMonth.getMonth() === earliestSessionDate.getMonth();
 
 	const isNextDisabled =
-		displayMonth.getFullYear() === today.getFullYear() &&
-		displayMonth.getMonth() === today.getMonth();
+		displayMonth.getFullYear() === today.getFullYear() && displayMonth.getMonth() === today.getMonth();
 
 	const handlePrev = () => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -84,7 +138,7 @@ export default function HistoryCalendar({
 
 	return (
 		<View style={styles.container}>
-			{/* Month header row */}
+			{/* Month header */}
 			<View style={styles.headerRow}>
 				<Text style={styles.monthTitle}>{title}</Text>
 				<View style={styles.navButtons}>
@@ -124,45 +178,32 @@ export default function HistoryCalendar({
 							return <View key={colIndex} style={styles.cell} />;
 						}
 
+						const isToday = dateStr === TODAY_STR;
 						const isSelected = dateStr === selectedDate;
-						const isToday = dateStr === todayStr;
-						const isPast = dateStr < todayStr;
+						const isPast = dateStr < TODAY_STR;
 						const hasSession = sessionDates.has(dateStr);
-						const dayNum = Number(dateStr.split("-")[2]);
 						const isTappable = hasSession || isPast || isToday;
+						const dayNum = Number(dateStr.split("-")[2]);
 
-						let circleBg: string | undefined;
-						let textColor: string;
-						let dimCircle = false;
-						if (isToday) {
-							circleBg = colors.textPrimary;
-							textColor = "#FFFFFF";
-						} else if (isSelected) {
-							circleBg = colors.primaryAccent;
-							textColor = "#FFFFFF";
-						} else if (isPast && hasSession) {
-							circleBg = colors.primaryAccentLight;
-							textColor = colors.textPrimary;
-						} else if (isPast) {
-							circleBg = colors.gray200;
-							textColor = colors.textSecondary;
-							dimCircle = true;
-						} else {
-							circleBg = undefined;
-							textColor = colors.textSecondary;
-						}
-						const fontWeight: "400" | "500" = isPast || isToday ? "500" : "400";
-
-						const handlePress = () => {
-							Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-							onDayPress(dateStr);
-						};
+						const { circleBg, textColor, dimOpacity, fontWeight } = getDayStyle(
+							isToday,
+							isSelected,
+							isPast,
+							hasSession,
+						);
 
 						return (
 							<TouchableOpacity
 								key={colIndex}
 								style={styles.cell}
-								onPress={isTappable ? handlePress : undefined}
+								onPress={
+									isTappable
+										? () => {
+												Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+												onDayPress(dateStr);
+											}
+										: undefined
+								}
 								disabled={!isTappable}
 								activeOpacity={0.7}
 							>
@@ -170,12 +211,10 @@ export default function HistoryCalendar({
 									style={[
 										styles.circle,
 										circleBg !== undefined && { backgroundColor: circleBg },
-										dimCircle && { opacity: 0.5 },
+										dimOpacity < 1 && { opacity: dimOpacity },
 									]}
 								>
-									<Text style={[styles.dayNumber, { color: textColor, fontWeight }]}>
-										{dayNum}
-									</Text>
+									<Text style={[styles.dayNumber, { color: textColor, fontWeight }]}>{dayNum}</Text>
 								</View>
 							</TouchableOpacity>
 						);

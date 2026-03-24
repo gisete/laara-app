@@ -88,7 +88,7 @@ export default function ManageLanguagesScreen() {
 	// 5. Render
 	return (
 		<SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-			<StatusBar barStyle="dark-content" backgroundColor={colors.gray50} />
+			<StatusBar barStyle="dark-content" backgroundColor={colors.appBackground} />
 			<FormHeader title="My languages" onBack={() => router.back()} />
 
 			<ScrollView
@@ -136,7 +136,7 @@ export default function ManageLanguagesScreen() {
 const styles = StyleSheet.create({
 	safeArea: {
 		flex: 1,
-		backgroundColor: colors.gray50,
+		backgroundColor: colors.appBackground,
 	},
 	scroll: { flex: 1 },
 	scrollContent: {
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
 
 	// Section card (matches settings.tsx)
 	sectionCard: {
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		borderRadius: borderRadius.md,
 		marginBottom: spacing.md,
 		overflow: "hidden",
@@ -163,23 +163,23 @@ const styles = StyleSheet.create({
 	},
 	rowBorder: {
 		borderBottomWidth: StyleSheet.hairlineWidth,
-		borderBottomColor: colors.gray200,
+		borderBottomColor: colors.borderDefault,
 	},
 	rowLabel: {
 		fontSize: 15,
 		fontWeight: "500",
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 
 	// Active badge — coral pill
 	activeBadge: {
-		backgroundColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
 		borderRadius: borderRadius.pill,
 		paddingHorizontal: spacing.xs,
 		paddingVertical: 3,
 	},
 	activeBadgeText: {
-		color: colors.white,
+		color: colors.surfaceDefault,
 		fontSize: 12,
 		fontWeight: "600",
 	},
@@ -194,13 +194,13 @@ const styles = StyleSheet.create({
 	// Empty state
 	emptyText: {
 		fontSize: 15,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		fontStyle: "italic",
 	},
 
 	// Add a language row
 	addRow: {
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		borderRadius: borderRadius.md,
 		flexDirection: "row",
 		alignItems: "center",
@@ -211,6 +211,6 @@ const styles = StyleSheet.create({
 	addRowText: {
 		fontSize: 15,
 		fontWeight: "600",
-		color: colors.primaryAccent,
+		color: colors.accentPrimary,
 	},
 });

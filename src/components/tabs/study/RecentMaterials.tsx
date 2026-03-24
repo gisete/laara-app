@@ -87,19 +87,19 @@ const styles = StyleSheet.create({
 	},
 	header: {
 		...typography.headingSmall,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginBottom: spacing.md,
 	},
 	materialCard: {
 		flexDirection: "row",
 		alignItems: "center",
 		gap: spacing.sm,
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		padding: spacing.md,
 		borderRadius: borderRadius.sm,
 		marginBottom: spacing.sm,
 		borderWidth: 1,
-		borderColor: colors.gray200,
+		borderColor: colors.borderDefault,
 	},
 	contentContainer: {
 		flex: 1,
@@ -107,13 +107,13 @@ const styles = StyleSheet.create({
 	},
 	materialName: {
 		...typography.bodyLarge,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		fontWeight: "500",
 		marginBottom: 4,
 	},
 	sessionInfo: {
 		fontSize: 13,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 	},
 	continueButton: {
 		paddingHorizontal: spacing.sm,
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
 	continueText: {
 		...typography.button,
 		fontSize: 14,
-		color: colors.primaryAccent,
+		color: colors.textLink,
 		fontWeight: "500",
 	},
 });

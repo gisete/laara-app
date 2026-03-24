@@ -111,7 +111,7 @@ export default function EmptyState({ onAddNew, onDataSeeded }: EmptyStateProps) 
 						disabled={seedingScenario !== null}
 					>
 						{seedingScenario === "basic" ? (
-							<ActivityIndicator color={colors.white} />
+							<ActivityIndicator color={colors.surfaceDefault} />
 						) : (
 							<Text style={styles.seedButtonText}>🌱 Basic library (one language)</Text>
 						)}
@@ -124,7 +124,7 @@ export default function EmptyState({ onAddNew, onDataSeeded }: EmptyStateProps) 
 						disabled={seedingScenario !== null}
 					>
 						{seedingScenario === "two-languages" ? (
-							<ActivityIndicator color={colors.white} />
+							<ActivityIndicator color={colors.surfaceDefault} />
 						) : (
 							<Text style={styles.seedButtonText}>🎌 Two languages (Japanese + Spanish)</Text>
 						)}
@@ -137,7 +137,7 @@ export default function EmptyState({ onAddNew, onDataSeeded }: EmptyStateProps) 
 						disabled={seedingScenario !== null}
 					>
 						{seedingScenario === "full-state" ? (
-							<ActivityIndicator color={colors.white} />
+							<ActivityIndicator color={colors.surfaceDefault} />
 						) : (
 							<Text style={styles.seedButtonText}>📊 Full state (two languages + sessions)</Text>
 						)}
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
 	title: {
 		fontFamily: fonts.heading.medium,
 		fontSize: 22,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginBottom: 12,
 		textAlign: "center",
 	},
@@ -179,9 +179,9 @@ const styles = StyleSheet.create({
 		maxWidth: 280,
 	},
 	addButton: {
-		backgroundColor: colors.gray300,
+		backgroundColor: colors.borderStrong,
 		borderWidth: 1,
-		borderColor: colors.gray300,
+		borderColor: colors.borderStrong,
 		height: 56,
 		borderRadius: borderRadius.button,
 		minWidth: 140,
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
 		elevation: 8,
 	},
 	addButtonText: {
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		fontSize: 16,
 		fontWeight: "500",
 	},
@@ -206,16 +206,16 @@ const styles = StyleSheet.create({
 	dividerLine: {
 		flex: 1,
 		height: 1,
-		backgroundColor: colors.gray300,
+		backgroundColor: colors.borderStrong,
 	},
 	dividerText: {
 		paddingHorizontal: spacing.md,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		fontSize: 14,
 		fontWeight: "500",
 	},
 	seedButton: {
-		backgroundColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
 		height: 56,
 		borderRadius: borderRadius.button,
 		minWidth: 240,
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
 		elevation: 4,
 	},
 	seedButtonText: {
-		color: colors.white,
+		color: colors.surfaceDefault,
 		fontSize: 15,
 		fontWeight: "500",
 	},

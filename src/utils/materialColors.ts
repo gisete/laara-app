@@ -9,5 +9,5 @@ export const MATERIAL_ACCENT: Record<string, string> = {
 };
 
 export function getMaterialAccent(type: string): string {
-	return MATERIAL_ACCENT[type] ?? colors.primaryAccentLight;
+	return MATERIAL_ACCENT[type] ?? colors.accentSecondary;
 }

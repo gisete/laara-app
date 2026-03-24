@@ -76,7 +76,7 @@ export default function LevelSelectionScreen() {
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+			<StatusBar barStyle="dark-content" backgroundColor={colors.surfaceDefault} />
 
 			<View style={styles.screen}>
 				<ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -95,7 +95,7 @@ export default function LevelSelectionScreen() {
 									<Text style={styles.levelDescription}>{level.description}</Text>
 								</View>
 								<Svg width={18} height={18} viewBox="0 0 24 24" fill="none" style={selectedLevel !== level.code && styles.checkmarkHidden}>
-						<Path d="M5 12L10 17L19 8" stroke={colors.primaryAccent} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+						<Path d="M5 12L10 17L19 8" stroke={colors.accentPrimary} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
 					</Svg>
 							</TouchableOpacity>
 						))}
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
 	title: {
 		fontFamily: fonts.heading.medium,
 		fontSize: 26,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginBottom: spacing.xl,
 		textAlign: "left",
 	},
@@ -146,10 +146,10 @@ const styles = StyleSheet.create({
 	levelOption: {
 		flexDirection: "row",
 		alignItems: "center",
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		borderRadius: borderRadius.sm,
 		borderWidth: 1,
-		borderColor: colors.gray200,
+		borderColor: colors.borderDefault,
 		padding: spacing.md,
 		marginBottom: spacing.xs,
 	},
@@ -159,12 +159,12 @@ const styles = StyleSheet.create({
 	levelName: {
 		fontSize: 16,
 		fontWeight: "500",
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginBottom: 4,
 	},
 	levelDescription: {
 		fontSize: 14,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 	},
 	checkmarkHidden: {
 		opacity: 0,
@@ -182,18 +182,18 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		borderWidth: 1,
-		borderColor: colors.gray200,
-		backgroundColor: colors.white,
+		borderColor: colors.borderDefault,
+		backgroundColor: colors.surfaceDefault,
 	},
 	skipButtonText: {
 		fontSize: 16,
 		fontWeight: "500",
-		color: colors.grayMedium,
+		color: colors.textLink,
 	},
 	continueButton: {
 		height: 56,
 		borderRadius: borderRadius.button,
-		backgroundColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
 		alignItems: "center",
 		justifyContent: "center",
 	},

@@ -80,7 +80,7 @@ export default function ActivityDetailsForm(props: ActivityDetailsFormProps) {
 					onChangeText={onCustomTimeChange}
 					placeholder="e.g., 90 minutes"
 					keyboardType="numeric"
-					placeholderTextColor={colors.grayMedium}
+					placeholderTextColor={colors.textSecondary}
 				/>
 			</View>
 
@@ -95,7 +95,7 @@ export default function ActivityDetailsForm(props: ActivityDetailsFormProps) {
 							onChangeText={onPagesReadChange}
 							placeholder="e.g., 25 pages"
 							keyboardType="numeric"
-							placeholderTextColor={colors.grayMedium}
+							placeholderTextColor={colors.textSecondary}
 						/>
 					</View>
 
@@ -107,7 +107,7 @@ export default function ActivityDetailsForm(props: ActivityDetailsFormProps) {
 							onChangeText={onChaptersReadChange}
 							placeholder="e.g., 2 chapters"
 							keyboardType="numeric"
-							placeholderTextColor={colors.grayMedium}
+							placeholderTextColor={colors.textSecondary}
 						/>
 					</View>
 				</>
@@ -122,7 +122,7 @@ export default function ActivityDetailsForm(props: ActivityDetailsFormProps) {
 						onChangeText={onUnitsStudiedChange}
 						placeholder="e.g., 3 episodes"
 						keyboardType="numeric"
-						placeholderTextColor={colors.grayMedium}
+						placeholderTextColor={colors.textSecondary}
 					/>
 				</View>
 			)}
@@ -136,7 +136,7 @@ export default function ActivityDetailsForm(props: ActivityDetailsFormProps) {
 						onChangeText={onUnitsStudiedChange}
 						placeholder="e.g., 5 videos"
 						keyboardType="numeric"
-						placeholderTextColor={colors.grayMedium}
+						placeholderTextColor={colors.textSecondary}
 					/>
 				</View>
 			)}
@@ -150,7 +150,7 @@ export default function ActivityDetailsForm(props: ActivityDetailsFormProps) {
 						onChangeText={onUnitsStudiedChange}
 						placeholder="e.g., 1 session"
 						keyboardType="numeric"
-						placeholderTextColor={colors.grayMedium}
+						placeholderTextColor={colors.textSecondary}
 					/>
 				</View>
 			)}
@@ -164,7 +164,7 @@ export default function ActivityDetailsForm(props: ActivityDetailsFormProps) {
 						onChangeText={onUnitsStudiedChange}
 						placeholder="e.g., 10 lessons"
 						keyboardType="numeric"
-						placeholderTextColor={colors.grayMedium}
+						placeholderTextColor={colors.textSecondary}
 					/>
 				</View>
 			)}
@@ -179,11 +179,11 @@ const styles = StyleSheet.create({
 	sectionLabel: {
 		...typography.bodyMedium,
 		fontWeight: "600",
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginBottom: spacing.sm,
 	},
 	required: {
-		color: colors.primaryAccent,
+		color: colors.accentPrimary,
 	},
 	quickTimeContainer: {
 		flexDirection: "row",
@@ -194,37 +194,37 @@ const styles = StyleSheet.create({
 		flex: 1,
 		paddingVertical: spacing.sm,
 		marginHorizontal: 4,
-		backgroundColor: colors.grayLightest,
+		backgroundColor: colors.appBackground,
 		borderRadius: borderRadius.sm,
 		borderWidth: 1,
-		borderColor: colors.gray200,
+		borderColor: colors.borderDefault,
 		alignItems: "center",
 	},
 	quickTimeButtonSelected: {
-		backgroundColor: colors.primaryAccent,
-		borderColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
+		borderColor: colors.accentPrimary,
 	},
 	quickTimeText: {
 		...typography.bodyMedium,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		fontWeight: "500",
 	},
 	quickTimeTextSelected: {
-		color: colors.white,
+		color: colors.surfaceDefault,
 	},
 	customTimeLabel: {
 		...typography.bodySmall,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		marginBottom: spacing.xs,
 	},
 	input: {
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		borderWidth: 1,
-		borderColor: colors.gray200,
+		borderColor: colors.borderDefault,
 		borderRadius: borderRadius.sm,
 		paddingVertical: spacing.sm,
 		paddingHorizontal: spacing.md,
 		fontSize: 16,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 });

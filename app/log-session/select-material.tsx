@@ -144,7 +144,7 @@ export default function SelectMaterialScreen() {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 		if (entryMode === "manual") {
 			router.push({
-				pathname: "/log-session/session-summary",
+				pathname: "/log-session/log-session",
 				params: {
 					materialId: material.id.toString(),
 					materialName: material.name,
@@ -178,9 +178,9 @@ export default function SelectMaterialScreen() {
 	if (loading) {
 		return (
 			<SafeAreaView style={globalStyles.container}>
-				<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+				<StatusBar barStyle="dark-content" backgroundColor={colors.surfaceDefault} />
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={colors.primaryAccent} />
+					<ActivityIndicator size="large" color={colors.accentPrimary} />
 				</View>
 			</SafeAreaView>
 		);
@@ -189,7 +189,7 @@ export default function SelectMaterialScreen() {
 	if (allMaterials.length === 0) {
 		return (
 			<SafeAreaView style={globalStyles.container}>
-				<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+				<StatusBar barStyle="dark-content" backgroundColor={colors.surfaceDefault} />
 				<View style={styles.content}>
 					<View style={styles.header}>
 						<TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
@@ -206,7 +206,7 @@ export default function SelectMaterialScreen() {
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+			<StatusBar barStyle="dark-content" backgroundColor={colors.surfaceDefault} />
 
 			<View style={styles.content}>
 				{/* Header */}
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: spacing.lg,
 		paddingVertical: spacing.md,
 		borderBottomWidth: 1,
-		borderBottomColor: colors.gray200,
+		borderBottomColor: colors.borderDefault,
 	},
 	backButton: {
 		width: 40,
@@ -277,11 +277,11 @@ const styles = StyleSheet.create({
 	},
 	backButtonText: {
 		fontSize: 28,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 	headerTitle: {
 		...typography.headingSmall,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 	spacer: {
 		width: 40,
@@ -300,12 +300,12 @@ const styles = StyleSheet.create({
 	sectionTitle: {
 		...typography.bodyLarge,
 		fontWeight: "600",
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginBottom: spacing.sm,
 	},
 	divider: {
 		height: 1,
-		backgroundColor: colors.gray200,
+		backgroundColor: colors.borderDefault,
 		marginVertical: spacing.lg,
 	},
 	materialCard: {
@@ -313,11 +313,11 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		gap: spacing.sm,
 		padding: spacing.md,
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		borderRadius: borderRadius.sm,
 		marginBottom: spacing.sm,
 		borderWidth: 1,
-		borderColor: colors.gray200,
+		borderColor: colors.borderDefault,
 	},
 	materialInfo: {
 		flex: 1,
@@ -325,18 +325,18 @@ const styles = StyleSheet.create({
 	materialName: {
 		...typography.bodyLarge,
 		fontWeight: "600",
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginBottom: 4,
 	},
 	subcategoryBadge: {
 		...typography.bodySmall,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		marginBottom: 2,
 		textTransform: "capitalize",
 	},
 	progressText: {
 		...typography.bodySmall,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		fontStyle: "italic",
 	},
 	emptyContainer: {
@@ -347,19 +347,19 @@ const styles = StyleSheet.create({
 	},
 	emptyTitle: {
 		...typography.headingMedium,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginBottom: spacing.sm,
 		textAlign: "center",
 	},
 	emptyDescription: {
 		...typography.bodyMedium,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		textAlign: "center",
 		marginBottom: spacing.xl,
 		maxWidth: 280,
 	},
 	emptyButton: {
-		backgroundColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
 		height: 56,
 		borderRadius: borderRadius.button,
 		alignItems: "center",
@@ -368,6 +368,6 @@ const styles = StyleSheet.create({
 	},
 	emptyButtonText: {
 		...typography.button,
-		color: colors.white,
+		color: colors.surfaceDefault,
 	},
 });

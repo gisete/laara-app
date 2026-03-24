@@ -41,7 +41,7 @@ export default function SearchEmptyState({
 			{/* Illustration */}
 			{illustration && (
 				<View style={styles.illustrationContainer}>
-					<HoldingBook width="100%" height="100%" accentColor={colors.primaryAccent} />
+					<HoldingBook width="100%" height="100%" accentColor={colors.accentPrimary} />
 				</View>
 			)}
 		</View>
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
 		marginTop: 8,
 	},
 	manualButton: {
-		backgroundColor: colors.gray300,
+		backgroundColor: colors.borderStrong,
 		paddingVertical: 16,
 		paddingHorizontal: 24,
 		borderRadius: 5,
@@ -70,12 +70,12 @@ const styles = StyleSheet.create({
 	},
 	manualButtonIcon: {
 		fontSize: 20,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginRight: 8,
 		fontWeight: "400",
 	},
 	manualButtonText: {
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		fontSize: 16,
 		fontWeight: "400",
 	},

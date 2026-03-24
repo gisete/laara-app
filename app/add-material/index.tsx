@@ -58,7 +58,7 @@ export default function AddMaterialCategoryScreen() {
 		return (
 			<SafeAreaView style={globalStyles.container}>
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={colors.primaryAccent} />
+					<ActivityIndicator size="large" color={colors.accentPrimary} />
 					<Text style={styles.loadingText}>Loading categories...</Text>
 				</View>
 			</SafeAreaView>
@@ -67,7 +67,7 @@ export default function AddMaterialCategoryScreen() {
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+			<StatusBar barStyle="dark-content" backgroundColor={colors.surfaceDefault} />
 
 			<View style={styles.content}>
 				<View style={styles.header}>
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
 	loadingText: {
 		marginTop: spacing.md,
 		...globalStyles.bodyMedium,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 	},
 	header: {
 		paddingTop: spacing.xs,
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
 	},
 	backButtonText: {
 		fontSize: 28,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 	titleContainer: {
 		marginBottom: spacing.xl,
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
 	title: {
 		fontSize: 26,
 		...typography.headingMedium,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		lineHeight: 36,
 	},
 	scrollView: {

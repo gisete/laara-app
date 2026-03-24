@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
 	greeting: {
 		fontSize: 28,
 		fontFamily: fonts.heading.medium,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 	flagContainer: {
 		width: 40,

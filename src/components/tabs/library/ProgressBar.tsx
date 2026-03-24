@@ -13,7 +13,7 @@ interface ProgressBarProps {
 }
 
 export default function ProgressBar({ current, total, unitLabel, percentage, color }: ProgressBarProps) {
-	const fillColor = color ?? colors.grayMedium;
+	const fillColor = color ?? colors.textSecondary;
 	const clampedPct = Math.min(Math.max(percentage, 0), 100);
 	const remaining = total - current;
 
@@ -48,15 +48,15 @@ const styles = StyleSheet.create({
 	},
 	progressText: {
 		fontSize: 12,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 	},
 	percentText: {
 		fontSize: 12,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 	},
 	track: {
 		height: 7,
-		backgroundColor: colors.gray50,
+		backgroundColor: colors.appBackground,
 		borderRadius: borderRadius.pill,
 		overflow: "hidden",
 	},

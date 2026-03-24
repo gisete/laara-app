@@ -24,7 +24,7 @@ export default function LibraryItemActions({ onEdit, onDelete }: LibraryItemActi
 
 const styles = StyleSheet.create({
 	container: {
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		borderRadius: 8,
 		shadowColor: "#000",
 		shadowOffset: {
@@ -45,13 +45,13 @@ const styles = StyleSheet.create({
 	},
 	buttonText: {
 		fontSize: 16,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 	deleteButtonText: {
 		color: "red",
 	},
 	divider: {
 		height: 1,
-		backgroundColor: colors.gray200,
+		backgroundColor: colors.borderDefault,
 	},
 });

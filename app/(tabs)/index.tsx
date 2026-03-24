@@ -125,9 +125,9 @@ export default function StudyScreen() {
 	if (loading) {
 		return (
 			<SafeAreaView style={styles.safeArea}>
-				<StatusBar barStyle="dark-content" backgroundColor={colors.gray50} />
+				<StatusBar barStyle="dark-content" backgroundColor={colors.appBackground} />
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={colors.primaryAccent} />
+					<ActivityIndicator size="large" color={colors.accentPrimary} />
 				</View>
 			</SafeAreaView>
 		);
@@ -136,7 +136,7 @@ export default function StudyScreen() {
 	return (
 		<>
 			<SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-				<StatusBar barStyle="dark-content" backgroundColor={colors.gray50} />
+				<StatusBar barStyle="dark-content" backgroundColor={colors.appBackground} />
 
 				<View style={styles.topBlock}>
 					<DashboardHeader
@@ -182,7 +182,7 @@ export default function StudyScreen() {
 const styles = StyleSheet.create({
 	safeArea: {
 		flex: 1,
-		backgroundColor: colors.gray50,
+		backgroundColor: colors.appBackground,
 	},
 	topBlock: {
 		flex: 1,
@@ -202,14 +202,14 @@ const styles = StyleSheet.create({
 		fontSize: 10,
 		fontWeight: "700",
 		letterSpacing: 1.5,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		textTransform: "uppercase",
 		marginBottom: 4,
 	},
 	materialTitle: {
 		fontFamily: fonts.heading.italic,
 		fontSize: 15,
-		color: colors.grayLightMedium,
+		color: colors.textTertiary,
 		marginBottom: spacing.md,
 		maxWidth: 260,
 		textAlign: "center",
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
 		width: 144,
 		height: 144,
 		borderRadius: 72,
-		backgroundColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
 		alignItems: "center",
 		justifyContent: "center",
 		marginTop: spacing.lg,

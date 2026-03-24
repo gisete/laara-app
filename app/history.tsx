@@ -1,6 +1,7 @@
 // app/history.tsx
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
+	Alert,
 	FlatList,
 	StatusBar,
 	StyleSheet,
@@ -8,15 +9,16 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import Swipeable from "react-native-gesture-handler/Swipeable";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 import * as Haptics from "expo-haptics";
 
-import { getAllSessions } from "@database/queries";
+import { getAllSessions, deleteSessionActivity } from "@database/queries";
 import { MaterialIcon } from "@components/shared/MaterialIcon";
 import FormHeader from "@components/forms/FormHeader";
 import HistoryCalendar from "@components/history/HistoryCalendar";
-import { getActivityText } from "@utils/materialUtils";
+import { getActivityText, getUnitLabel } from "@utils/materialUtils";
 import { formatDateToYYYYMMDD } from "@utils/dateHelper";
 
 import { colors } from "@theme/colors";
@@ -45,7 +47,11 @@ interface Session {
 
 type ListItem =
 	| { kind: "header"; date: string; totalMinutes: number; key: string }
-	| { kind: "activity"; activity: Activity; isLast: boolean; key: string };
+	| { kind: "activity"; activity: Activity; isLast: boolean; sessionDate: string; key: string };
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const TODAY_STR = new Date().toISOString().split("T")[0];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -84,12 +90,108 @@ const buildListItems = (sessions: Session[]): ListItem[] => {
 				kind: "activity",
 				activity,
 				isLast: index === session.activities.length - 1,
+				sessionDate: session.session_date,
 				key: `activity-${activity.id}`,
 			});
 		});
 	}
 	return items;
 };
+
+// ── Activity Row with swipe actions ──────────────────────────────────────────
+
+function ActivityRow({
+	activity,
+	isLast,
+	sessionDate,
+	onReload,
+}: {
+	activity: Activity;
+	isLast: boolean;
+	sessionDate: string;
+	onReload: () => void;
+}) {
+	const swipeRef = useRef<Swipeable>(null);
+
+	const handleEdit = () => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+		swipeRef.current?.close();
+		router.push({
+			pathname: "/log-session/log-session",
+			params: {
+				activityId: String(activity.id),
+				materialId: String(activity.material_id),
+				materialName: activity.material_name,
+				materialType: activity.material_type,
+				materialSubtype: activity.material_subtype ?? "",
+				date: sessionDate,
+				elapsedSeconds: "0",
+				mode: "edit",
+				currentDuration: String(activity.duration_minutes),
+				currentUnits: String(activity.units_studied ?? "0"),
+				unitLabel: getUnitLabel(activity.material_type, 2),
+			},
+		});
+	};
+
+	const handleDelete = () => {
+		swipeRef.current?.close();
+		Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+		Alert.alert("Delete session?", "This can't be undone.", [
+			{ text: "Cancel", style: "cancel" },
+			{
+				text: "Delete",
+				style: "destructive",
+				onPress: async () => {
+					try {
+						await deleteSessionActivity(activity.id);
+						Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+						onReload();
+					} catch (error) {
+						console.error("Error deleting activity:", error);
+						Alert.alert("Error", "Failed to delete. Please try again.");
+					}
+				},
+			},
+		]);
+	};
+
+	const renderRightActions = () => (
+		<View style={styles.swipeActions}>
+			<TouchableOpacity style={styles.swipeEdit} onPress={handleEdit} activeOpacity={0.85}>
+				<Text style={styles.swipeActionText}>Edit</Text>
+			</TouchableOpacity>
+			<TouchableOpacity style={styles.swipeDelete} onPress={handleDelete} activeOpacity={0.85}>
+				<Text style={styles.swipeActionText}>Delete</Text>
+			</TouchableOpacity>
+		</View>
+	);
+
+	return (
+		<Swipeable
+			ref={swipeRef}
+			renderRightActions={renderRightActions}
+			onSwipeableOpen={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+			friction={2}
+			overshootRight={false}
+		>
+			<View style={[styles.activityRow, isLast && styles.activityRowLast]}>
+				<MaterialIcon type={activity.material_type} />
+				<View style={styles.activityInfo}>
+					<Text style={styles.activityName} numberOfLines={1}>
+						{activity.material_name}
+					</Text>
+					{activity.units_studied != null && activity.units_studied > 0 && (
+						<Text style={styles.activityUnits}>
+							{getActivityText(activity.material_type, activity.units_studied)}
+						</Text>
+					)}
+				</View>
+				<Text style={styles.activityDuration}>{formatDuration(activity.duration_minutes)}</Text>
+			</View>
+		</Swipeable>
+	);
+}
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 
@@ -98,10 +200,14 @@ export default function HistoryScreen() {
 	const [displayMonth, setDisplayMonth] = useState<Date>(() => new Date());
 	const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
+	const loadSessions = useCallback(() => {
+		(getAllSessions() as Promise<Session[]>).then(setAllSessions).catch(console.error);
+	}, []);
+
 	useFocusEffect(
 		useCallback(() => {
-			(getAllSessions() as Promise<Session[]>).then(setAllSessions).catch(console.error);
-		}, [])
+			loadSessions();
+		}, [loadSessions])
 	);
 
 	const sessionDates = useMemo(
@@ -121,7 +227,12 @@ export default function HistoryScreen() {
 
 	const handleDayPress = (date: string) => {
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-		setSelectedDate((prev) => (prev === date ? null : date));
+		if (date === TODAY_STR) {
+			// Tapping today resets the filter — show all sessions for the month
+			setSelectedDate(null);
+		} else {
+			setSelectedDate((prev) => (prev === date ? null : date));
+		}
 	};
 
 	const handleMonthChange = (direction: "prev" | "next") => {
@@ -147,7 +258,6 @@ export default function HistoryScreen() {
 
 	const listItems = buildListItems(filteredSessions);
 
-
 	const renderItem = ({ item }: { item: ListItem }) => {
 		if (item.kind === "header") {
 			return (
@@ -158,22 +268,14 @@ export default function HistoryScreen() {
 			);
 		}
 
-		const { activity, isLast } = item;
+		const { activity, isLast, sessionDate } = item;
 		return (
-			<View style={[styles.activityRow, isLast && styles.activityRowLast]}>
-				<MaterialIcon type={activity.material_type} />
-				<View style={styles.activityInfo}>
-					<Text style={styles.activityName} numberOfLines={1}>
-						{activity.material_name}
-					</Text>
-					{activity.units_studied != null && activity.units_studied > 0 && (
-						<Text style={styles.activityUnits}>
-							{getActivityText(activity.material_type, activity.units_studied)}
-						</Text>
-					)}
-				</View>
-				<Text style={styles.activityDuration}>{formatDuration(activity.duration_minutes)}</Text>
-			</View>
+			<ActivityRow
+				activity={activity}
+				isLast={isLast}
+				sessionDate={sessionDate}
+				onReload={loadSessions}
+			/>
 		);
 	};
 
@@ -203,7 +305,7 @@ export default function HistoryScreen() {
 								? "No sessions on this day"
 								: `No sessions in ${displayMonth.toLocaleString("default", { month: "long" })}`}
 						</Text>
-							</View>
+					</View>
 				}
 			/>
 
@@ -294,6 +396,28 @@ const styles = StyleSheet.create({
 		color: colors.textSecondary,
 	},
 
+	// Swipe actions
+	swipeActions: {
+		flexDirection: "row",
+	},
+	swipeEdit: {
+		width: 72,
+		backgroundColor: colors.accentPrimary,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	swipeDelete: {
+		width: 72,
+		backgroundColor: colors.error,
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	swipeActionText: {
+		color: colors.surfaceDefault,
+		fontSize: 14,
+		fontWeight: "500",
+	},
+
 	// FAB
 	fabContainer: {
 		position: "absolute",
@@ -311,7 +435,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: spacing.lg,
 		paddingVertical: 14,
 		borderRadius: borderRadius.pill,
-		backgroundColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
 		gap: spacing.xs,
 	},
 	fabIcon: {

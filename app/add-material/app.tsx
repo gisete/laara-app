@@ -194,7 +194,7 @@ export default function AddAppScreen() {
 		return (
 			<SafeAreaView style={globalStyles.container}>
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={colors.primaryAccent} />
+					<ActivityIndicator size="large" color={colors.accentPrimary} />
 					<Text style={styles.loadingText}>Loading app data...</Text>
 				</View>
 			</SafeAreaView>
@@ -203,7 +203,7 @@ export default function AddAppScreen() {
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+			<StatusBar barStyle="dark-content" backgroundColor={colors.surfaceDefault} />
 
 			<View style={styles.content}>
 				{/* Header */}
@@ -226,7 +226,7 @@ export default function AddAppScreen() {
 					>
 						{loadingSubcategories ? (
 							<View style={styles.loadingContainer}>
-								<ActivityIndicator size="large" color={colors.primaryAccent} />
+								<ActivityIndicator size="large" color={colors.accentPrimary} />
 								<Text style={styles.loadingText}>Loading app types...</Text>
 							</View>
 						) : (
@@ -265,7 +265,7 @@ export default function AddAppScreen() {
 											onFocus={() => setFocusedField("customSubcategory")}
 											onBlur={() => setFocusedField(null)}
 											placeholder="Enter custom subcategory"
-											placeholderTextColor={colors.grayMedium}
+											placeholderTextColor={colors.textSecondary}
 											autoCapitalize="words"
 										/>
 									</View>
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
 	},
 	content: {
 		flex: 1,
-		backgroundColor: colors.gray50,
+		backgroundColor: colors.appBackground,
 	},
 	scrollView: {
 		flex: 1,
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
 	buttonContainer: {
 		paddingHorizontal: spacing.lg,
 		paddingBottom: spacing.lg,
-		backgroundColor: colors.gray50,
+		backgroundColor: colors.appBackground,
 	},
 	loadingContainer: {
 		flex: 1,
@@ -331,6 +331,6 @@ const styles = StyleSheet.create({
 	loadingText: {
 		marginTop: spacing.md,
 		fontSize: 16,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 	},
 });

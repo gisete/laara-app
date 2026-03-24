@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
 		gap: 12,
 	},
 	saveButton: {
-		backgroundColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
 		height: BUTTON_HEIGHT,
 		borderRadius: borderRadius.button,
 		alignItems: "center",
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
 		width: "100%",
 	},
 	cancelButtonText: {
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		fontSize: BUTTON_FONT_SIZE,
 		fontWeight: "500",
 	},

@@ -71,7 +71,7 @@ export default function PreviousSessionsCard({ sessionRows }: PreviousSessionsCa
 
 const styles = StyleSheet.create({
 	sessionsCard: {
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		borderTopLeftRadius: 28,
 		borderTopRightRadius: 28,
 		paddingHorizontal: spacing.lg,
@@ -84,11 +84,11 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		marginBottom: spacing.md,
 	},
-	sessionsCardTitle: { ...typography.headingSmall, color: colors.grayDarkest },
+	sessionsCardTitle: { ...typography.headingSmall, color: colors.textPrimary },
 	seeAllText: { fontSize: 14, fontWeight: "600", color: colors.textLink },
 	emptyText: {
 		fontSize: 15,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		fontStyle: "italic",
 		textAlign: "center",
 		paddingVertical: spacing.lg,
@@ -99,15 +99,15 @@ const styles = StyleSheet.create({
 		gap: spacing.sm,
 		paddingVertical: 10,
 		borderBottomWidth: 1,
-		borderBottomColor: colors.gray200,
+		borderBottomColor: colors.borderDefault,
 	},
 	sessionRowLast: { borderBottomWidth: 0 },
 	sessionInfo: { flex: 1 },
-	sessionName: { fontSize: 15, fontWeight: "600", color: colors.grayDarkest, marginBottom: 2 },
-	sessionMeta: { fontSize: 12, color: colors.grayMedium },
+	sessionName: { fontSize: 15, fontWeight: "600", color: colors.textPrimary, marginBottom: 2 },
+	sessionMeta: { fontSize: 12, color: colors.textSecondary },
 	sessionDuration: {
 		fontFamily: fonts.heading.italic,
 		fontSize: 14,
-		color: colors.grayDark,
+		color: colors.textStrong,
 	},
 });

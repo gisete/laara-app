@@ -1,7 +1,7 @@
-// ─── Primitive values (edit these to retheme the whole app) ───────────────────
+// ─── Primitive values ─────────────────────────────────────────────────────────
 
 const primitive = {
-	// Backgrounds
+	// Surfaces
 	white: "#FFFFFF",
 	gray100: "#F5F5F5",
 	gray200: "#E5E5E5",
@@ -44,11 +44,13 @@ export const colors = {
 	surfaceSubtle: primitive.gray100,
 
 	// Borders & dividers
-	borderDefault: primitive.gray300,
-	borderStrong: primitive.gray400,
+	borderSubtle: primitive.gray200, // tag backgrounds, light dividers
+	borderDefault: primitive.gray300, // card borders, input borders
+	borderStrong: primitive.gray400, // emphasis borders
 
 	// Text
 	textPrimary: primitive.gray800,
+	textStrong: primitive.gray700, // tag text, secondary headings
 	textSecondary: primitive.gray600,
 	textTertiary: primitive.gray500,
 	textDisabled: primitive.gray400,
@@ -56,7 +58,8 @@ export const colors = {
 	// Accent
 	accentPrimary: primitive.coral600,
 	accentSecondary: primitive.coral400,
-	buttonOnAccentText: "#000000",
+	accentDark: primitive.purple800,
+	buttonOnAccentText: primitive.white,
 	textLink: primitive.purple800,
 
 	// Categories
@@ -71,7 +74,7 @@ export const colors = {
 	categoryApp: primitive.categoryAppBg,
 	categoryAppIcon: primitive.categoryAppFg,
 
-	// Material type accent colors — backgrounds for icon cards
+	// Material type accent colors — icon card backgrounds + progress bars
 	materialBookAccent: "#ffddbd",
 	materialAudioAccent: "#baf6b9",
 	materialVideoAccent: "#f2baf6",
@@ -80,29 +83,14 @@ export const colors = {
 
 	// Feedback
 	error: primitive.red600,
-
-	// Legacy aliases — keeps existing code working without a refactor sweep
-	// These can be removed once components are updated to semantic tokens
-	white: primitive.white,
-	gray50: primitive.gray100,
-	grayLightest: primitive.gray100,
-	grayLight: primitive.gray200,
-	gray200: primitive.gray300,
-	gray300: primitive.gray400,
-	grayLightMedium: primitive.gray500,
-	grayMedium: primitive.gray600,
-	grayDark: primitive.gray700,
-	grayDarkest: primitive.gray800,
-	primaryAccent: primitive.coral600,
-	primaryAccentLight: primitive.coral400,
 };
 
 colors.categoryColors = {
-	book: { bg: colors.categoryBook, icon: colors.categoryBookIcon, progress: primitive.gray700 },
-	audio: { bg: colors.categoryAudio, icon: colors.categoryAudioIcon, progress: primitive.categoryAudioFg },
-	video: { bg: colors.categoryVideo, icon: colors.categoryVideoIcon, progress: primitive.categoryVideoFg },
-	class: { bg: colors.categoryClass, icon: colors.categoryClassIcon, progress: primitive.categoryClassFg },
-	app: { bg: colors.categoryApp, icon: colors.categoryAppIcon, progress: primitive.categoryAppFg },
+	book: { bg: colors.categoryBook, icon: colors.categoryBookIcon, progress: colors.textStrong },
+	audio: { bg: colors.categoryAudio, icon: colors.categoryAudioIcon, progress: colors.categoryAudioIcon },
+	video: { bg: colors.categoryVideo, icon: colors.categoryVideoIcon, progress: colors.categoryVideoIcon },
+	class: { bg: colors.categoryClass, icon: colors.categoryClassIcon, progress: colors.categoryClassIcon },
+	app: { bg: colors.categoryApp, icon: colors.categoryAppIcon, progress: colors.categoryAppIcon },
 };
 
 export const getCategoryColors = (type) => colors.categoryColors[type] ?? colors.categoryColors.book;

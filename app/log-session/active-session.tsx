@@ -148,7 +148,7 @@ export default function ActiveSessionScreen() {
 			Math.floor((Date.now() - startTimeRef.current) / 1000),
 		);
 		router.replace({
-			pathname: "/log-session/session-summary",
+			pathname: "/log-session/log-session",
 			params: {
 				materialId,
 				materialName,
@@ -188,7 +188,7 @@ export default function ActiveSessionScreen() {
 
 	return (
 		<SafeAreaView style={[globalStyles.container, styles.safeArea]}>
-			<StatusBar barStyle="dark-content" backgroundColor={colors.gray50} />
+			<StatusBar barStyle="dark-content" backgroundColor={colors.appBackground} />
 
 			<View style={styles.content}>
 				{/* Top left — circular discard button */}
@@ -259,7 +259,7 @@ export default function ActiveSessionScreen() {
 
 const styles = StyleSheet.create({
 	safeArea: {
-		backgroundColor: colors.gray50,
+		backgroundColor: colors.appBackground,
 	},
 	content: {
 		flex: 1,
@@ -274,14 +274,14 @@ const styles = StyleSheet.create({
 		height: 36,
 		borderRadius: 18,
 		borderWidth: 1,
-		borderColor: colors.gray300,
+		borderColor: colors.borderStrong,
 		alignItems: "center",
 		justifyContent: "center",
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 	},
 	discardText: {
 		fontSize: 20,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		lineHeight: 22,
 	},
 	materialSection: {
@@ -294,14 +294,14 @@ const styles = StyleSheet.create({
 	materialName: {
 		fontFamily: fonts.heading.medium,
 		fontSize: 22,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		textAlign: "center",
 		marginTop: spacing.xs,
 		marginHorizontal: spacing.lg,
 	},
 	materialTypeLabel: {
 		...typography.label,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		marginTop: spacing.xs,
 		letterSpacing: 1,
 	},
@@ -319,17 +319,17 @@ const styles = StyleSheet.create({
 		width: 280,
 		height: 280,
 		borderRadius: 999,
-		backgroundColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
 	},
 	timerDisplay: {
 		fontFamily: fonts.heading.medium,
 		fontSize: 80,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		fontVariant: ["tabular-nums"],
 	},
 	timerLabel: {
 		...typography.label,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		marginTop: spacing.sm,
 		letterSpacing: 1,
 	},

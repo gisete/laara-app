@@ -77,7 +77,7 @@ export default function BookForm({
 						onFocus={() => setFocusedField("customSubcategory")}
 						onBlur={() => setFocusedField(null)}
 						placeholder="Enter custom subcategory"
-						placeholderTextColor={colors.grayMedium}
+						placeholderTextColor={colors.textSecondary}
 						autoCapitalize="words"
 					/>
 				</View>
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
 		fontWeight: "800",
 		textTransform: "uppercase",
 		letterSpacing: HERO_LETTER_SPACING,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		marginTop: spacing.sm,
 	},
 	rowSection: {
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
 	helperText: {
 		fontSize: 12,
 		fontStyle: "italic",
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		marginTop: 4,
 		paddingLeft: 4,
 		marginBottom: spacing.xl,

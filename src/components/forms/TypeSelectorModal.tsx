@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
 		fontWeight: "800",
 		textTransform: "uppercase",
 		letterSpacing: 1,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		marginBottom: 6,
 		marginLeft: 4,
 	},
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 12,
 		backgroundColor: "#FFFFFF",
 		borderWidth: 1,
-		borderColor: colors.gray200,
+		borderColor: colors.borderDefault,
 		borderRadius: borderRadius.sm,
 		minHeight: 48,
 	},
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "#F9F9F9",
 	},
 	categoryItemSelected: {
-		backgroundColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
 	},
 	categoryText: {
 		fontSize: 16,
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 	},
 	checkmarkText: {
-		color: colors.primaryAccent,
+		color: colors.accentPrimary,
 		fontSize: 16,
 		fontWeight: "bold",
 	},
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
 		borderTopColor: "#E5E7EB",
 	},
 	applyButton: {
-		backgroundColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
 		height: 56,
 		borderRadius: borderRadius.button,
 		alignItems: "center",

@@ -132,7 +132,7 @@ function DonutChart({ byType, total }: { byType: TypeBreakdown[]; total: number 
 					cy={cy}
 					r={RADIUS}
 					fill="none"
-					stroke={colors.gray200}
+					stroke={colors.borderDefault}
 					strokeWidth={STROKE_WIDTH}
 				/>
 			</Svg>
@@ -157,7 +157,7 @@ function DonutChart({ byType, total }: { byType: TypeBreakdown[]; total: number 
 						cy={cy}
 						r={RADIUS}
 						fill="none"
-						stroke={CATEGORY_COLORS[item.type] ?? colors.gray200}
+						stroke={CATEGORY_COLORS[item.type] ?? colors.borderDefault}
 						strokeWidth={STROKE_WIDTH}
 						strokeDasharray={`${visibleArc} ${CIRCUMFERENCE - visibleArc}`}
 						strokeDashoffset={dashOffset}
@@ -221,9 +221,9 @@ export default function ReportsScreen() {
 	if (loading) {
 		return (
 			<SafeAreaView style={globalStyles.container} edges={["top", "left", "right"]}>
-				<StatusBar barStyle="dark-content" backgroundColor={colors.gray50} />
+				<StatusBar barStyle="dark-content" backgroundColor={colors.appBackground} />
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={colors.primaryAccent} />
+					<ActivityIndicator size="large" color={colors.accentPrimary} />
 				</View>
 			</SafeAreaView>
 		);
@@ -231,7 +231,7 @@ export default function ReportsScreen() {
 
 	return (
 		<SafeAreaView style={globalStyles.container} edges={["top", "left", "right"]}>
-			<StatusBar barStyle="dark-content" backgroundColor={colors.gray50} />
+			<StatusBar barStyle="dark-content" backgroundColor={colors.appBackground} />
 
 			<ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 				<ScreenHeader title="Reports" />
@@ -301,7 +301,7 @@ export default function ReportsScreen() {
 									<View
 										style={[
 											styles.legendDot,
-											{ backgroundColor: CATEGORY_COLORS[item.type] ?? colors.gray200 },
+											{ backgroundColor: CATEGORY_COLORS[item.type] ?? colors.borderDefault },
 										]}
 									/>
 									<Text style={styles.legendLabel}>{TYPE_LABELS[item.type] ?? item.type}</Text>
@@ -354,7 +354,7 @@ export default function ReportsScreen() {
 								<View
 									style={[
 										styles.legendDot,
-										{ backgroundColor: CATEGORY_COLORS[item.type] ?? colors.gray200 },
+										{ backgroundColor: CATEGORY_COLORS[item.type] ?? colors.borderDefault },
 									]}
 								/>
 								<Text style={styles.unitText}>
@@ -404,19 +404,19 @@ const styles = StyleSheet.create({
 		borderRadius: borderRadius.pill,
 		alignItems: "center",
 		borderWidth: 1.5,
-		borderColor: colors.gray300,
+		borderColor: colors.borderStrong,
 	},
 	filterTabSelected: {
-		backgroundColor: colors.grayDarkest,
-		borderColor: colors.grayDarkest,
+		backgroundColor: colors.textPrimary,
+		borderColor: colors.textPrimary,
 	},
 	filterTabText: {
 		...typography.bodySmall,
 		fontWeight: "600",
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 	},
 	filterTabTextSelected: {
-		color: colors.white,
+		color: colors.surfaceDefault,
 	},
 
 	// Hero card
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
 		fontFamily: fonts.heading.medium,
 		fontSize: 48,
 		lineHeight: 56,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginBottom: spacing.xs,
 	},
 	heroLabel: {
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
 	},
 	legendLabel: {
 		...typography.bodySmall,
-		color: colors.grayDark,
+		color: colors.textStrong,
 	},
 
 	// Stats row
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
 		fontFamily: fonts.heading.medium,
 		fontSize: 20,
 		lineHeight: 28,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginBottom: 4,
 	},
 	statLabel: {
@@ -507,18 +507,18 @@ const styles = StyleSheet.create({
 	mostStudiedName: {
 		...typography.bodyLarge,
 		fontWeight: "600",
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginBottom: 4,
 	},
 	mostStudiedTime: {
 		fontFamily: fonts.heading.italic,
 		fontSize: 15,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 	},
 	emptyCardText: {
 		...typography.bodyMedium,
 		fontStyle: "italic",
-		color: colors.grayLightMedium,
+		color: colors.textTertiary,
 		marginTop: spacing.sm,
 	},
 
@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
 	},
 	unitText: {
 		...typography.bodyMedium,
-		color: colors.grayDark,
+		color: colors.textStrong,
 	},
 
 	viewHistoryRow: {
@@ -541,7 +541,7 @@ const styles = StyleSheet.create({
 	viewHistoryText: {
 		fontSize: 15,
 		fontWeight: "600",
-		color: colors.primaryAccent,
+		color: colors.accentPrimary,
 	},
 
 	bottomPadding: {

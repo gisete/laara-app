@@ -1,4 +1,4 @@
-// app/log-session/session-summary.tsx
+// app/log-session/log-session.tsx
 import React, { useCallback, useState } from "react";
 import {
 	ActivityIndicator,
@@ -23,6 +23,7 @@ import {
 	addSessionActivity,
 	updateSessionTotalDuration,
 	updateMaterialProgress,
+	updateSessionActivity,
 } from "@database/queries";
 import { MaterialIcon } from "@components/shared/MaterialIcon";
 import { formatDateToYYYYMMDD } from "@utils/dateHelper";
@@ -59,39 +60,64 @@ const getUnitPlaceholder = (type: string): string => {
 	return "How many units?";
 };
 
-export default function SessionSummaryScreen() {
-	const { materialId, materialName, materialType, materialSubtype, date, elapsedSeconds, entryMode, returnTo } =
-		useLocalSearchParams<{
-			materialId: string;
-			materialName: string;
-			materialType: string;
-			materialSubtype: string;
-			date: string;
-			elapsedSeconds: string;
-			entryMode: string;
-			returnTo: string;
-		}>();
+export default function LogSessionScreen() {
+	// 1. Params
+	const {
+		materialId,
+		materialName,
+		materialType,
+		materialSubtype,
+		date,
+		elapsedSeconds,
+		entryMode,
+		returnTo,
+		activityId: activityIdParam,
+		mode,
+		currentDuration,
+		currentUnits,
+		unitLabel,
+	} = useLocalSearchParams<{
+		materialId: string;
+		materialName: string;
+		materialType: string;
+		materialSubtype: string;
+		date: string;
+		elapsedSeconds: string;
+		entryMode: string;
+		returnTo: string;
+		activityId: string;
+		mode: string;
+		currentDuration: string;
+		currentUnits: string;
+		unitLabel: string;
+	}>();
+
+	const isEditMode = mode === "edit";
+	const activityId = activityIdParam ? Number(activityIdParam) : null;
 
 	const materialIdNum = parseInt(materialId, 10);
 	const elapsedSecondsNum = parseInt(elapsedSeconds, 10);
 	const elapsedMinutes = Math.max(1, Math.round(elapsedSecondsNum / 60));
 
+	// 2. State
 	const [material, setMaterial] = useState<Material | null>(null);
 	const [loadingMaterial, setLoadingMaterial] = useState(true);
 	const [saving, setSaving] = useState(false);
 
-	// Form state — duration pre-filled from the timer
-	const [duration, setDuration] = useState(String(elapsedMinutes));
-	const [units, setUnits] = useState("");
+	// Pre-fill from edit params when present; otherwise use existing timed/manual logic
+	const [duration, setDuration] = useState(currentDuration ?? String(elapsedMinutes));
+	const [units, setUnits] = useState(currentUnits ?? "");
 	const [notes, setNotes] = useState("");
 	const [focusedField, setFocusedField] = useState<string | null>(null);
 
+	// 3. Effects
 	useFocusEffect(
 		useCallback(() => {
 			loadMaterial();
 		}, [materialIdNum]),
 	);
 
+	// 4. Handlers
 	const loadMaterial = async () => {
 		try {
 			setLoadingMaterial(true);
@@ -116,33 +142,44 @@ export default function SessionSummaryScreen() {
 		try {
 			setSaving(true);
 
-			const session = (await getOrCreateTodaySession(date)) as { id: number };
+			if (isEditMode && activityId) {
+				// Edit mode — update existing activity
+				await updateSessionActivity(activityId, {
+					duration: durationNum,
+					units: units.trim() ? Number(units) : null,
+				});
+				Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+				router.back();
+			} else {
+				// Timed / manual — insert new activity (unchanged)
+				const session = (await getOrCreateTodaySession(date)) as { id: number };
 
-			const unitsNum = units.trim() ? parseInt(units, 10) || null : null;
-			const pagesReadNum = materialType === "book" ? unitsNum : null;
+				const unitsNum = units.trim() ? parseInt(units, 10) || null : null;
+				const pagesReadNum = materialType === "book" ? unitsNum : null;
 
-			await addSessionActivity({
-				session_id: session.id,
-				material_id: materialIdNum,
-				duration_minutes: durationNum,
-				units_studied: unitsNum,
-				pages_read: pagesReadNum,
-				notes: notes.trim() || null,
-			});
+				await addSessionActivity({
+					session_id: session.id,
+					material_id: materialIdNum,
+					duration_minutes: durationNum,
+					units_studied: unitsNum,
+					pages_read: pagesReadNum,
+					notes: notes.trim() || null,
+				});
 
-			await updateSessionTotalDuration(session.id);
+				await updateSessionTotalDuration(session.id);
 
-			if (unitsNum && unitsNum > 0 && material) {
-				const newUnit = (material.current_unit || 0) + unitsNum;
-				const progressPct =
-					material.total_units && material.total_units > 0
-						? Math.min((newUnit / material.total_units) * 100, 100)
-						: 0;
-				await updateMaterialProgress(materialIdNum, unitsNum, progressPct);
+				if (unitsNum && unitsNum > 0 && material) {
+					const newUnit = (material.current_unit || 0) + unitsNum;
+					const progressPct =
+						material.total_units && material.total_units > 0
+							? Math.min((newUnit / material.total_units) * 100, 100)
+							: 0;
+					await updateMaterialProgress(materialIdNum, unitsNum, progressPct);
+				}
+
+				Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+				router.replace(returnTo === "history" ? "/history" : "/(tabs)");
 			}
-
-			Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-			router.replace(returnTo === "history" ? "/history" : "/(tabs)");
 		} catch (error) {
 			console.error("Error saving session:", error);
 			Alert.alert("Error", "Failed to save session. Please try again.");
@@ -163,6 +200,11 @@ export default function SessionSummaryScreen() {
 		]);
 	};
 
+	const handleCancel = () => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+		router.back();
+	};
+
 	const formatDateLabel = (dateStr: string): string => {
 		if (!dateStr) return "Today";
 		const todayStr = formatDateToYYYYMMDD(new Date());
@@ -176,26 +218,30 @@ export default function SessionSummaryScreen() {
 		return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 	};
 
+	// 5. Loading guard
 	if (loadingMaterial) {
 		return (
 			<SafeAreaView style={globalStyles.container}>
-				<StatusBar barStyle="dark-content" backgroundColor={colors.gray50} />
+				<StatusBar barStyle="dark-content" backgroundColor={colors.appBackground} />
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={colors.primaryAccent} />
+					<ActivityIndicator size="large" color={colors.accentPrimary} />
 				</View>
 			</SafeAreaView>
 		);
 	}
 
+	const screenTitle = isEditMode ? "Edit Session" : "Log Session";
+
+	// 6. JSX
 	return (
 		<SafeAreaView style={styles.safeArea}>
-			<StatusBar barStyle="dark-content" backgroundColor={colors.gray50} />
+			<StatusBar barStyle="dark-content" backgroundColor={colors.appBackground} />
 
 			<View style={styles.content}>
 				{/* Header */}
 				<View style={styles.header}>
 					<View style={{ flex: 1 }}>
-						<Text style={styles.headerTitle}>Log Session</Text>
+						<Text style={styles.headerTitle}>{screenTitle}</Text>
 						<Text style={styles.headerDate}>{formatDateLabel(date)}</Text>
 					</View>
 					<TouchableOpacity style={styles.discardButton} onPress={handleDiscard} activeOpacity={0.7}>
@@ -239,7 +285,7 @@ export default function SessionSummaryScreen() {
 									onBlur={() => setFocusedField(null)}
 									keyboardType="number-pad"
 									placeholder="Minutes"
-									placeholderTextColor={colors.grayMedium}
+									placeholderTextColor={colors.textSecondary}
 								/>
 							</View>
 							<View style={styles.unitField}>
@@ -254,7 +300,7 @@ export default function SessionSummaryScreen() {
 									onBlur={() => setFocusedField(null)}
 									keyboardType="number-pad"
 									placeholder={getUnitPlaceholder(materialType)}
-									placeholderTextColor={colors.grayMedium}
+									placeholderTextColor={colors.textSecondary}
 								/>
 							</View>
 						</View>
@@ -273,7 +319,7 @@ export default function SessionSummaryScreen() {
 								onFocus={() => setFocusedField("notes")}
 								onBlur={() => setFocusedField(null)}
 								placeholder="Any notes about this session..."
-								placeholderTextColor={colors.grayMedium}
+								placeholderTextColor={colors.textSecondary}
 								multiline
 								numberOfLines={4}
 								textAlignVertical="top"
@@ -282,7 +328,7 @@ export default function SessionSummaryScreen() {
 					</ScrollView>
 				</KeyboardAvoidingView>
 
-				{/* Save button — outside KeyboardAvoidingView, fixed at bottom */}
+				{/* Buttons — outside KeyboardAvoidingView, fixed at bottom */}
 				<View style={styles.buttonContainer}>
 					<TouchableOpacity
 						style={[styles.saveButton, saving && styles.saveButtonDisabled]}
@@ -291,11 +337,17 @@ export default function SessionSummaryScreen() {
 						activeOpacity={0.7}
 					>
 						{saving ? (
-							<ActivityIndicator size="small" color={colors.white} />
+							<ActivityIndicator size="small" color={colors.surfaceDefault} />
 						) : (
 							<Text style={styles.saveButtonText}>Save Session</Text>
 						)}
 					</TouchableOpacity>
+
+					{isEditMode && (
+						<TouchableOpacity style={styles.cancelButton} onPress={handleCancel} activeOpacity={0.7}>
+							<Text style={styles.cancelButtonText}>Cancel</Text>
+						</TouchableOpacity>
+					)}
 				</View>
 			</View>
 		</SafeAreaView>
@@ -305,11 +357,11 @@ export default function SessionSummaryScreen() {
 const styles = StyleSheet.create({
 	safeArea: {
 		flex: 1,
-		backgroundColor: colors.gray50,
+		backgroundColor: colors.appBackground,
 	},
 	content: {
 		flex: 1,
-		backgroundColor: colors.gray50,
+		backgroundColor: colors.appBackground,
 	},
 	header: {
 		flexDirection: "row",
@@ -321,11 +373,11 @@ const styles = StyleSheet.create({
 	},
 	headerTitle: {
 		...typography.headingSmall,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 	headerDate: {
 		fontSize: 13,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		marginTop: 2,
 	},
 	discardButton: {
@@ -333,14 +385,14 @@ const styles = StyleSheet.create({
 		height: 36,
 		borderRadius: 18,
 		borderWidth: 1,
-		borderColor: colors.gray300,
+		borderColor: colors.borderStrong,
 		alignItems: "center",
 		justifyContent: "center",
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 	},
 	discardButtonText: {
 		fontSize: 20,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		lineHeight: 22,
 	},
 	keyboardView: {
@@ -357,11 +409,11 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "center",
 		gap: spacing.sm,
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		padding: spacing.md,
 		borderRadius: borderRadius.sm,
 		borderWidth: 1,
-		borderColor: colors.gray200,
+		borderColor: colors.borderDefault,
 		marginBottom: spacing.xl,
 	},
 	materialInfo: {
@@ -370,12 +422,12 @@ const styles = StyleSheet.create({
 	materialName: {
 		...typography.bodyLarge,
 		fontWeight: "600",
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginBottom: 4,
 	},
 	materialSubtype: {
 		...typography.bodySmall,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		textTransform: "capitalize",
 	},
 	fieldRow: {
@@ -397,10 +449,10 @@ const styles = StyleSheet.create({
 		paddingHorizontal: spacing.lg,
 		paddingBottom: spacing.lg,
 		paddingTop: spacing.md,
-		backgroundColor: colors.gray50,
+		backgroundColor: colors.appBackground,
 	},
 	saveButton: {
-		backgroundColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
 		height: 56,
 		borderRadius: borderRadius.button,
 		alignItems: "center",
@@ -408,11 +460,22 @@ const styles = StyleSheet.create({
 		width: "100%",
 	},
 	saveButtonDisabled: {
-		backgroundColor: colors.gray300,
+		backgroundColor: colors.borderStrong,
 	},
 	saveButtonText: {
 		...typography.button,
 		color: colors.buttonOnAccentText,
+	},
+	cancelButton: {
+		height: 48,
+		alignItems: "center",
+		justifyContent: "center",
+		marginTop: spacing.xs,
+	},
+	cancelButtonText: {
+		fontSize: 15,
+		fontWeight: "500",
+		color: colors.textLink,
 	},
 	loadingContainer: {
 		flex: 1,

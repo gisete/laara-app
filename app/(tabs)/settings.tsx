@@ -45,7 +45,7 @@ const formatJoinedDate = (ts: string): string => {
 
 // ─── Chevron Icon ─────────────────────────────────────────────────────────────
 
-const ChevronRight = ({ color = colors.grayLightMedium }: { color?: string }) => (
+const ChevronRight = ({ color = colors.textTertiary }: { color?: string }) => (
 	<Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
 		<Path d="M6 4L10 8L6 12" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
 	</Svg>
@@ -193,7 +193,7 @@ export default function SettingsScreen() {
 	// 6. Render
 	return (
 		<SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-			<StatusBar barStyle="dark-content" backgroundColor={colors.gray50} />
+			<StatusBar barStyle="dark-content" backgroundColor={colors.appBackground} />
 
 			<ScrollView
 				style={styles.scroll}
@@ -259,8 +259,8 @@ export default function SettingsScreen() {
 								Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 								setNotifications(val);
 							}}
-							trackColor={{ false: colors.gray200, true: colors.primaryAccent }}
-							thumbColor={colors.white}
+							trackColor={{ false: colors.borderDefault, true: colors.accentPrimary }}
+							thumbColor={colors.surfaceDefault}
 						/>
 					</View>
 
@@ -398,7 +398,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
 	safeArea: {
 		flex: 1,
-		backgroundColor: colors.gray50,
+		backgroundColor: colors.appBackground,
 	},
 	scroll: { flex: 1 },
 	scrollContent: {
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
 
 	// Section card
 	sectionCard: {
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		borderRadius: borderRadius.md,
 		marginBottom: spacing.lg,
 		overflow: "hidden",
@@ -424,12 +424,12 @@ const styles = StyleSheet.create({
 	},
 	rowBorder: {
 		borderBottomWidth: StyleSheet.hairlineWidth,
-		borderBottomColor: colors.gray200,
+		borderBottomColor: colors.borderDefault,
 	},
 	rowLabel: {
 		fontSize: 15,
 		fontWeight: "500",
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 	rowRight: {
 		flexDirection: "row",
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
 	},
 	rowValue: {
 		fontSize: 15,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 	},
 	rowLabelDestructive: {
 		color: colors.error,
@@ -449,13 +449,13 @@ const styles = StyleSheet.create({
 		position: "absolute",
 		bottom: 90,
 		alignSelf: "center",
-		backgroundColor: colors.grayDarkest,
+		backgroundColor: colors.textPrimary,
 		paddingHorizontal: spacing.lg,
 		paddingVertical: spacing.sm,
 		borderRadius: borderRadius.pill,
 	},
 	toastText: {
-		color: colors.white,
+		color: colors.surfaceDefault,
 		fontSize: 14,
 		fontWeight: "600",
 	},
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
 		justifyContent: "flex-end",
 	},
 	modalSheet: {
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		borderTopLeftRadius: borderRadius.lg,
 		borderTopRightRadius: borderRadius.lg,
 		paddingHorizontal: spacing.lg,
@@ -478,14 +478,14 @@ const styles = StyleSheet.create({
 		width: 36,
 		height: 4,
 		borderRadius: 2,
-		backgroundColor: colors.gray300,
+		backgroundColor: colors.borderStrong,
 		alignSelf: "center",
 		marginBottom: spacing.md,
 	},
 	sheetTitle: {
 		fontFamily: fonts.heading.medium,
 		fontSize: 18,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		textAlign: "center",
 		marginBottom: spacing.lg,
 	},
@@ -496,24 +496,24 @@ const styles = StyleSheet.create({
 		paddingVertical: spacing.md,
 		paddingHorizontal: spacing.md,
 		borderRadius: borderRadius.sm,
-		backgroundColor: colors.gray50,
+		backgroundColor: colors.appBackground,
 		marginBottom: spacing.sm,
 	},
 	sheetOptionText: {
 		fontSize: 16,
 		fontWeight: "500",
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 	sheetEmptyText: {
 		fontSize: 15,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		textAlign: "center",
 		paddingVertical: spacing.lg,
 		fontStyle: "italic",
 	},
 	currentBadge: {
 		fontSize: 12,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		fontStyle: "italic",
 	},
 });

@@ -760,6 +760,35 @@ export const deleteSessionActivity = (activityId) => {
 };
 
 /**
+ * Update duration and units for a session activity.
+ * @param {number} activityId - Activity ID
+ * @param {{ duration: number, units: number|null }} params
+ * @returns {Promise<void>}
+ */
+export const updateSessionActivity = (activityId, { duration, units }) => {
+	return new Promise((resolve, reject) => {
+		try {
+			const activity = db.getFirstSync(
+				"SELECT session_id FROM session_activities WHERE id = ?",
+				[activityId]
+			);
+			if (!activity) {
+				reject(new Error("Activity not found"));
+				return;
+			}
+			db.runSync(
+				`UPDATE session_activities SET duration_minutes = ?, units_studied = ? WHERE id = ?`,
+				[duration, units ?? null, activityId]
+			);
+			updateSessionTotalDuration(activity.session_id).then(resolve).catch(reject);
+		} catch (error) {
+			console.error("Error updating session activity:", error);
+			reject(error);
+		}
+	});
+};
+
+/**
  * Update user's proficiency level
  * @param {string|null} level - CEFR level ('A1', 'A2', 'B1', 'B2', 'C1', 'C2') or null
  * @returns {Promise<void>}

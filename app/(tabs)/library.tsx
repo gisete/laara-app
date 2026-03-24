@@ -63,7 +63,10 @@ export default function LibraryScreen() {
 			const languageFilteredMaterials = langCode
 				? materialsData.filter((m: any) => m.language_code === null || m.language_code === langCode)
 				: materialsData;
-			console.log("All materials:", JSON.stringify(materialsData.map((m: any) => ({ id: m.id, name: m.name, language_code: m.language_code }))));
+			console.log(
+				"All materials:",
+				JSON.stringify(materialsData.map((m: any) => ({ id: m.id, name: m.name, language_code: m.language_code }))),
+			);
 			console.log("Active language:", langCode);
 			console.log("Language filtered:", languageFilteredMaterials.length);
 		} catch (error) {
@@ -77,7 +80,7 @@ export default function LibraryScreen() {
 	useFocusEffect(
 		useCallback(() => {
 			loadMaterials();
-		}, [loadMaterials])
+		}, [loadMaterials]),
 	);
 
 	const handleAddMaterial = () => {
@@ -134,15 +137,10 @@ export default function LibraryScreen() {
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+			<StatusBar barStyle="dark-content" backgroundColor={colors.surfaceDefault} />
 
 			<View style={styles.content}>
 				<ScreenHeader title="Library" rightElement={languageFilteredMaterials.length > 0 ? AddButton : undefined} />
-				{activeLanguageCode && activeLanguageName ? (
-					<Text style={styles.languageIndicator}>
-						{activeLanguageName}
-					</Text>
-				) : null}
 
 				{/* Conditional content based on materials */}
 				{!loading && languageFilteredMaterials.length === 0 ? (
@@ -196,7 +194,7 @@ const styles = StyleSheet.create({
 		width: 48,
 		height: 48,
 		borderRadius: 24,
-		backgroundColor: colors.primaryAccent,
+		backgroundColor: colors.accentPrimary,
 		alignItems: "center",
 		justifyContent: "center",
 		shadowColor: "#000",
@@ -206,7 +204,7 @@ const styles = StyleSheet.create({
 		elevation: 3,
 	},
 	addButtonText: {
-		color: colors.white,
+		color: colors.surfaceDefault,
 		fontSize: 28,
 		fontWeight: "300",
 		marginTop: -2,
@@ -219,7 +217,7 @@ const styles = StyleSheet.create({
 
 	languageIndicator: {
 		fontSize: 13,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		marginBottom: spacing.xs,
 		marginTop: -4,
 	},

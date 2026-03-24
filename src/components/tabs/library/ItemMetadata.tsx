@@ -16,7 +16,7 @@ interface ItemMetadataProps {
 
 // Helper function to get the appropriate icon component
 const getMetadataIcon = (type: string) => {
-	const iconColor = colors.grayMedium;
+	const iconColor = colors.textSecondary;
 	const iconSize = 14;
 
 	switch (type) {
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
 	},
 	metadataText: {
 		fontSize: 13,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		marginLeft: 6,
 	},
 });

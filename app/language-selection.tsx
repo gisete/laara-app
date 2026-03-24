@@ -117,7 +117,7 @@ export default function LanguageSelectionScreen() {
 		return (
 			<SafeAreaView style={globalStyles.container}>
 				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={colors.primaryAccent} />
+					<ActivityIndicator size="large" color={colors.accentPrimary} />
 					<Text style={styles.loadingText}>Loading languages...</Text>
 				</View>
 			</SafeAreaView>
@@ -126,7 +126,7 @@ export default function LanguageSelectionScreen() {
 
 	return (
 		<SafeAreaView style={globalStyles.container}>
-			<StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+			<StatusBar barStyle="dark-content" backgroundColor={colors.surfaceDefault} />
 
 			<ScrollView
 				style={{ flex: 1 }}
@@ -151,7 +151,7 @@ export default function LanguageSelectionScreen() {
 							<Text style={styles.flag}>{language.flag}</Text>
 							<Text style={styles.languageName}>{language.name}</Text>
 							<Svg width={18} height={18} viewBox="0 0 24 24" fill="none" style={selectedLanguage !== language.code && styles.checkmarkHidden}>
-					<Path d="M5 12L10 17L19 8" stroke={colors.primaryAccent} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+					<Path d="M5 12L10 17L19 8" stroke={colors.accentPrimary} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
 				</Svg>
 						</TouchableOpacity>
 					))}
@@ -177,7 +177,7 @@ export default function LanguageSelectionScreen() {
 								<Text style={styles.flag}>{language.flag}</Text>
 								<Text style={styles.languageName}>{language.name}</Text>
 								<Svg width={18} height={18} viewBox="0 0 24 24" fill="none" style={selectedLanguage !== language.code && styles.checkmarkHidden}>
-					<Path d="M5 12L10 17L19 8" stroke={colors.primaryAccent} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+					<Path d="M5 12L10 17L19 8" stroke={colors.accentPrimary} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
 				</Svg>
 							</TouchableOpacity>
 						))
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
 	loadingText: {
 		marginTop: spacing.md,
 		...globalStyles.bodyMedium,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 	},
 
 	// Scroll
@@ -229,14 +229,14 @@ const styles = StyleSheet.create({
 	title: {
 		fontFamily: fonts.heading.medium,
 		fontSize: 28,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginBottom: spacing.xs,
 		textAlign: "left",
 	},
 	subtitle: {
 		...globalStyles.bodyLarge,
 		fontSize: 18,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		textAlign: "left",
 		marginTop: spacing.lg,
 	},
@@ -250,10 +250,10 @@ const styles = StyleSheet.create({
 	languageItem: {
 		flexDirection: "row",
 		alignItems: "center",
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		borderRadius: borderRadius.sm,
 		borderWidth: 1,
-		borderColor: colors.gray200,
+		borderColor: colors.borderDefault,
 		padding: spacing.md,
 		marginBottom: spacing.xs,
 	},
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 		fontSize: 16,
 		fontWeight: "400",
-		color: colors.grayDark,
+		color: colors.textStrong,
 	},
 	checkmarkHidden: {
 		opacity: 0,
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
 	// Divider
 	divider: {
 		height: 1,
-		backgroundColor: colors.gray200,
+		backgroundColor: colors.borderDefault,
 		marginVertical: spacing.xl,
 	},
 
@@ -285,14 +285,14 @@ const styles = StyleSheet.create({
 	sectionTitle: {
 		fontSize: 16,
 		fontWeight: "600",
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		marginBottom: spacing.md,
 		textTransform: "uppercase",
 		letterSpacing: 0.5,
 	},
 	noResultsText: {
 		...globalStyles.bodyMedium,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 		textAlign: "center",
 		marginTop: spacing.lg,
 		fontStyle: "italic",
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
 		borderRadius: borderRadius.button,
 	},
 	nextButtonDisabled: {
-		backgroundColor: colors.gray300,
+		backgroundColor: colors.borderStrong,
 	},
 	nextButtonText: {
 		...globalStyles.buttonPrimaryText,

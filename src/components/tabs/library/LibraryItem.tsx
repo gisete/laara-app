@@ -68,51 +68,51 @@ export default function LibraryItem({
 	return (
 		<View>
 			<View style={styles.cardShadow}>
-			<View style={styles.cardInner}>
-				<Pressable style={styles.topRow} onPress={onCloseMenu}>
-					<MaterialIcon type={material.type} />
+				<View style={styles.cardInner}>
+					<Pressable style={styles.topRow} onPress={onCloseMenu}>
+						<MaterialIcon type={material.type} />
 
-					<View style={styles.info}>
-						<View style={styles.titleRow}>
-							<Text style={styles.name} numberOfLines={1}>
-								{material.name}
-							</Text>
-							<TouchableOpacity
-								onPress={(e) => {
-									e.stopPropagation();
-									onToggleMenu();
-								}}
-								hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-							>
-								<MoreOptionsIcon />
-							</TouchableOpacity>
-						</View>
-
-						{/* Tag + metadata on one line */}
-						<View style={styles.metaRow}>
-							<View style={[styles.typeTag, { backgroundColor: getMaterialAccent(material.type) }]}>
-								<Text style={[styles.typeTagText, { color: colors.textPrimary }]}>{tagLabel}</Text>
+						<View style={styles.info}>
+							<View style={styles.titleRow}>
+								<Text style={styles.name} numberOfLines={1}>
+									{material.name}
+								</Text>
+								<TouchableOpacity
+									onPress={(e) => {
+										e.stopPropagation();
+										onToggleMenu();
+									}}
+									hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+								>
+									<MoreOptionsIcon />
+								</TouchableOpacity>
 							</View>
-							{totalUnits > 0 && (
-								<>
-									<Text style={styles.metaSeparator}>·</Text>
-									<Text style={styles.metaText}>
-										{totalUnits} {getUnitLabel(material.type, totalUnits)}
-									</Text>
-								</>
-							)}
-						</View>
-					</View>
-				</Pressable>
 
-				<ProgressBar
-					current={currentUnit}
-					total={totalUnits}
-					unitLabel={getUnitLabel(material.type, totalUnits - currentUnit)}
-					percentage={progressPercentage}
-					color={getMaterialAccent(material.type)}
-				/>
-			</View>
+							{/* Tag + metadata on one line */}
+							<View style={styles.metaRow}>
+								<View style={styles.typeTag}>
+									<Text style={styles.typeTagText}>{tagLabel}</Text>
+								</View>
+								{totalUnits > 0 && (
+									<>
+										<Text style={styles.metaSeparator}>·</Text>
+										<Text style={styles.metaText}>
+											{totalUnits} {getUnitLabel(material.type, totalUnits)}
+										</Text>
+									</>
+								)}
+							</View>
+						</View>
+					</Pressable>
+
+					<ProgressBar
+						current={currentUnit}
+						total={totalUnits}
+						unitLabel={getUnitLabel(material.type, totalUnits - currentUnit)}
+						percentage={progressPercentage}
+						color={getMaterialAccent(material.type)}
+					/>
+				</View>
 			</View>
 			{isMenuOpen && <LibraryItemActions onEdit={handleEdit} onDelete={handleDelete} />}
 		</View>
@@ -121,7 +121,7 @@ export default function LibraryItem({
 
 const styles = StyleSheet.create({
 	cardShadow: {
-		backgroundColor: colors.white,
+		backgroundColor: colors.surfaceDefault,
 		borderRadius: borderRadius.sm,
 		marginBottom: spacing.sm,
 	},
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 		...typography.bodyLarge,
 		fontWeight: "600",
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 		marginRight: spacing.sm,
 	},
 	// Tag pill + separator + metadata text all on one line
@@ -161,19 +161,21 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 6,
 		paddingVertical: 3,
 		borderRadius: 4,
+		backgroundColor: colors.appBackground,
 	},
 	typeTagText: {
 		fontSize: 10,
 		fontWeight: "400",
 		textTransform: "uppercase",
 		letterSpacing: 0.5,
+		color: colors.textStrong,
 	},
 	metaSeparator: {
 		fontSize: 11,
-		color: colors.grayLightMedium,
+		color: colors.textTertiary,
 	},
 	metaText: {
 		fontSize: 12,
-		color: colors.grayMedium,
+		color: colors.textSecondary,
 	},
 });

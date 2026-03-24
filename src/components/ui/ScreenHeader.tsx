@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 		fontFamily: fonts.heading.medium,
 		fontSize: 32,
-		color: colors.grayDarkest,
+		color: colors.textPrimary,
 	},
 	// Fixed-width slot keeps title left-aligned whether or not a right element is present.
 	// Width matches the add button (48px) — the largest expected right element.
